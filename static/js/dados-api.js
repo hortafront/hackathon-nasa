@@ -79,12 +79,12 @@
 
   // ---------- Caso de sono ----------
 
-  // A API só tem o sono. As outras 5 áreas vêm de dados-demo.js,
+  // A API só tem o sono. As outras áreas vêm de dados-demo.js,
   // marcadas como locais (local: true) para a tela avisar.
   function areasDaApi(registros, avaliacao) {
     var estadoSono = avaliacao ? avaliacao.estado : (registros.length ? "dados_insuficientes" : "sem_registros");
     var resumoSono = avaliacao
-      ? "Avaliado com dados até " + window.RagaFormato.dia(avaliacao.data_avaliacao) + "."
+      ? "Avaliação com dados até " + window.RagaFormato.dia(avaliacao.data_avaliacao) + "."
       : "Nenhum registro de sono ainda.";
     return [{ id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono }]
       .concat(demo.areasLocais());
@@ -98,9 +98,11 @@
       var ultimo = registros[registros.length - 1];
       var data = dataEscolhida || (ultimo ? ultimo.fim_sono.slice(0, 10) : null);
       var avaliacao = registros.length && data
-        ? pedir(BASE + "/sono/avaliacao?data=" + data)
-        : Promise.resolve(null);
-      return avaliacao.then(function (av) {
+        ? pedir(BASE + "/sono/avaliacoes?data=" + data)
+        : Promise.resolve({ avaliacoes: [] });
+      return avaliacao.then(function (historicoAvaliacoes) {
+        var avaliacoes = historicoAvaliacoes.avaliacoes;
+        var av = avaliacoes.length ? avaliacoes[avaliacoes.length - 1] : null;
         return {
           modo: "api",
           atualizado_em: new Date().toISOString(),
@@ -113,9 +115,7 @@
           sono: {
             linha_base: historico.linha_base,
             registros: registros,
-            // A API devolve só a avaliação atual; o histórico de avaliações
-            // (indicação → reavaliação) é recomendação ao back-end.
-            avaliacoes: av ? [av] : []
+            avaliacoes: avaliacoes
           }
         };
       });
@@ -157,8 +157,7 @@
       return checkinNaApi(checkin);
     },
 
-    // Check-in da noite (Mente e equipe). Rotas recomendadas em
-    // docs/integracao-front-api.md; o diário NUNCA é enviado.
+    // Check-in da noite, incluindo o diário fictício compartilhado.
     buscarCheckinsNoite: function () {
       return comReserva("noite", function () { return pedir(BASE + "/mente/checkins"); }, demo.buscarCheckinsNoite);
     },
@@ -205,7 +204,7 @@
       });
     },
 
-    // Rota ainda não existe: recomendada em docs/integracao-front-api.md.
+    // A visão médica lê apenas o banco local fictício.
     buscarVisaoMedica: function () {
       return comReserva("medica", function () { return pedir("/api/equipe-medica/sono"); }, demo.buscarVisaoMedica);
     }

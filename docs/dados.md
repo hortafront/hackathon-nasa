@@ -16,7 +16,7 @@ Use `database.carregar_dados_ficticios(conexao)` somente quando quiser carregar 
 
 `registros_sono` possui indice unico por `(astronauta_id, noite_em)`, comparando o texto completo do horario. Ele nao garante uma unica data local de despertar se os textos de `noite_em` forem diferentes: a avaliacao ainda rejeita registros com o mesmo dia de `fim_sono`. Uma duplicata identica e ignorada pela carga; conflito com dados diferentes interrompe a transacao. Bases antigas com duplicatas precisam ser corrigidas conscientemente antes da criacao do indice.
 
-Check-ins continuam pendentes de alinhamento com Alan: campos, limites, autoria de `astronauta_id` e `origem`, duplicidade e erros.
+O POST de sono e os check-ins da noite usam os campos e limites de `docs/api.md`. O diário fictício fica no banco junto ao check-in e é incluído na visão médica. Não há controle de acesso; use somente dados fictícios.
 
 ## Funções para o back-end 2
 

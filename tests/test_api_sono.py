@@ -38,11 +38,50 @@ class TesteApiSono(unittest.TestCase):
         self.assertEqual(resposta.json['noites_consideradas'][0]['origem'], 'simulada')
 
     def test_paginas_e_arquivos_estaticos(self):
-        for rota in ('/', '/index.html', '/equipe-medica.html', '/static/js/dados-api.js'):
+        for rota in ('/', '/index.html', '/equipe-medica.html', '/checkins.html', '/teste-reacao.html', '/static/js/dados-api.js'):
             with self.subTest(rota=rota):
                 resposta = self.cliente.get(rota)
                 self.assertEqual(resposta.status_code, 200)
                 resposta.close()
+
+    def test_gravacao_e_avaliacoes_retrospectivas(self):
+        url = '/api/astronautas/1/sono/registros'
+        dados = {'noite_em': '2026-11-12T00:00:00-03:00',
+                 'inicio_sono': '2026-11-11T23:00:00-03:00',
+                 'fim_sono': '2026-11-12T06:30:00-03:00',
+                 'duracao_horas': 1, 'qualidade': 4, 'interrupcoes': 1}
+        resposta = self.cliente.post(url, json=dados)
+        self.assertEqual(resposta.status_code, 201)
+        self.assertEqual(resposta.json['registro']['duracao_horas'], 7.5)
+        self.assertEqual(resposta.json['registro']['origem'], 'autorrelato_simulado')
+        self.assertNotIn('observacao', resposta.json['registro'])
+        avaliacao_nova = self.cliente.get(self.url + '?data=2026-11-12')
+        self.assertEqual(avaliacao_nova.json['estado'], 'verde')
+        self.assertEqual(avaliacao_nova.json['noites_consideradas'][-1]['origem'], 'autorrelato_simulado')
+        dados['noite_em'] = '2026-11-12T00:00:00+00:00'
+        self.assertEqual(self.cliente.post(url, json=dados).status_code, 409)
+        historico = self.cliente.get('/api/astronautas/1/sono/avaliacoes?data=2026-11-11')
+        self.assertEqual(historico.status_code, 200)
+        avaliacoes = historico.json['avaliacoes']
+        self.assertEqual([(a['data_avaliacao'], a['estado']) for a in avaliacoes[-2:]],
+                         [('2026-11-10', 'amarelo'), ('2026-11-11', 'verde')])
+
+    def test_gravacao_rejeita_dados_invalidos_e_banco_ausente(self):
+        url = '/api/astronautas/1/sono/registros'
+        valido = {'noite_em': '2026-11-12T00:00:00-03:00',
+                  'inicio_sono': '2026-11-11T23:00:00-03:00',
+                  'fim_sono': '2026-11-12T06:30:00-03:00',
+                  'duracao_horas': 7.5, 'qualidade': 4, 'interrupcoes': 1}
+        for mudanca in ({'qualidade': True}, {'interrupcoes': -1},
+                        {'fim_sono': '2026-11-12T06:30:00'},
+                        {'noite_em': '2026-11-13T00:00:00-03:00'},
+                        {'duracao_horas': float('nan')}, {'observacao': 'texto privado'}):
+            with self.subTest(mudanca=mudanca):
+                self.assertEqual(self.cliente.post(url, json={**valido, **mudanca}).status_code, 400)
+        self.assertEqual(self.cliente.post('/api/astronautas/999/sono/registros', json=valido).status_code, 404)
+        app.config['CAMINHO_BANCO'] = self.caminho.parent / 'ausente.db'
+        self.assertEqual(self.cliente.post(url, json=valido).status_code, 503)
+        self.assertFalse(app.config['CAMINHO_BANCO'].exists())
 
     def test_historico_e_avaliacao_usam_os_mesmos_dados(self):
         resposta = self.cliente.get('/api/astronautas/1/sono/registros')

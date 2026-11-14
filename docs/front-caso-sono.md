@@ -1,5 +1,7 @@
 # Front-end — caso de sono
 
+**Atualização:** o Flask serve as quatro páginas, aceita os check-ins de sono e mente e oferece avaliações retrospectivas e visão médica. Esta inclui as respostas e o diário fictício por decisão do integrante; não há autenticação. A carga explícita usa `python database.py --carregar-ficticios`. Onde o restante deste documento descreve essas funções como pendentes ou o diário como não compartilhado, registra a proposta anterior. O teste de reação continua local; avaliações retrospectivas não são acompanhamento agendado nem persistido.
+
 Primeira entrega do front-end do Raga: o caso de três noites de sono alterado ([docs/raga.md](raga.md)), da astronauta fictícia ao check-in e à prévia da visão médica. `static/js/dados-api.js` liga a interface à API Flask; quando uma rota ainda não existe, usa os dados fictícios locais de `static/js/dados-demo.js` e avisa na tela. O que falta no back-end está em [integracao-front-api.md](integracao-front-api.md). Nada disso vem de sensor, relógio ou da NASA.
 
 ## Páginas e arquivos
@@ -43,7 +45,7 @@ Depois que a API respondeu uma vez, uma falha seguinte não troca para os dados 
 
 - Mostra estado, explicação, dados que motivaram, regra usada, orientação e reavaliação **exatamente como vierem dos dados**. Não aplica regra clínica nem calcula cor.
 - Todo estado tem texto e ícone de formato próprio, além da cor. "Dados insuficientes" e "Sem registros" nunca aparecem como verde.
-- A visão médica mostra só os campos marcados como compartilháveis. Respostas detalhadas do check-in e diário ficam de fora até a equipe definir a política.
+- A visão médica mostra as respostas do check-in e o diário fictício; o servidor não controla acesso por perfil.
 - Validação do check-in no navegador é só para ajudar quem preenche; o servidor precisa validar de novo.
 
 ## Proposta de dados para a API (a combinar com o back-end)

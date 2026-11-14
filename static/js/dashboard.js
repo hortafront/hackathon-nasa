@@ -207,6 +207,9 @@
     var t = $("avaliado-em");
     t.dateTime = av.data_avaliacao;
     t.textContent = F.dia(av.data_avaliacao);
+    var hoje = new Date();
+    var dataLocal = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
+    $("avaliacao-antiga").hidden = av.data_avaliacao >= dataLocal;
 
     mostrarAcompanhamento(sono.avaliacoes);
   }
@@ -223,7 +226,7 @@
       var quando = document.createElement("time");
       quando.dateTime = av.data_avaliacao;
       quando.textContent = F.dia(av.data_avaliacao);
-      titulo.append(quando, document.createTextNode(i === 0 ? ": indicação" : ": reavaliação"));
+      titulo.append(quando, document.createTextNode(": avaliação calculada"));
       var selo = document.createElement("p");
       selo.innerHTML = F.selo(av.estado); // rótulos fixos de formato.js
       var texto = document.createElement("p");

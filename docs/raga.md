@@ -40,7 +40,7 @@ Há necessidade de carregamento, ausência, dados insuficientes, dados antigos e
 
 ## Dados sensíveis e limites
 
-Usem exclusivamente dados fictícios e identifiquem sua origem. A equipe deve definir quem pode acessar cada campo; não presumam acesso da visão médica ao texto do diário. As conversas psicológicas privadas não são dados disponíveis automaticamente. Controle de acesso, confidencialidade e notificações reais não estão implementados. Não façam afirmações de segurança, diagnóstico, efetividade clínica ou integração que não tenham sido verificadas.
+Usem exclusivamente dados fictícios e identifiquem sua origem. Para esta demonstração local, foi autorizado compartilhar check-ins completos e o diário fictício na visão médica. A aplicação ainda não distingue os perfis nem restringe acesso: qualquer pessoa com acesso ao servidor pode ler os dados. Conversas psicológicas privadas não são coletadas automaticamente. Controle de acesso, confidencialidade e notificações reais não estão implementados. Não façam afirmações de segurança, diagnóstico, efetividade clínica ou integração que não tenham sido verificadas.
 
 As cores, limiares e ações do PDF são exemplos para protótipo. Ajuste de treino, terapia de luz, interpretação de ECG/oxigenação e encaminhamento dependem de especialistas e protocolos aprovados antes de qualquer uso real. Não chamar o Raga de sistema médico validado.
 

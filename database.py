@@ -128,6 +128,30 @@ def buscar_historico_sono(conexao, astronauta_id):
     return registros
 
 
+def buscar_checkins_noite(conexao, astronauta_id):
+    cursor = conexao.execute(
+        """SELECT id, astronauta_id, data, humor, estresse, convivencia,
+                  diario, registrado_em, origem
+           FROM checkins_noite WHERE astronauta_id = ? ORDER BY data, id""",
+        (astronauta_id,),
+    )
+    campos = [coluna[0] for coluna in cursor.description]
+    return [dict(zip(campos, linha)) for linha in cursor.fetchall()]
+
+
+def salvar_checkin_noite(conexao, checkin):
+    campos = ("astronauta_id", "data", "humor", "estresse", "convivencia",
+              "diario", "registrado_em", "origem")
+    with conexao:
+        cursor = conexao.execute(
+            """INSERT INTO checkins_noite
+               (astronauta_id, data, humor, estresse, convivencia, diario, registrado_em, origem)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            tuple(checkin[campo] for campo in campos),
+        )
+    return {"id": cursor.lastrowid, **{campo: checkin[campo] for campo in campos}}
+
+
 def conectar_banco(caminho=CAMINHO_BANCO):
     """Abre o banco; quem chamar esta função deve fechar a conexão."""
     caminho = Path(caminho)
@@ -280,5 +304,18 @@ def buscar_historico(conexao, astronauta_id, indicador):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Inicializa o banco local do Raga.")
+    parser.add_argument("--carregar-ficticios", action="store_true",
+                        help="carrega explicitamente os dados de demonstração")
+    argumentos = parser.parse_args()
     inicializar_banco()
     print("Banco inicializado em instance/saude.db.")
+    if argumentos.carregar_ficticios:
+        conexao = conectar_banco()
+        try:
+            resultado = carregar_dados_ficticios(conexao)
+            print("Carga fictícia:", resultado)
+        finally:
+            conexao.close()

@@ -126,7 +126,7 @@
 
   // Check-ins da noite (Mente e equipe) fictícios. Escalas de 1 a 5:
   // humor e convivência (5 = melhor), estresse (5 = mais estresse).
-  // O diário nunca entra aqui: ele fica só no navegador (checkins.js).
+  // O diário fictício acompanha o check-in na demonstração local.
   var checkinsNoite = lerSessao("raga-demo-noite", null) || [
     { id: 1, data: "2026-11-08", humor: 4, estresse: 2, convivencia: 4, registrado_em: "2026-11-08T21:30:00-03:00", origem: "simulada" },
     { id: 2, data: "2026-11-09", humor: 3, estresse: 3, convivencia: 4, registrado_em: "2026-11-09T21:40:00-03:00", origem: "simulada" },
@@ -353,16 +353,12 @@
       }, 300);
     },
 
-    // Futuro: GET da visão médica. Só campos que a equipe médica
-    // poderia ver; check-in detalhado e diário ficam de fora
-    // até a política de compartilhamento ser definida.
+    // Visão médica fictícia, incluindo os check-ins salvos nesta aba.
     buscarVisaoMedica: function () {
       if (simular === "carregando") return new Promise(function () {});
       if (deveFalhar("medica")) return responder(falha, 300);
       return responder(function () {
-        // Exemplos escritos à mão: um tripulante de cada cor, do mais
-        // grave para o menos grave. Só o estado e o motivo resumido;
-        // respostas dos check-ins e diário não aparecem.
+        checkinsNoite = lerSessao("raga-demo-noite", checkinsNoite);
         return {
           modo: "demonstracao-local",
           atualizado_em: new Date().toISOString(),
@@ -375,7 +371,9 @@
                 "Oxigênio simulado em repouso: 90% (linha de base fictícia: 97%)",
                 "Sono: 3 noites abaixo da linha de base fictícia de 7 h 30 min"
               ],
-              data_avaliacao: alerta.data_avaliacao, reavaliar_em_horas: null },
+              data_avaliacao: alerta.data_avaliacao, reavaliar_em_horas: null,
+              linha_base_sono: copiar(linhaBase), registros_sono: juntarRegistros(registros),
+              checkins_noite: copiar(checkinsNoite) },
             { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: "Exercício",
               estado: "amarelo",
               motivo: "Treino abaixo do plano fictício de 2 h por dia nos 3 últimos dias.",
@@ -387,10 +385,7 @@
               dados_compartilhados: [],
               data_avaliacao: "2026-11-10", reavaliar_em_horas: null }
           ],
-          nao_exibido: [
-            "Respostas detalhadas dos check-ins (qualidade informada, interrupções, horários)",
-            "Observações e diário opcional"
-          ]
+          nao_exibido: []
         };
       }, 400);
     }

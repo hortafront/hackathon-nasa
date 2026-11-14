@@ -1,5 +1,7 @@
 # Integração front-end ↔ API — o que falta no back-end
 
+**Atualização:** o POST de sono, as quatro rotas de páginas, a carga explícita, as avaliações retrospectivas, os check-ins da noite com diário e a visão médica foram implementados. O diário fictício é compartilhado por decisão do integrante; não há autenticação. O restante deste documento conserva as propostas originais; consulte [api.md](api.md) para o contrato atual. As avaliações são calculadas na consulta, sem agendamento ou registro de atendimento. O PDF presente no repositório é a versão 2, com cinco áreas; a referência abaixo à versão 3 requer confirmação da equipe.
+
 Para: back-end (Alan e Rodrigo). Do: front-end (Andrew).
 
 ## Próximos passos recomendados (14/11, noite — prazo 15/11 às 23h59)

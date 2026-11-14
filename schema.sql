@@ -50,3 +50,18 @@ CREATE INDEX IF NOT EXISTS idx_registros_sono_astronauta_noite
 -- Bases antigas com duplicatas devem ser corrigidas conscientemente.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_registros_sono_astronauta_noite
     ON registros_sono (astronauta_id, noite_em);
+
+-- Somente dados fictícios: o diário acompanha o check-in compartilhado.
+CREATE TABLE IF NOT EXISTS checkins_noite (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    astronauta_id INTEGER NOT NULL,
+    data TEXT NOT NULL,
+    humor INTEGER NOT NULL,
+    estresse INTEGER NOT NULL,
+    convivencia INTEGER NOT NULL,
+    diario TEXT NOT NULL DEFAULT '',
+    registrado_em TEXT NOT NULL,
+    origem TEXT NOT NULL,
+    UNIQUE (astronauta_id, data),
+    FOREIGN KEY (astronauta_id) REFERENCES astronautas (id)
+);

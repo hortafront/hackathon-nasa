@@ -6,7 +6,21 @@ Este documento distingue as rotas existentes das necessidades futuras. O contrat
 
 Além da rota de sono abaixo, `app.py` implementa `GET /api/leituras/recentes`, com resposta fixa fictícia, sem banco. A implementação usa por engano o parâmetro e campo `astrounata_id`; aceita somente o valor 1 e responde 404 nos demais casos. O contrato anterior previa `astronauta_id`, mas a implementação não o cumpre. A divergência precisa ser resolvida junto aos consumidores, com documentação e testes.
 
-As rotas antigas `GET /api/leituras` e `POST /api/leituras` foram planejadas, mas não estão implementadas. O banco oferece funções Python de leituras numéricas, não rotas HTTP. O Flask serve o painel em `/` e `/index.html` e a prévia médica em `/equipe-medica.html`. Ainda não há POST de check-in nem API da visão médica.
+As rotas antigas `GET /api/leituras` e `POST /api/leituras` foram planejadas, mas não estão implementadas. O banco oferece funções Python de leituras numéricas, não rotas HTTP. O Flask serve o painel, a prévia médica, check-ins e teste de reação em `/`, `/index.html`, `/equipe-medica.html`, `/checkins.html` e `/teste-reacao.html`. Sono, check-in da noite e visão médica têm rotas; ainda não há API de cognição.
+
+## Check-in da noite e visão médica fictícia
+
+No MVP local foi autorizado compartilhar respostas completas e diário fictício com a visão médica. Não existe autenticação ou controle por papel: **qualquer pessoa com acesso ao servidor pode consultar esses dados**. Não use dados reais nem exponha o servidor publicamente.
+
+`GET /api/astronautas/<id>/mente/checkins` retorna `astronauta` e `checkins` em ordem de data, com diário, origem e horário. `POST` nessa rota recebe `data` (`AAAA-MM-DD`, sem data futura), `humor`, `estresse`, `convivencia` (inteiros de 1 a 5), `diario` (texto, até 1000 caracteres; use `""` se vazio) e `registrado_em` (ISO 8601 com fuso). O servidor define `astronauta_id` e `origem: autorrelato_simulado`. Responde `201 {"checkin": {...}}`; entrada inválida 400, astronauta inexistente 404, data duplicada 409 e banco indisponível 503. Não há regra de classificação de mente.
+
+`GET /api/equipe-medica/sono` retorna `atualizado_em`, `ordem` e `tripulantes`, incluindo avaliações demonstrativas de sono, linha de base, registros de sono com observações, e `checkins_noite` com respostas e diário. A ordem é amarelo, dados insuficientes, verde, exclusivamente conforme a última avaliação de sono: não é triagem clínica e os dados podem ser antigos. Sem banco responde 503; dados inconsistentes, 422. Sem autenticação, ambos os perfis de interface acessam as mesmas rotas.
+
+## Registro de sono fictício e histórico de avaliações
+
+`POST /api/astronautas/<id>/sono/registros` recebe JSON com `noite_em`, `inicio_sono`, `fim_sono` (ISO 8601 com fuso), `duracao_horas`, `qualidade` (inteiro 1–5) e `interrupcoes` (inteiro 0–30). `noite_em` deve representar a meia-noite da data local de despertar; datas futuras não são aceitas. A duração é recalculada pelo servidor a partir dos horários e deve ser positiva e no máximo 16 horas. O servidor define a origem `autorrelato_simulado`; não aceita observações ou outros campos. Sucesso retorna `201 {"registro": {...}}`; entradas inválidas retornam 400, astronauta inexistente 404, data de despertar já registrada 409, dados inconsistentes 422 e banco indisponível 503. A verificação de duplicidade e a inserção são serializadas. Apenas dados fictícios são permitidos neste protótipo local sem autenticação.
+
+`GET /api/astronautas/<id>/sono/avaliacoes?data=AAAA-MM-DD` retorna `{"avaliacoes": [...]}`, em ordem de data, para as datas de despertar até a data informada e para a própria data informada. Cada elemento usa o formato da avaliação individual. São cálculos retrospectivos no momento da consulta, não um histórico de eventos persistidos, agendamentos ou atendimentos. Retorna os mesmos erros de data, astronauta, consistência e banco da avaliação individual.
 
 ## Consulta HTTP do histórico de sono
 
@@ -69,7 +83,7 @@ Sem referência ou três noites consecutivas, responde `200` com `estado: dados_
 
 Para o caso de sono, o front-end já usa dados fictícios locais num formato proposto em [front-caso-sono.md](front-caso-sono.md); ele serve de ponto de partida para a conversa, não é contrato fechado.
 
-Antes de implementar, definir nomes de rotas e campos, tipos, códigos HTTP, erros, política de acesso e atualização. Não incluir o diário por padrão na visão médica; sua política de compartilhamento precisa ser definida.
+As demais rotas e regras dessa tabela ainda precisam ser combinadas. Para o MVP fictício, foi definido o compartilhamento integral de check-ins e diário com a visão médica; controle de acesso real continua não implementado.
 
 ## Semântica obrigatória
 

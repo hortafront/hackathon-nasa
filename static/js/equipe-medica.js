@@ -1,6 +1,5 @@
 // Prévia da visão da equipe médica.
-// Mostra só os campos que a resposta marca como compartilháveis.
-// Check-in detalhado e diário não aparecem (política a definir).
+// Exibe os dados fictícios disponíveis, incluindo check-ins e diário.
 (function () {
   var INTERVALO_MS = 10000;
   var F = window.RagaFormato;
@@ -53,9 +52,41 @@
         tri.dados_compartilhados.forEach(function (d) { ul.appendChild(texto("li", "", d)); });
         li.appendChild(ul);
       }
+      var detalhes = document.createElement("details");
+      detalhes.appendChild(texto("summary", "", "Ver registros e diário compartilhados"));
+      if (tri.linha_base_sono) {
+        detalhes.appendChild(texto("p", "", "Linha de base fictícia de sono: " +
+          F.duracao(tri.linha_base_sono.duracao_media_horas) + "; qualidade média " + tri.linha_base_sono.qualidade_media +
+          "; período de " + F.dataHora(tri.linha_base_sono.periodo_inicio) + " a " + F.dataHora(tri.linha_base_sono.periodo_fim) +
+          "; origem: " + tri.linha_base_sono.origem + "."));
+      }
+      detalhes.appendChild(texto("h4", "", "Registros de sono"));
+      var noites = tri.registros_sono || [];
+      if (!noites.length) detalhes.appendChild(texto("p", "", "Nenhum registro de sono disponível."));
+      noites.forEach(function (r) {
+        detalhes.appendChild(texto("p", "", "Despertar em " + F.dataHora(r.fim_sono) +
+          "; início " + F.dataHora(r.inicio_sono) + "; duração " + F.duracao(r.duracao_horas) +
+          "; qualidade " + r.qualidade + "; interrupções " + r.interrupcoes +
+          "; origem: " + r.origem + (r.observacao ? "; observação: " + r.observacao : "") + "."));
+      });
+      detalhes.appendChild(texto("h4", "", "Check-ins da noite e diário"));
+      var checkins = tri.checkins_noite || [];
+      if (!checkins.length) detalhes.appendChild(texto("p", "", "Nenhum check-in da noite disponível."));
+      checkins.forEach(function (c) {
+        detalhes.appendChild(texto("p", "", "Data " + F.dia(c.data) + "; humor " + c.humor +
+          "; estresse " + c.estresse + "; convivência " + c.convivencia +
+          "; registrado em " + F.dataHora(c.registrado_em) + "; origem: " + c.origem + "."));
+        detalhes.appendChild(texto("p", "", "Diário: " + (c.diario || "não informado")));
+      });
+      li.appendChild(detalhes);
       // Datas no formato de avaliacao_sono.py: data + prazo em horas.
       if (tri.data_avaliacao) {
         li.appendChild(texto("p", "leitura-detalhe", "Avaliado com dados até " + F.dia(tri.data_avaliacao) + "."));
+        var hoje = new Date();
+        var hojeTexto = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
+        if (tri.data_avaliacao < hojeTexto) {
+          li.appendChild(texto("p", "nota", "Avaliação histórica; pode não refletir a situação atual."));
+        }
       }
       if (tri.data_avaliacao && tri.reavaliar_em_horas) {
         li.appendChild(texto("p", "leitura-detalhe", "Reavaliação sugerida em " + tri.reavaliar_em_horas +
@@ -65,9 +96,6 @@
       lista.appendChild(li);
     });
 
-    var naoExibido = $("lista-nao-exibido");
-    naoExibido.replaceChildren();
-    dados.nao_exibido.forEach(function (item) { naoExibido.appendChild(texto("li", "", item)); });
   }
 
   function carregar() {

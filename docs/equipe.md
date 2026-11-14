@@ -15,7 +15,7 @@ O [norte do projeto](raga.md) descreve a solução. As atribuições abaixo são
 - Combinar regras **ilustrativas** para as cinco áreas, estado geral e informações insuficientes; documentar fontes e limites.
 - Implementar avaliação explicável, recomendações de demonstração, alertas e reavaliação. Diferenciar acompanhamento e prioridade imediata; nunca aguardar 24–48 horas em situação apresentada como urgente.
 - Implementar API Flask e entrega do painel, com entradas validadas, erros seguros e respostas combinadas com o front-end.
-- Definir visibilidade para astronauta e equipe médica; não presumir compartilhamento do diário ou de informações psicológicas. Não alegar autenticação ou notificação real sem implementação e teste.
+- Na demonstração fictícia, compartilhar check-ins e diário com a visão médica conforme decisão do integrante; implementar e testar controle por perfil antes de qualquer uso com dados reais. Não alegar autenticação ou notificação real sem implementação e teste.
 - Testar regras, ausência de dados, atualização, erros e integração. Atualizar `docs/api.md` e avisar a equipe sobre mudanças de contrato.
 
 ## Front-end — Andrew e Gustavo

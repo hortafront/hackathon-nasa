@@ -3,8 +3,7 @@
 // (a API pode ter a rota do sono e ainda não ter a da noite).
 // - O front não avalia nada: a avaliação do sono vem do back-end e
 //   aparece no painel; Mente e equipe ainda não tem regra.
-// - Diário da noite: PRIVADO. Fica só no sessionStorage desta aba e
-//   nunca é enviado ao servidor nem mostrado na visão da equipe médica.
+// - O diário fictício acompanha o check-in e aparece na visão médica.
 (function () {
   var INTERVALO_MS = 10000;
   var F = window.RagaFormato;
@@ -63,8 +62,8 @@
       ? "O check-in é gravado no servidor (dados fictícios, ambiente local) e a avaliação é refeita pela API."
       : "Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor e some ao fechar a aba.";
     $("noite-nota-fonte").textContent = noite.fonte === "api"
-      ? "As respostas de 1 a 5 são gravadas no servidor (dados fictícios, ambiente local). O diário não é enviado."
-      : "Nesta demonstração, as respostas ficam só nesta aba e somem ao fechar a aba.";
+      ? "Respostas e diário fictícios são gravados no servidor e mostrados na visão médica. Não há controle de acesso."
+      : "Respostas e diário ficam nesta aba e podem aparecer na visão médica local; somem ao fechar a aba.";
   }
 
   // ---------- Manhã: histórico ----------
@@ -100,26 +99,6 @@
     return n + " (" + ROTULOS[campo][n] + ")";
   }
 
-  function chaveDiario(data) { return "raga-diario-" + data; }
-
-  function guardarDiario(data, texto) {
-    try {
-      if (texto) sessionStorage.setItem(chaveDiario(data), texto);
-      else sessionStorage.removeItem(chaveDiario(data));
-      return true;
-    } catch (erro) {
-      return false;
-    }
-  }
-
-  function temDiario(data) {
-    try {
-      return !!sessionStorage.getItem(chaveDiario(data));
-    } catch (erro) {
-      return false;
-    }
-  }
-
   function mostrarNoite(dados) {
     var lista = dados.checkins;
     $("noite-vazio").hidden = lista.length > 0;
@@ -132,7 +111,7 @@
         valor("humor", c.humor),
         valor("estresse", c.estresse),
         valor("convivencia", c.convivencia),
-        temDiario(c.data) ? "Escrito (só nesta aba)" : "—",
+        c.diario || "—",
         c.origem
       ]);
     });
@@ -343,12 +322,12 @@
       erros[0].focus();
       return null;
     }
-    // O diário não entra no objeto enviado.
     return {
       data: campoDataNoite.value,
       humor: respostas.humor,
       estresse: respostas.estresse,
       convivencia: respostas.convivencia,
+      diario: campoDiario.value,
       registrado_em: new Date().toISOString()
     };
   }
@@ -361,15 +340,12 @@
       mensagemNoite.textContent = "Confira os campos destacados.";
       return;
     }
-    var diario = campoDiario.value.trim();
     var botao = formNoite.querySelector('button[type="submit"]');
     botao.disabled = true;
     window.RagaDados.enviarCheckinNoite(checkin).then(function (resposta) {
-      var guardado = diario ? guardarDiario(checkin.data, diario) : true;
       mensagemNoite.textContent = (resposta.situacao === "salvo_no_servidor"
-        ? "Check-in da noite de " + F.dia(checkin.data) + " salvo no servidor."
-        : "Check-in da noite de " + F.dia(checkin.data) + " registrado nesta aba.") +
-        (diario ? (guardado ? " O diário ficou só neste navegador." : " O navegador bloqueou o armazenamento, então o diário não foi guardado.") : "");
+        ? "Check-in e diário fictícios de " + F.dia(checkin.data) + " salvos no servidor e disponíveis na visão médica."
+        : "Check-in e diário fictícios de " + F.dia(checkin.data) + " registrados nesta aba.");
       formNoite.reset();
       prepararNoite();
       return carregar();
