@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raga: visão da equipe médica</title>
+
+  <!-- Mesmos caminhos relativos do index.html (ver comentário lá).
+       No Flask, esta página precisa de uma rota de um só nível
+       (por exemplo, /equipe-medica.html) para ../static/ continuar válido. -->
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/equipe-medica.css">
+  <script src="../static/js/tema.js"></script>
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="nav">
+      <a class="marca" href="index.html">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="13" r="5" fill="currentColor"/>
+          <ellipse cx="13" cy="13" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 13 13)"/>
+        </svg>
+        Raga
+      </a>
+
+      <nav class="links" aria-label="Páginas">
+        <a href="index.html">Painel da astronauta</a>
+        <a href="equipe-medica.html" aria-current="page">Equipe médica</a>
+      </nav>
+
+      <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
+        </svg>
+        Tema escuro
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Visão da equipe médica</h1>
+    <p>Prévia com tripulantes fictícios. Não há acesso por perfil nem envio real de avisos.</p>
+  </div>
+
+  <!-- data-estado: carregando | ok | erro (equipe-medica.js). -->
+  <main id="painel-medico" class="painel" data-estado="carregando" data-tem-dados="nao">
+    <p id="aviso-medico" class="aviso" role="status">Carregando dados da demonstração…</p>
+
+    <section class="depende-dados" aria-labelledby="titulo-tripulacao">
+      <h2 id="titulo-tripulacao">Tripulação</h2>
+      <p id="ordem-texto" class="leitura-detalhe"></p>
+      <p class="leitura-detalhe">Atualizado em <time id="medico-atualizado-em">—</time></p>
+      <!-- Um item por tripulante, criado pelo equipe-medica.js. -->
+      <ol id="lista-tripulantes" class="lista-tripulantes"></ol>
+    </section>
+
+    <section class="cartao privacidade depende-dados" aria-labelledby="titulo-privacidade">
+      <h2 id="titulo-privacidade">O que não aparece aqui</h2>
+      <p>Até a equipe definir a política de compartilhamento, esta visão não mostra:</p>
+      <ul id="lista-nao-exibido" class="lista-dados"></ul>
+      <p class="nota">Na NASA, as conversas com o psicólogo são confidenciais. O Raga não presume acesso da equipe médica ao diário.</p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+  </footer>
+
+  <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/formato.js" defer></script>
+  <script src="../static/js/equipe-medica.js" defer></script>
+</body>
+</html>

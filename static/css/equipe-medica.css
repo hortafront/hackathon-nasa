@@ -1,0 +1,39 @@
+/* Estilos só da visão da equipe médica (templates/equipe-medica.html).
+   Depende do style.css, carregado antes. */
+
+/* ==========================================================
+   1. Visão da equipe médica
+   ========================================================== */
+.lista-tripulantes {
+  list-style: none;
+  margin: var(--espaco-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.tripulante {
+  border-left: 4px solid var(--cor-divisor);
+}
+
+.tripulante--verde { border-left-color: var(--cor-normal); }
+.tripulante--amarelo { border-left-color: var(--cor-atencao); }
+.tripulante--vermelho { border-left-color: var(--cor-critico); }
+.tripulante--insuficiente,
+.tripulante--sem_registros { border-left-style: dashed; border-left-color: var(--cor-texto-suave); }
+
+.tripulante-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+}
+
+.tripulante-topo h3 {
+  font-size: var(--titulo-2);
+}
+
+.privacidade {
+  gap: var(--espaco-3);
+}

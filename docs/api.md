@@ -61,6 +61,8 @@ Sem referência ou três noites consecutivas, responde `200` com `estado: dados_
 | Visão médica | Tripulantes fictícios ordenados por atenção, motivo e dados autorizados. |
 | Reavaliação | Estado anterior, novos dados, resultado e registro de encaminhamento simulado quando aplicável. |
 
+Para o caso de sono, o front-end já usa dados fictícios locais num formato proposto em [front-caso-sono.md](front-caso-sono.md); ele serve de ponto de partida para a conversa, não é contrato fechado.
+
 Antes de implementar, definir nomes de rotas e campos, tipos, códigos HTTP, erros, política de acesso e atualização. Não incluir o diário por padrão na visão médica; sua política de compartilhamento precisa ser definida.
 
 ## Semântica obrigatória
