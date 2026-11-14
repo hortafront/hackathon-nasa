@@ -16,9 +16,9 @@ O ciclo planejado é **medir → comparar com a linha de base individual → cla
 ## Estado real do repositório
 
 - `database.py` e `schema.sql` implementam leituras numéricas e armazenamento de astronautas fictícios, linha de base e registros de sono. As demais áreas, alertas e ciclo completo ainda não estão modelados.
-- `app.py` oferece uma rota de avaliação de sono conectada ao banco e uma rota antiga de leitura recente fictícia. Esta última usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. Não há rota para servir o painel nem API completa.
+- `app.py` serve as duas páginas e oferece consultas de histórico e avaliação de sono conectadas ao banco, além de uma rota antiga de leitura recente fictícia. Esta última usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. A API ainda está incompleta.
 - `avaliacao_sono.py` implementa uma regra ilustrativa para duração do sono; `servico_sono.py` conecta a avaliação aos dados salvos. Detalhes em [API e integração](docs/api.md).
-- `templates/index.html` (painel da astronauta) e `templates/equipe-medica.html` (prévia da visão médica) apresentam o caso de sono com **dados fictícios locais** (`static/js/dados-demo.js`), sem API. Ver [front-end — caso de sono](docs/front-caso-sono.md). `simulator.py` é apenas um esboço.
+- O painel consulta histórico e avaliação na API quando disponíveis; a prévia médica usa dados fictícios locais enquanto sua rota não existe. O front identifica a fonte e dispõe de reserva local. Check-ins ainda não são gravados pelo servidor. Ver [front-end — caso de sono](docs/front-caso-sono.md). `simulator.py` é apenas um esboço.
 - Nenhum ciclo completo do Raga, controle de acesso, notificação, execução de reavaliação ou integração com sensores está implementado. Não se deve anunciar o produto como operacional ou validado.
 
 ## Preparação e verificação do código existente
@@ -33,6 +33,6 @@ python database.py
 python -m unittest discover -s tests
 ```
 
-`database.py` cria `instance/saude.db` sem apagar leituras existentes; não carrega automaticamente o JSON de exemplo. O banco local não deve ser versionado. `python app.py` inicia o Flask e a rota de avaliação documentada em `docs/api.md`, mas não disponibiliza o painel nem implementa o ciclo completo. A rota não tem autenticação: use somente dados fictícios em ambiente local. Dependências do navegador, fontes e dados necessários à demonstração offline devem estar disponíveis localmente.
+`database.py` cria `instance/saude.db` sem apagar leituras existentes; não carrega automaticamente o JSON de exemplo. O banco local não deve ser versionado. `python app.py` inicia o Flask; acesse `http://127.0.0.1:5000/`. Para dados do servidor, o banco precisa conter astronauta, linha de base e registros fictícios; o carregador ainda está pendente. Sem esses dados, a API pode retornar 404. As rotas não têm autenticação: use somente dados fictícios em ambiente local. O ciclo completo não está implementado.
 
 Não coloquem dados reais de saúde, credenciais, ambientes virtuais ou bancos locais no repositório. O software é um protótipo de apoio, não um diagnóstico ou ferramenta clínica validada.

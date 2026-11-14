@@ -37,6 +37,53 @@ class TesteApiSono(unittest.TestCase):
         self.assertEqual(len(resposta.json['noites_consideradas']), 3)
         self.assertEqual(resposta.json['noites_consideradas'][0]['origem'], 'simulada')
 
+    def test_paginas_e_arquivos_estaticos(self):
+        for rota in ('/', '/index.html', '/equipe-medica.html', '/static/js/dados-api.js'):
+            with self.subTest(rota=rota):
+                resposta = self.cliente.get(rota)
+                self.assertEqual(resposta.status_code, 200)
+                resposta.close()
+
+    def test_historico_e_avaliacao_usam_os_mesmos_dados(self):
+        resposta = self.cliente.get('/api/astronautas/1/sono/registros')
+        self.assertEqual(resposta.status_code, 200)
+        dados = resposta.json
+        self.assertEqual(dados['astronauta']['id'], 1)
+        self.assertEqual(dados['linha_base']['duracao_media_horas'], 7.5)
+        self.assertEqual(len(dados['registros']), 7)
+        self.assertEqual([r['id'] for r in dados['registros']], sorted(r['id'] for r in dados['registros']))
+        self.assertNotIn('observacao', dados['registros'][0])
+        avaliacao = self.cliente.get(self.url + '?data=2026-11-10')
+        self.assertEqual(avaliacao.json['estado'], 'amarelo')
+
+    def test_historico_vazio_e_erros(self):
+        conexao = database.conectar_banco(self.caminho)
+        try:
+            database.salvar_astronauta(conexao, {'id': 99, 'identificacao': 'TESTE',
+                                               'nome_exibicao': 'Pessoa fictícia', 'origem': 'ficticia'})
+        finally:
+            conexao.close()
+        resposta = self.cliente.get('/api/astronautas/99/sono/registros')
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json['registros'], [])
+        self.assertIsNone(resposta.json['linha_base'])
+        self.assertEqual(self.cliente.get('/api/astronautas/999/sono/registros').status_code, 404)
+        self.assertEqual(self.cliente.get('/api/astronautas/0/sono/registros').status_code, 400)
+        app.config['CAMINHO_BANCO'] = self.caminho.parent / 'ausente.db'
+        self.assertEqual(self.cliente.get('/api/astronautas/1/sono/registros').status_code, 503)
+        self.assertFalse(app.config['CAMINHO_BANCO'].exists())
+
+    def test_historico_inconsistente_retorna_erro_generico(self):
+        conexao = database.conectar_banco(self.caminho)
+        try:
+            with conexao:
+                conexao.execute("UPDATE registros_sono SET noite_em = 'inválida' WHERE id = 1")
+        finally:
+            conexao.close()
+        resposta = self.cliente.get('/api/astronautas/1/sono/registros')
+        self.assertEqual(resposta.status_code, 422)
+        self.assertIn('erro', resposta.json)
+
     def test_ausencia_e_identificador_inexistente(self):
         resposta = self.cliente.get(self.url, query_string={'data': '2026-11-14'})
         self.assertEqual(resposta.status_code, 200)

@@ -6,7 +6,13 @@ Este documento distingue as rotas existentes das necessidades futuras. O contrat
 
 Além da rota de sono abaixo, `app.py` implementa `GET /api/leituras/recentes`, com resposta fixa fictícia, sem banco. A implementação usa por engano o parâmetro e campo `astrounata_id`; aceita somente o valor 1 e responde 404 nos demais casos. O contrato anterior previa `astronauta_id`, mas a implementação não o cumpre. A divergência precisa ser resolvida junto aos consumidores, com documentação e testes.
 
-As rotas antigas `GET /api/leituras` e `POST /api/leituras` foram planejadas, mas não estão implementadas. O banco oferece funções Python de leituras numéricas, não rotas HTTP. Não há rota para o painel, check-in ou visão médica.
+As rotas antigas `GET /api/leituras` e `POST /api/leituras` foram planejadas, mas não estão implementadas. O banco oferece funções Python de leituras numéricas, não rotas HTTP. O Flask serve o painel em `/` e `/index.html` e a prévia médica em `/equipe-medica.html`. Ainda não há POST de check-in nem API da visão médica.
+
+## Consulta HTTP do histórico de sono
+
+`GET /api/astronautas/1/sono/registros` retorna `astronauta` (id, identificação, nome de exibição e origem), `linha_base` (objeto ou `null`) e `registros` em ordem cronológica (ou `[]`). Os registros incluem horários com fuso, duração em horas, qualidade, interrupções e origem. O campo de texto livre `observacao` é omitido enquanto sua política de acesso não estiver definida.
+
+O identificador zero retorna `400`, astronauta inexistente `404`, dados de sono inconsistentes `422` e banco indisponível `503`; erros usam `{"erro": "mensagem"}`. A consulta não cria um banco ausente. Como na avaliação, não há autenticação: somente dados fictícios em ambiente local. O JSON de demonstração não é importado automaticamente.
 
 ## Primeiro componente de avaliação — interface interna, não HTTP
 

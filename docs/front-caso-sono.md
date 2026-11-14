@@ -15,7 +15,7 @@ O gráfico é SVG desenhado em `chart.js`, sem biblioteca externa: funciona offl
 
 ## Como abrir e testar
 
-**Com a API:** rode o Flask (passos em [integracao-front-api.md](integracao-front-api.md#como-testar-a-ligação)) e abra `http://127.0.0.1:5000/`. A linha abaixo do título diz de onde vêm os dados. `?data=2026-11-10` avalia essa data (mostra o alerta amarelo do cenário); sem ela, avalia o despertar mais recente. `?fonte=demo` força os dados locais.
+**Com a API:** rode o Flask e abra `http://127.0.0.1:5000/`. O banco precisa ter sido preenchido com dados fictícios; o carregador ainda está pendente. A linha abaixo do título diz de onde vêm os dados. `?data=2026-11-10` avalia essa data (mostra o alerta amarelo do cenário); sem ela, avalia o despertar mais recente. `?fonte=demo` força os dados locais.
 
 **Sem a API:** abra `templates/index.html` com o Live Server. A página avisa que está usando os dados locais. Para ver cada estado, acrescente ao endereço (estes parâmetros sempre usam os dados locais):
 
@@ -29,7 +29,7 @@ O gráfico é SVG desenhado em `chart.js`, sem biblioteca externa: funciona offl
 | `index.html?simular=erro` | 1ª carga funciona; a atualização seguinte (10 s) falha e os dados anteriores continuam na tela, com o horário |
 | `index.html?simular=erro-inicial` | Falha já na primeira carga |
 
-Os mesmos parâmetros funcionam em `equipe-medica.html`. Com dados locais, o check-in fica só na memória da aba (some ao recarregar), aparece no gráfico com contorno tracejado e é marcado como "ainda não avaliado": o front não recalcula a avaliação. Com a API, o check-in é gravado pelo POST e a avaliação vem do servidor.
+Os mesmos parâmetros funcionam em `equipe-medica.html`. Com dados locais, o check-in fica só na memória da aba (some ao recarregar), aparece no gráfico com contorno tracejado e é marcado como "ainda não avaliado": o front não recalcula a avaliação. O POST de check-in ainda não existe; em modo API, o envio falha até sua implementação.
 
 Depois que a API respondeu uma vez, uma falha seguinte não troca para os dados locais: a tela mantém os últimos dados, mostra o horário e a mensagem de erro da API.
 
@@ -74,8 +74,8 @@ Os nomes seguem o que o back-end já tem: astronauta, linha de base e registros 
 ## Depende do back-end
 
 - Rotas, códigos HTTP e formato de erro das três operações acima.
-- Rotas para astronauta, linha de base, histórico de registros e lista de avaliações. Hoje só existe `GET /api/astronautas/<id>/sono/avaliacao?data=AAAA-MM-DD` (uma avaliação por data); cada item de `avaliacoes` em `dados-demo.js` tem exatamente o formato da resposta dessa rota, então a avaliação pode ser a primeira parte trocada por `fetch()`.
-- Rota Flask que sirva as páginas: sem ela, o painel não consegue chamar a API pela mesma origem.
+- Histórico de avaliações: a API calcula uma avaliação por data, mas não a persiste. As consultas de astronauta, linha de base e histórico de registros já existem em `GET /api/astronautas/<id>/sono/registros`.
+- Carga dos dados fictícios no banco e POST de check-in com validação no servidor.
 - Gravação real do check-in com `salvar_registro_sono()`, validação no servidor e nova avaliação.
 - Execução e registro da reavaliação (hoje `reavaliar_em_horas` é só um prazo sugerido).
 - Política de acesso da visão médica e controle por perfil.

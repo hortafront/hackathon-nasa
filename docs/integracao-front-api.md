@@ -1,5 +1,7 @@
 # Integração front-end ↔ API — o que falta no back-end
 
+**Atualização:** as páginas Flask e o `GET /api/astronautas/<id>/sono/registros` já foram implementados. Os exemplos abaixo registram a proposta original; o contrato vigente está em [api.md](api.md). O carregador, o POST, o histórico de avaliações e a API da visão médica ainda estão pendentes. A consulta de registros omite `observacao` até definição da política de acesso.
+
 Para: back-end (Alan e Rodrigo). Do: front-end (Andrew).
 
 O front já está ligado à API. `static/js/dados-api.js` chama as rotas abaixo; se uma rota ainda não existir, a página usa os dados fictícios locais (`dados-demo.js`) **e avisa na tela** que eles não vieram do servidor. Por isso nada quebra enquanto as rotas não chegam, e cada rota nova passa a ser usada sozinha, sem mudar o front.
@@ -10,9 +12,9 @@ Todo o fluxo abaixo foi testado de ponta a ponta com o `app.py` atual (rota de a
 
 | # | Tarefa | Por quê | Sem isso |
 | --- | --- | --- | --- |
-| 1 | Rotas que servem as páginas (`/` e `/equipe-medica.html`) | O navegador só deixa o painel chamar `/api/...` se a página vier do mesmo servidor | O painel nunca fala com a API (Live Server roda em outra porta) |
+| 1 | Rotas que servem as páginas (`/` e `/equipe-medica.html`) — implementadas | O painel e a API usam a mesma origem | — |
 | 2 | Script que carrega o JSON fictício no banco | Hoje o banco começa vazio; o JSON só é usado nos testes | API responde, mas sem astronauta: 404 |
-| 3 | `GET /api/astronautas/<id>/sono/registros` | Astronauta, linha de base e histórico para o gráfico e a tabela | Painel continua nos dados locais |
+| 3 | `GET /api/astronautas/<id>/sono/registros` — implementado | Astronauta, linha de base e histórico para o gráfico e a tabela | — |
 | 4 | `POST /api/astronautas/<id>/sono/registros` | Gravar o check-in da manhã | Check-in fica só na aba |
 | 5 | (Depois) histórico de avaliações e visão médica | Mostrar o ciclo indicação → reavaliação e a lista da equipe médica com dados reais | Essas partes seguem com dados locais, com aviso |
 
@@ -158,13 +160,14 @@ py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python database.py
-python carregar_dados_ficticios.py
 python app.py
 ```
+
+O carregador sugerido neste documento ainda não existe. Para consultar o cenário no servidor, é necessário primeiro inserir dados fictícios no banco; um banco recém-criado não contém astronautas.
 
 Abrir `http://127.0.0.1:5000/`:
 
 - A linha logo abaixo do título deve dizer **"Dados do servidor do Raga"**. Se disser "A API não respondeu", alguma rota está faltando.
 - `http://127.0.0.1:5000/?data=2026-11-10` mostra o alerta amarelo do cenário (três noites hachuradas no gráfico).
-- Fazer um check-in: a nova noite aparece na tabela com origem "autorrelato" e a avaliação muda para a data dele.
+- Quando o POST estiver implementado, testar um check-in persistido e a atualização da avaliação. Hoje o envio em modo API falha.
 - `?fonte=demo` força os dados locais (útil para a apresentação se o servidor cair).

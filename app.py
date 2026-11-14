@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from datetime import date
 from pathlib import Path
 import sqlite3
@@ -8,6 +8,50 @@ from servico_sono import avaliar_sono_do_astronauta
 
 app = Flask(__name__)
 app.config['CAMINHO_BANCO'] = database.CAMINHO_BANCO
+
+
+@app.get('/')
+@app.get('/index.html')
+def pagina_painel():
+    return render_template('index.html')
+
+
+@app.get('/equipe-medica.html')
+def pagina_equipe_medica():
+    return render_template('equipe-medica.html')
+
+
+@app.get('/api/astronautas/<int:astronauta_id>/sono/registros')
+def listar_registros_sono(astronauta_id):
+    if astronauta_id < 1:
+        return jsonify(erro='Identificador inválido.'), 400
+    caminho = Path(app.config['CAMINHO_BANCO'])
+    if not caminho.is_file():
+        return jsonify(erro='Banco indisponível.'), 503
+    try:
+        conexao = database.conectar_banco(caminho)
+        try:
+            linha = conexao.execute(
+                'SELECT id, identificacao, nome_exibicao, origem FROM astronautas WHERE id = ?',
+                (astronauta_id,),
+            ).fetchone()
+            if not linha:
+                return jsonify(erro='Astronauta não encontrado.'), 404
+            registros = database.buscar_historico_sono(conexao, astronauta_id)
+            # Observações livres aguardam definição de política de acesso.
+            for registro in registros:
+                registro.pop('observacao', None)
+            return jsonify(
+                astronauta=dict(zip(('id', 'identificacao', 'nome_exibicao', 'origem'), linha)),
+                linha_base=database.buscar_linha_base_sono(conexao, astronauta_id),
+                registros=registros,
+            )
+        finally:
+            conexao.close()
+    except ValueError:
+        return jsonify(erro='Dados de sono inconsistentes; consulta indisponível.'), 422
+    except sqlite3.Error:
+        return jsonify(erro='Banco indisponível.'), 503
 
 
 @app.get('/api/astronautas/<int:astronauta_id>/sono/avaliacao')
