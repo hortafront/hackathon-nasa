@@ -14,7 +14,7 @@ A ordem abaixo prioriza o que faz a **demonstração pelo Flask** funcionar com 
 | **2** | Script `carregar_dados_ficticios.py` (seção 2) | Dados (Rodrigo) | ~20 linhas, código pronto abaixo | Sem ele, o painel no Flask mostra "Astronauta não encontrado" |
 | **3** | `POST .../sono/registros` com `409` para data repetida (seção 4) | API (Alan) | rota + testes | Fecha o caso de sono de ponta a ponta: check-in → avaliação nova. Hoje a tela avisa que o servidor ainda não grava |
 | **4** | Tabela `checkins_noite` + `GET`/`POST .../mente/checkins` (seção 6) | Dados + API | tabela, 2 funções, 2 rotas | Leva a saúde mental para o servidor. **Sem campo de diário** |
-| 5 | Se der tempo: histórico de avaliações, API da visão médica, regras de outras áreas (seção 5) | — | maior | Hoje usam dados locais com aviso; não bloqueiam a demonstração |
+| 5 | Se der tempo: rota `/teste-reacao.html` + `GET`/`POST .../cognicao/testes` (seção 7); histórico de avaliações, API da visão médica, regras de outras áreas (seção 5) | — | maior | Hoje usam dados locais com aviso; não bloqueiam a demonstração. A rota da página (3 linhas) vale fazer junto com a prioridade 1, para o link não dar 404 |
 
 Fora do código, também antes da entrega:
 
@@ -209,6 +209,30 @@ def pagina_checkin_noite():
 - **Diário**: o front **não envia** o diário. Ele fica só no `sessionStorage` da aba, até a equipe definir a política de privacidade (AGENTS.md e PDF: conversas psicológicas são confidenciais). Não criem campo de diário na API sem essa decisão.
 - **Banco**: precisa de uma tabela nova (ex.: `checkins_noite`: `id`, `astronauta_id`, `data`, `humor`, `estresse`, `convivencia`, `registrado_em`, `origem`), criada com `CREATE TABLE IF NOT EXISTS` para não apagar dados.
 - **Regra**: não há regra de demonstração para Mente e equipe; a página diz isso e não mostra cor. Se criarem uma (PDF: "humor em queda ou atrito por vários dias → amarelo"), o retorno pode seguir o formato da avaliação de sono.
+
+## 7. Teste de reação (Cognição) — novo
+
+Página `templates/teste-reacao.html` (CSS e JS próprios), inspirada no PVT da bateria Cognition. **Não é o PVT validado.** Ligada pelo menu e pelo cartão "Cognição" do painel; usa dados locais com aviso enquanto as rotas não existirem.
+
+**Rota da página:** `@app.get('/teste-reacao.html')` → `render_template('teste-reacao.html')`.
+
+**`GET /api/astronautas/<id>/cognicao/testes`** → `200`:
+
+```json
+{
+  "astronauta": { "id": 1, "identificacao": "RAGA-AST-001", "nome_exibicao": "Comandante Aurora", "origem": "ficticia" },
+  "linha_base_ms": 285,
+  "testes": [
+    { "id": 3, "realizado_em": "2026-11-10T08:12:00-03:00", "tentativas": 10, "mediana_ms": 286, "mais_rapida_ms": 248, "mais_lenta_ms": 371, "acima_500ms": 0, "antecipacoes": 0, "origem": "simulada" }
+  ]
+}
+```
+
+**`POST /api/astronautas/<id>/cognicao/testes`** recebe os mesmos campos de um teste (sem `id` e `origem`) mais `tempos_ms` (lista com os tempos de cada tentativa) e responde `201 {"teste": {...}}`. O servidor deve recalcular mediana, mínimo, máximo e contagem acima de 500 ms a partir de `tempos_ms`, em vez de confiar nos números enviados.
+
+- O front conta como **antecipação** a resposta antes do sinal ou em menos de 100 ms (convenção do PVT) e repete a tentativa.
+- `linha_base_ms` é fictícia (285 ms). Não há regra para Cognição: o front mostra a diferença para a linha de base, sem cor. Se criarem regra (PDF: "queda no teste de atenção → amarelo"), documentem origem e limites.
+- **Banco**: tabela nova (ex.: `testes_reacao`), criada com `CREATE TABLE IF NOT EXISTS`.
 
 ## Como testar a ligação
 
