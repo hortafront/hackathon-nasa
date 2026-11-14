@@ -104,6 +104,15 @@
   // Check-ins feitos nesta aba. Ficam só na memória: somem ao recarregar.
   var checkinsLocais = [];
 
+  // Check-ins da noite (Mente e equipe) fictícios. Escalas de 1 a 5:
+  // humor e convivência (5 = melhor), estresse (5 = mais estresse).
+  // O diário nunca entra aqui: ele fica só no navegador (checkin-noite.js).
+  var checkinsNoite = [
+    { id: 1, data: "2026-11-08", humor: 4, estresse: 2, convivencia: 4, registrado_em: "2026-11-08T21:30:00-03:00", origem: "simulada" },
+    { id: 2, data: "2026-11-09", humor: 3, estresse: 3, convivencia: 4, registrado_em: "2026-11-09T21:40:00-03:00", origem: "simulada" },
+    { id: 3, data: "2026-11-10", humor: 3, estresse: 4, convivencia: 3, registrado_em: "2026-11-10T22:05:00-03:00", origem: "simulada" }
+  ];
+
   function copiar(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
@@ -233,6 +242,32 @@
         });
         checkinsLocais.push(registro);
         return { situacao: "registrado_localmente", registro: copiar(registro) };
+      }, 300);
+    },
+
+    // Check-ins da noite: lista cronológica (vazia com ?simular=vazio).
+    buscarCheckinsNoite: function () {
+      chamadas += 1;
+      if (simular === "carregando") return new Promise(function () {});
+      if (deveFalhar()) return responder(falha, 300);
+      return responder(function () {
+        return {
+          modo: "demonstracao-local",
+          atualizado_em: new Date().toISOString(),
+          astronauta: copiar(astronauta),
+          checkins: simular === "vazio" ? [] : copiar(checkinsNoite)
+        };
+      }, 400);
+    },
+
+    // Um check-in por data: o novo substitui o da mesma data, só nesta aba.
+    enviarCheckinNoite: function (checkin) {
+      return responder(function () {
+        var registro = Object.assign({ id: "local-" + checkin.data, origem: "autorrelato (só nesta aba)" }, checkin);
+        checkinsNoite = checkinsNoite.filter(function (c) { return c.data !== checkin.data; });
+        checkinsNoite.push(registro);
+        checkinsNoite.sort(function (a, b) { return a.data < b.data ? -1 : 1; });
+        return { situacao: "registrado_localmente", checkin: copiar(registro) };
       }, 300);
     },
 

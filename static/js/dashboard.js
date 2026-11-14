@@ -59,10 +59,12 @@
     dados.areas.forEach(function (area) {
       var li = document.createElement("li");
       li.className = "area area--" + area.estado;
-      var nome = document.createElement(area.id === "sono" ? "a" : "p");
+      // Áreas com tela própria viram link.
+      var destino = { sono: "#sono", mente: "checkin-noite.html" }[area.id];
+      var nome = document.createElement(destino ? "a" : "p");
       nome.className = "area-nome";
       nome.textContent = area.nome;
-      if (area.id === "sono") nome.href = "#sono";
+      if (destino) nome.href = destino;
       var selo = document.createElement("p");
       selo.innerHTML = F.selo(area.estado); // rótulos fixos de formato.js
       var resumo = document.createElement("p");

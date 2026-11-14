@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raga: check-in da noite</title>
+
+  <!-- Mesmos caminhos relativos do index.html. No Flask, esta página
+       precisa de rota de um só nível: /checkin-noite.html. -->
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/checkin-noite.css">
+  <script src="../static/js/tema.js"></script>
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="nav">
+      <a class="marca" href="index.html">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="13" r="5" fill="currentColor"/>
+          <ellipse cx="13" cy="13" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 13 13)"/>
+        </svg>
+        Raga
+      </a>
+
+      <nav class="links" aria-label="Páginas">
+        <a href="index.html">Painel</a>
+        <a href="checkin-noite.html" aria-current="page">Check-in da noite</a>
+        <a href="equipe-medica.html">Equipe médica</a>
+      </nav>
+
+      <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
+        </svg>
+        Tema escuro
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Check-in da noite</h1>
+    <p>Como foi o seu dia? Três perguntas rápidas sobre humor, estresse e convivência com a equipe.</p>
+  </div>
+
+  <!-- data-estado: carregando | vazio | ok | erro (checkin-noite.js). -->
+  <main id="painel-noite" class="painel" data-estado="carregando" data-tem-dados="nao">
+    <p id="aviso-noite" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
+
+    <section id="checkin" class="cartao depende-dados" aria-labelledby="titulo-form-noite">
+      <h2 id="titulo-form-noite">Como você está hoje, <span id="nome-astronauta">—</span>?</h2>
+      <p class="nota">Não existe resposta certa. Escolha o que mais se parece com o seu dia.</p>
+
+      <!-- novalidate: as mensagens ficam no checkin-noite.js, em português. -->
+      <form id="form-noite" class="formulario" novalidate>
+        <div class="campo">
+          <label for="noite-data">Data</label>
+          <input id="noite-data" name="data" type="date" required aria-describedby="erro-data">
+          <p id="erro-data" class="erro-campo"></p>
+        </div>
+
+        <!-- Escalas de 1 a 5. O texto de cada opção diz o sentido,
+             porque no estresse o 5 é o pior e nos outros o 5 é o melhor. -->
+        <fieldset class="campo" aria-describedby="erro-humor">
+          <legend>Como está o seu humor?</legend>
+          <div class="escala">
+            <label><input type="radio" name="humor" value="1"><span>1. Muito ruim</span></label>
+            <label><input type="radio" name="humor" value="2"><span>2. Ruim</span></label>
+            <label><input type="radio" name="humor" value="3"><span>3. Neutro</span></label>
+            <label><input type="radio" name="humor" value="4"><span>4. Bom</span></label>
+            <label><input type="radio" name="humor" value="5"><span>5. Muito bom</span></label>
+          </div>
+          <p id="erro-humor" class="erro-campo"></p>
+        </fieldset>
+
+        <fieldset class="campo" aria-describedby="erro-estresse">
+          <legend>Quanto estresse você sentiu?</legend>
+          <div class="escala">
+            <label><input type="radio" name="estresse" value="1"><span>1. Nenhum</span></label>
+            <label><input type="radio" name="estresse" value="2"><span>2. Pouco</span></label>
+            <label><input type="radio" name="estresse" value="3"><span>3. Moderado</span></label>
+            <label><input type="radio" name="estresse" value="4"><span>4. Muito</span></label>
+            <label><input type="radio" name="estresse" value="5"><span>5. Demais</span></label>
+          </div>
+          <p id="erro-estresse" class="erro-campo"></p>
+        </fieldset>
+
+        <fieldset class="campo" aria-describedby="erro-convivencia">
+          <legend>Como foi a convivência com a equipe?</legend>
+          <div class="escala">
+            <label><input type="radio" name="convivencia" value="1"><span>1. Muito difícil</span></label>
+            <label><input type="radio" name="convivencia" value="2"><span>2. Difícil</span></label>
+            <label><input type="radio" name="convivencia" value="3"><span>3. Normal</span></label>
+            <label><input type="radio" name="convivencia" value="4"><span>4. Boa</span></label>
+            <label><input type="radio" name="convivencia" value="5"><span>5. Muito boa</span></label>
+          </div>
+          <p id="erro-convivencia" class="erro-campo"></p>
+        </fieldset>
+
+        <!-- Diário opcional: privado. Nunca é enviado ao servidor nesta
+             versão e não aparece na visão da equipe médica. -->
+        <div class="campo diario">
+          <label for="noite-diario">Diário (opcional)</label>
+          <p id="diario-ajuda" class="nota">
+            Privado: fica só neste navegador, nesta aba. Não é enviado ao servidor
+            e não aparece para a equipe médica.
+          </p>
+          <textarea id="noite-diario" name="diario" rows="4" maxlength="1000" aria-describedby="diario-ajuda diario-contador"></textarea>
+          <p id="diario-contador" class="nota">0 de 1000 caracteres</p>
+        </div>
+
+        <p id="noite-nota-fonte" class="nota"></p>
+
+        <button type="submit" class="botao">Registrar check-in da noite</button>
+        <p id="noite-mensagem" class="checkin-mensagem" role="status"></p>
+      </form>
+    </section>
+
+    <section id="historico-noite" class="cartao depende-dados" aria-labelledby="titulo-historico-noite">
+      <h2 id="titulo-historico-noite">Seus últimos check-ins da noite</h2>
+      <p id="noite-vazio" class="mensagem-vazia" hidden>Ainda não há check-ins da noite. Registre o primeiro acima.</p>
+
+      <div id="noite-tabela-bloco" class="tabela-rolagem">
+        <table class="tabela-noite">
+          <caption>Do mais antigo para o mais recente</caption>
+          <thead>
+            <tr>
+              <th scope="col">Data</th>
+              <th scope="col">Humor</th>
+              <th scope="col">Estresse</th>
+              <th scope="col">Convivência</th>
+              <th scope="col">Diário</th>
+              <th scope="col">Origem</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-noite"></tbody>
+        </table>
+      </div>
+
+      <p class="nota">
+        Ainda não há regra de demonstração para a área Mente e equipe: estes registros
+        não geram cor nem orientação. As regras serão definidas pelo back-end.
+      </p>
+    </section>
+
+    <section class="sobre depende-dados" aria-labelledby="titulo-sobre-noite">
+      <h2 id="titulo-sobre-noite">Sobre este check-in</h2>
+      <dl>
+        <dt>Para que serve</dt>
+        <dd>Registrar como você está, para perceber mudanças ao longo dos dias. Inspirado no questionário de humor e equipe antes de dormir usado em pesquisas da NASA.</dd>
+
+        <dt>O que não é</dt>
+        <dd>Não é um teste psicológico nem diagnóstico, e não substitui a conversa com o psicólogo da missão.</dd>
+
+        <dt>Se o dia foi muito difícil</dt>
+        <dd>Não espere o próximo check-in: procure a equipe médica ou o psicólogo da missão. Este protótipo não envia avisos a ninguém.</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+  </footer>
+
+  <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/dados-api.js" defer></script>
+  <script src="../static/js/formato.js" defer></script>
+  <script src="../static/js/checkin-noite.js" defer></script>
+</body>
+</html>

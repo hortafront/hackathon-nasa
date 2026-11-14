@@ -1,0 +1,52 @@
+/* Estilos só do check-in da noite (templates/checkin-noite.html).
+   Formulário, escalas e botão vêm do style.css (seção 7b),
+   que deve ser carregado antes deste arquivo. */
+
+/* ==========================================================
+   1. Diário opcional
+   ========================================================== */
+.diario textarea {
+  font: inherit;
+  width: 100%;
+  min-height: 7rem;
+  padding: var(--espaco-2);
+  border: 1px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  resize: vertical;
+}
+
+/* ==========================================================
+   2. Tabela dos últimos check-ins
+   ========================================================== */
+
+/* Rola na horizontal no celular, sem alargar a página. */
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+.tabela-noite {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-noite caption {
+  text-align: left;
+  color: var(--cor-texto-suave);
+  padding-bottom: var(--espaco-2);
+}
+
+.tabela-noite th,
+.tabela-noite td {
+  text-align: left;
+  padding: var(--espaco-2);
+  border-bottom: var(--borda);
+  white-space: nowrap;
+}
+
+.tabela-noite thead th {
+  font-weight: 500;
+}

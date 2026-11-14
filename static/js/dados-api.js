@@ -154,6 +154,30 @@
       return checkinNaApi(checkin);
     },
 
+    // Check-in da noite (Mente e equipe). Rotas recomendadas em
+    // docs/integracao-front-api.md; o diário NUNCA é enviado.
+    buscarCheckinsNoite: function () {
+      return comReserva(function () { return pedir(BASE + "/mente/checkins"); }, demo.buscarCheckinsNoite);
+    },
+
+    enviarCheckinNoite: function (checkin) {
+      if (estado.fonte === "demo") return demo.enviarCheckinNoite(checkin);
+      return pedir(BASE + "/mente/checkins", {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(checkin)
+      }).then(function (corpo) {
+        return { situacao: "salvo_no_servidor", checkin: corpo.checkin };
+      }, function (erro) {
+        if (erro.rotaAusente) {
+          var pendente = new Error("O servidor ainda não grava o check-in da noite: essa parte depende do back-end.");
+          pendente.semRota = true;
+          throw pendente;
+        }
+        throw erro;
+      });
+    },
+
     // Rota ainda não existe: recomendada em docs/integracao-front-api.md.
     buscarVisaoMedica: function () {
       return comReserva(function () { return pedir("/api/equipe-medica/sono"); }, demo.buscarVisaoMedica);
