@@ -19,7 +19,7 @@
 .tripulante--verde { border-left-color: var(--cor-normal); }
 .tripulante--amarelo { border-left-color: var(--cor-atencao); }
 .tripulante--vermelho { border-left-color: var(--cor-critico); }
-.tripulante--insuficiente,
+.tripulante--dados_insuficientes,
 .tripulante--sem_registros { border-left-style: dashed; border-left-color: var(--cor-texto-suave); }
 
 .tripulante-topo {
