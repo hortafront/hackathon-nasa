@@ -1,15 +1,19 @@
 // DADOS FICTÍCIOS LOCAIS — só para demonstração do front-end.
 // A API do caso de sono ainda não existe (docs/api.md). Este arquivo faz o
-// papel do servidor: devolve respostas no formato que a interface espera
-// (proposta em docs/front-caso-sono.md). Quando a API existir, basta trocar
-// o corpo das funções de window.RagaDados por fetch() às rotas combinadas;
-// dashboard.js e equipe-medica.js não precisam mudar.
+// papel do servidor e devolve respostas no formato proposto em
+// docs/front-caso-sono.md. Quando a API existir, basta trocar o corpo das
+// funções de window.RagaDados por fetch(); dashboard.js e equipe-medica.js
+// não precisam mudar.
 //
-// Nada aqui vem de sensor, relógio ou da NASA. As avaliações e orientações
-// abaixo são EXEMPLOS escritos à mão a partir do PDF norte; as regras
-// oficiais serão definidas pelo back-end.
+// Os nomes dos campos seguem o back-end:
+// - astronauta, linha de base e registros: schema.sql / docs/dados.md;
+// - avaliações: saída de avaliar_sono() em avaliacao_sono.py.
+// Os valores são uma cópia de data/astronautas-ficticios.json, e as
+// avaliações foram escritas à mão como avaliar_sono() responderia.
+// O front NÃO calcula a regra.
 //
 // Para testar os estados da tela, abra a página com ?simular=...
+//   reavaliado   → inclui a noite de 11/11 e a reavaliação (ciclo completo)
 //   carregando   → a resposta nunca chega
 //   vazio        → astronauta sem registros de sono
 //   insuficiente → poucos registros para avaliar
@@ -19,56 +23,83 @@
   var simular = new URLSearchParams(window.location.search).get("simular");
   var chamadas = 0;
 
-  // Faixa de referência fictícia. O método real de linha de base
-  // ainda será definido pela equipe (docs/raga.md, decisões em aberto).
-  var referencia = {
-    minimo_min: 420, // 7 h
-    maximo_min: 480, // 8 h
-    descricao: "Faixa fictícia criada para a demonstração. O método de cálculo da linha de base ainda será definido pela equipe."
+  var astronauta = {
+    id: 1,
+    identificacao: "RAGA-AST-001",
+    nome_exibicao: "Comandante Aurora",
+    origem: "ficticia"
   };
 
-  // Dez noites; as três últimas foram alteradas de propósito (caso do PDF norte).
-  // "noite" é a data em que a noite começou.
-  var noites = [
-    { id: 1, noite: "2026-11-04", duracao_min: 445, qualidade: 4 },
-    { id: 2, noite: "2026-11-05", duracao_min: 462, qualidade: 4 },
-    { id: 3, noite: "2026-11-06", duracao_min: 430, qualidade: 3 },
-    { id: 4, noite: "2026-11-07", duracao_min: 470, qualidade: 4 },
-    { id: 5, noite: "2026-11-08", duracao_min: 452, qualidade: 4 },
-    { id: 6, noite: "2026-11-09", duracao_min: 438, qualidade: 4 },
-    { id: 7, noite: "2026-11-10", duracao_min: 466, qualidade: 5 },
-    { id: 8, noite: "2026-11-11", duracao_min: 322, qualidade: 2 },
-    { id: 9, noite: "2026-11-12", duracao_min: 298, qualidade: 2 },
-    { id: 10, noite: "2026-11-13", duracao_min: 315, qualidade: 2 }
-  ].map(function (n) {
-    // Check-in feito na manhã seguinte, às 7h.
-    var dia = new Date(n.noite + "T07:00:00-03:00");
-    dia.setDate(dia.getDate() + 1);
-    n.registrado_em = dia.toISOString();
-    n.origem = "simulada";
-    return n;
-  });
+  var linhaBase = {
+    astronauta_id: 1,
+    duracao_media_horas: 7.5,
+    qualidade_media: 4.0,
+    periodo_inicio: "2026-11-01T07:00:00-03:00",
+    periodo_fim: "2026-11-04T07:00:00-03:00",
+    origem: "simulada"
+  };
 
-  var avaliacaoExemplo = {
+  // Cópia de data/astronautas-ficticios.json. noite_em é a data do despertar.
+  var registros = [
+    { id: 1, noite_em: "2026-11-05T00:00:00-03:00", inicio_sono: "2026-11-04T23:00:00-03:00", fim_sono: "2026-11-05T06:30:00-03:00", duracao_horas: 7.5, qualidade: 4, interrupcoes: 1, origem: "simulada", observacao: "Noite de referência fictícia." },
+    { id: 2, noite_em: "2026-11-06T00:00:00-03:00", inicio_sono: "2026-11-05T23:10:00-03:00", fim_sono: "2026-11-06T06:40:00-03:00", duracao_horas: 7.5, qualidade: 4, interrupcoes: 1, origem: "simulada", observacao: "Noite de referência fictícia." },
+    { id: 3, noite_em: "2026-11-07T00:00:00-03:00", inicio_sono: "2026-11-06T23:20:00-03:00", fim_sono: "2026-11-07T06:40:00-03:00", duracao_horas: 7.33, qualidade: 3, interrupcoes: 2, origem: "simulada", observacao: "Noite de referência fictícia." },
+    { id: 4, noite_em: "2026-11-08T00:00:00-03:00", inicio_sono: "2026-11-07T23:50:00-03:00", fim_sono: "2026-11-08T05:50:00-03:00", duracao_horas: 6.0, qualidade: 2, interrupcoes: 4, origem: "simulada", observacao: "Primeira noite alterada do cenário." },
+    { id: 5, noite_em: "2026-11-09T00:00:00-03:00", inicio_sono: "2026-11-09T00:20:00-03:00", fim_sono: "2026-11-09T05:50:00-03:00", duracao_horas: 5.5, qualidade: 2, interrupcoes: 5, origem: "simulada", observacao: "Segunda noite alterada do cenário." },
+    { id: 6, noite_em: "2026-11-10T00:00:00-03:00", inicio_sono: "2026-11-10T01:00:00-03:00", fim_sono: "2026-11-10T05:30:00-03:00", duracao_horas: 4.5, qualidade: 1, interrupcoes: 6, origem: "simulada", observacao: "Terceira noite alterada do cenário." },
+    { id: 7, noite_em: "2026-11-11T00:00:00-03:00", inicio_sono: "2026-11-10T23:00:00-03:00", fim_sono: "2026-11-11T06:30:00-03:00", duracao_horas: 7.5, qualidade: 3, interrupcoes: 2, origem: "simulada", observacao: "Noite posterior fictícia; sem interpretação clínica." }
+  ];
+
+  // Respostas de GET /api/astronautas/1/sono/avaliacao?data=... (rota do Alan,
+  // servico_sono.py) para cada cena, escritas à mão.
+  var alerta = {
+    astronauta_id: 1,
+    area: "sono",
+    data_avaliacao: "2026-11-10",
+    linha_base_horas: 7.5,
+    origem_linha_base: "simulada",
+    origem_regra: "demonstracao_nao_clinica",
     estado: "amarelo",
-    explicacao: "Nas 3 últimas noites, a duração registrada ficou abaixo da faixa de referência fictícia (7 h a 8 h), e a qualidade informada caiu para 2 de 5.",
-    regra: "Exemplo do PDF norte (sono curto por 3 noites → amarelo), usado provisoriamente. A regra oficial será definida pelo back-end. Não é validada clinicamente.",
-    noites_usadas: [8, 9, 10],
-    avaliado_em: "2026-11-14T07:30:00-03:00",
-    orientacao: "Conversar com a equipe médica de voo sobre a escala de trabalho e a exposição à luz, e continuar fazendo o check-in da manhã.",
-    orientacao_origem: "Exemplo de ação do PDF norte. Depende de especialistas e protocolos aprovados antes de qualquer uso real.",
-    reavaliar_em: "2026-11-16T07:30:00-03:00"
+    noites_consideradas: [
+      { data_sono: "2026-11-08", duracao_horas: 6.0, origem: "simulada", registrado_em: "2026-11-08T05:50:00-03:00" },
+      { data_sono: "2026-11-09", duracao_horas: 5.5, origem: "simulada", registrado_em: "2026-11-09T05:50:00-03:00" },
+      { data_sono: "2026-11-10", duracao_horas: 4.5, origem: "simulada", registrado_em: "2026-11-10T05:30:00-03:00" }
+    ],
+    explicacao: "As três durações estão abaixo da referência individual fictícia.",
+    orientacao: "Revise os registros e acompanhe a evolução com a equipe responsável.",
+    reavaliar_em_horas: 24
   };
 
-  var avaliacaoInsuficiente = {
-    estado: "insuficiente",
-    explicacao: "Há só 2 noites registradas. A regra de demonstração olha as 3 últimas noites, então ainda não é possível avaliar.",
-    regra: "Exemplo do PDF norte, usado provisoriamente. A regra oficial será definida pelo back-end.",
-    noites_usadas: [],
-    avaliado_em: "2026-11-14T07:30:00-03:00",
+  var reavaliacao = {
+    astronauta_id: 1,
+    area: "sono",
+    data_avaliacao: "2026-11-11",
+    linha_base_horas: 7.5,
+    origem_linha_base: "simulada",
+    origem_regra: "demonstracao_nao_clinica",
+    estado: "verde",
+    noites_consideradas: [
+      { data_sono: "2026-11-09", duracao_horas: 5.5, origem: "simulada", registrado_em: "2026-11-09T05:50:00-03:00" },
+      { data_sono: "2026-11-10", duracao_horas: 4.5, origem: "simulada", registrado_em: "2026-11-10T05:30:00-03:00" },
+      { data_sono: "2026-11-11", duracao_horas: 7.5, origem: "simulada", registrado_em: "2026-11-11T06:30:00-03:00" }
+    ],
+    explicacao: "A regra demonstrativa de três noites abaixo da referência não foi acionada.",
     orientacao: null,
-    orientacao_origem: null,
-    reavaliar_em: null
+    reavaliar_em_horas: null
+  };
+
+  var insuficiente = {
+    astronauta_id: 1,
+    area: "sono",
+    data_avaliacao: "2026-11-06",
+    linha_base_horas: 7.5,
+    origem_linha_base: "simulada",
+    origem_regra: "demonstracao_nao_clinica",
+    estado: "dados_insuficientes",
+    noites_consideradas: [],
+    explicacao: "São necessárias a referência individual e as três noites mais recentes consecutivas.",
+    orientacao: null,
+    reavaliar_em_horas: null
   };
 
   // Check-ins feitos nesta aba. Ficam só na memória: somem ao recarregar.
@@ -78,7 +109,13 @@
     return JSON.parse(JSON.stringify(obj));
   }
 
-  function areasExemplo(estadoSono, resumoSono) {
+  // Data local do despertar, tirada de fim_sono como em servico_sono.py.
+  function dataDe(registro) {
+    return registro.fim_sono.slice(0, 10);
+  }
+
+  // Áreas e estado geral ainda não existem no back-end: proposta do front.
+  function areas(estadoSono, resumoSono) {
     var semDados = "Sem registros nesta demonstração.";
     return [
       { id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono },
@@ -89,54 +126,54 @@
     ];
   }
 
-  // Junta as noites "do servidor" com os check-ins locais.
-  // Um check-in local substitui a noite de mesma data.
-  function juntarNoites(base) {
-    var lista = base.filter(function (n) {
-      return !checkinsLocais.some(function (c) { return c.noite === n.noite; });
+  // Um check-in local substitui o registro da mesma data.
+  function juntarRegistros(base) {
+    var lista = base.filter(function (r) {
+      return !checkinsLocais.some(function (c) { return dataDe(c) === dataDe(r); });
     });
     lista = lista.concat(copiar(checkinsLocais));
-    lista.sort(function (a, b) { return a.noite < b.noite ? -1 : 1; });
+    lista.sort(function (a, b) { return dataDe(a) < dataDe(b) ? -1 : 1; });
     return lista;
   }
 
   function montarCasoSono() {
-    var base = noites;
-    var avaliacao = avaliacaoExemplo;
+    // Cena padrão: o alerta de 10/11, antes da noite de 11/11.
+    var base = registros.slice(0, 6);
+    var avaliacoes = [alerta];
     var estadoSono = "amarelo";
-    var resumoSono = "3 noites abaixo da referência fictícia.";
+    var resumoSono = "3 noites abaixo da linha de base fictícia.";
 
-    if (simular === "vazio") {
+    if (simular === "reavaliado") {
+      base = registros;
+      avaliacoes = [alerta, reavaliacao];
+      estadoSono = "verde";
+      resumoSono = "Reavaliado em 11/11: regra não acionada.";
+    } else if (simular === "vazio") {
       base = [];
-      avaliacao = null;
+      avaliacoes = [];
       estadoSono = "sem_registros";
-      resumoSono = "Nenhum check-in de sono ainda.";
+      resumoSono = "Nenhum registro de sono ainda.";
     } else if (simular === "insuficiente") {
-      base = noites.slice(-2);
-      avaliacao = avaliacaoInsuficiente;
-      estadoSono = "insuficiente";
+      base = registros.slice(0, 2);
+      avaliacoes = [insuficiente];
+      estadoSono = "dados_insuficientes";
       resumoSono = "Poucos registros para avaliar.";
     }
 
     return {
       modo: "demonstracao-local",
       atualizado_em: new Date().toISOString(),
-      astronauta: {
-        id: 1,
-        nome: "Íris Andrade",
-        ficticia: true,
-        missao: "Missão simulada Raga-1",
-        dia_missao: 142
-      },
+      astronauta: copiar(astronauta),
       estado_geral: {
-        estado: "insuficiente",
+        estado: "dados_insuficientes",
         explicacao: "4 das 5 áreas ainda não têm dados nesta demonstração, então o estado geral não é calculado."
       },
-      areas: areasExemplo(estadoSono, resumoSono),
+      areas: areas(estadoSono, resumoSono),
       sono: {
-        referencia: referencia,
-        noites: juntarNoites(base),
-        avaliacao: avaliacao ? copiar(avaliacao) : null
+        linha_base: copiar(linhaBase),
+        registros: juntarRegistros(base),
+        // Da mais antiga para a mais recente; a última é a atual.
+        avaliacoes: copiar(avaliacoes)
       }
     };
   }
@@ -158,36 +195,40 @@
     throw new Error("Falha simulada de atualização.");
   }
 
+  function deveFalhar() {
+    return simular === "erro-inicial" || (simular === "erro" && chamadas > 1);
+  }
+
   window.RagaDados = {
     modo: "demonstracao-local",
 
-    // Futuro: GET da rota do caso de sono (a combinar com o back-end).
+    // Futuro: GET do caso de sono (rota a combinar com o back-end).
     buscarCasoSono: function () {
       chamadas += 1;
-      if (simular === "carregando") {
-        return new Promise(function () {}); // nunca responde
-      }
-      if (simular === "erro-inicial" || (simular === "erro" && chamadas > 1)) {
-        return responder(falha, 300);
-      }
+      if (simular === "carregando") return new Promise(function () {});
+      if (deveFalhar()) return responder(falha, 300);
       return responder(montarCasoSono, 400);
     },
 
-    // Futuro: POST do check-in. Aqui só guarda na memória da aba.
-    // A validação de verdade precisa ser feita no servidor.
+    // Futuro: POST do check-in, gravado com salvar_registro_sono().
+    // Aqui só guarda na memória da aba. O servidor precisa validar de novo.
     enviarCheckinSono: function (checkin) {
       return responder(function () {
         var registro = {
-          id: "local-" + checkin.noite,
-          noite: checkin.noite,
-          duracao_min: checkin.duracao_min,
+          id: "local-" + checkin.fim_sono.slice(0, 10),
+          astronauta_id: astronauta.id,
+          noite_em: checkin.noite_em,
+          inicio_sono: checkin.inicio_sono,
+          fim_sono: checkin.fim_sono,
+          duracao_horas: checkin.duracao_horas,
           qualidade: checkin.qualidade,
-          registrado_em: new Date().toISOString(),
+          interrupcoes: checkin.interrupcoes,
           origem: "autorrelato (só nesta aba)",
+          observacao: null,
           nao_avaliado: true
         };
         checkinsLocais = checkinsLocais.filter(function (c) {
-          return c.noite !== registro.noite;
+          return dataDe(c) !== dataDe(registro);
         });
         checkinsLocais.push(registro);
         return { situacao: "registrado_localmente", registro: copiar(registro) };
@@ -199,58 +240,43 @@
     // até a política de compartilhamento ser definida.
     buscarVisaoMedica: function () {
       chamadas += 1;
-      if (simular === "carregando") {
-        return new Promise(function () {});
-      }
-      if (simular === "erro-inicial" || (simular === "erro" && chamadas > 1)) {
-        return responder(falha, 300);
-      }
+      if (simular === "carregando") return new Promise(function () {});
+      if (deveFalhar()) return responder(falha, 300);
       return responder(function () {
+        var aurora = simular === "reavaliado"
+          ? {
+              estado: "verde",
+              motivo: reavaliacao.explicacao + " Houve indicação amarela em 10/11.",
+              dados_compartilhados: [
+                "Durações consideradas em 11/11: 5 h 30 min, 4 h 30 min e 7 h 30 min",
+                "Linha de base fictícia: 7 h 30 min"
+              ],
+              data_avaliacao: reavaliacao.data_avaliacao,
+              reavaliar_em_horas: null
+            }
+          : {
+              estado: "amarelo",
+              motivo: alerta.explicacao,
+              dados_compartilhados: [
+                "Durações das 3 noites: 6 h, 5 h 30 min e 4 h 30 min",
+                "Linha de base fictícia: 7 h 30 min"
+              ],
+              data_avaliacao: alerta.data_avaliacao,
+              reavaliar_em_horas: alerta.reavaliar_em_horas
+            };
+
         return {
           modo: "demonstracao-local",
           atualizado_em: new Date().toISOString(),
           ordem: "Ordem definida pelos dados de demonstração. O critério de prioridade ainda será definido pelo back-end.",
           tripulantes: [
-            {
-              id: 1,
-              nome: "Íris Andrade",
-              ficticio: true,
-              area: "Sono",
-              estado: "amarelo",
-              motivo: "3 noites seguidas abaixo da faixa de referência fictícia.",
-              dados_compartilhados: [
-                "Duração média nas 3 últimas noites: 5 h 12 min",
-                "Faixa de referência fictícia: 7 h a 8 h"
-              ],
-              avaliado_em: "2026-11-14T07:30:00-03:00",
-              reavaliar_em: "2026-11-16T07:30:00-03:00"
-            },
-            {
-              id: 2,
-              nome: "Teo Martins",
-              ficticio: true,
-              area: null,
-              estado: "sem_registros",
-              motivo: "Sem registros nesta demonstração.",
-              dados_compartilhados: [],
-              avaliado_em: null,
-              reavaliar_em: null
-            },
-            {
-              id: 3,
-              nome: "Nádia Kerr",
-              ficticio: true,
-              area: null,
-              estado: "sem_registros",
-              motivo: "Sem registros nesta demonstração.",
-              dados_compartilhados: [],
-              avaliado_em: null,
-              reavaliar_em: null
-            }
+            Object.assign({ id: 1, identificacao: "RAGA-AST-001", nome_exibicao: "Comandante Aurora", origem: "ficticia", area: "Sono" }, aurora),
+            { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: null, estado: "sem_registros", motivo: "Sem registros nesta demonstração.", dados_compartilhados: [], data_avaliacao: null, reavaliar_em_horas: null },
+            { id: 3, identificacao: "RAGA-AST-003", nome_exibicao: "Engenheira Lyra", origem: "ficticia", area: null, estado: "sem_registros", motivo: "Sem registros nesta demonstração.", dados_compartilhados: [], data_avaliacao: null, reavaliar_em_horas: null }
           ],
           nao_exibido: [
-            "Respostas detalhadas dos check-ins (como a qualidade do sono informada)",
-            "Diário opcional"
+            "Respostas detalhadas dos check-ins (qualidade informada, interrupções, horários)",
+            "Observações e diário opcional"
           ]
         };
       }, 400);
