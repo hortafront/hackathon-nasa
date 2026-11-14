@@ -1,0 +1,339 @@
+/* Estilos só do painel da astronauta (templates/index.html).
+   Tokens, tema, cabeçalho, rodapé e selos ficam no style.css,
+   que deve ser carregado antes deste arquivo. */
+
+/* ==========================================================
+   1. Astronauta e áreas
+   ========================================================== */
+.identificacao h2 {
+  font-size: var(--titulo-1);
+}
+
+.identificacao-detalhe {
+  color: var(--cor-texto-suave);
+}
+
+.areas {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.estado-geral {
+  background: var(--cor-superficie);
+  border: var(--borda);
+  border-radius: var(--raio);
+  padding: var(--espaco-3);
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.estado-geral-titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+}
+
+/* Cinco cartões pequenos; quebram de linha sozinhos em telas menores. */
+.lista-areas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--espaco-3);
+}
+
+/* A borda superior repete o estado (cor + estilo da linha). */
+.area {
+  background: var(--cor-superficie);
+  border: var(--borda);
+  border-top: 4px solid var(--cor-divisor);
+  border-radius: var(--raio);
+  padding: var(--espaco-3);
+  display: grid;
+  align-content: start;
+  gap: var(--espaco-2);
+}
+
+.area--verde { border-top-color: var(--cor-normal); }
+.area--amarelo { border-top-color: var(--cor-atencao); }
+.area--vermelho { border-top-color: var(--cor-critico); }
+.area--insuficiente,
+.area--sem_registros { border-top-style: dashed; border-top-color: var(--cor-texto-suave); }
+
+.area-nome {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  color: inherit;
+}
+
+/* Selo um pouco menor nos cartões estreitos, para caber em uma linha. */
+.area .selo {
+  font-size: 0.8125rem;
+  gap: var(--espaco-1);
+  padding: 2px var(--espaco-1);
+}
+
+.area-resumo {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+
+/* ==========================================================
+   2. Sono: referência, gráfico e tabela
+   ========================================================== */
+#sono-conteudo {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.grafico-figura {
+  margin: 0;
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.grafico-area {
+  width: 100%;
+  min-height: 260px;
+}
+
+.grafico-sono {
+  display: block;
+  font-family: var(--fonte-texto);
+}
+
+.grafico-sono .grade { stroke: var(--cor-divisor); }
+.grafico-sono .eixo { fill: var(--cor-texto-suave); font-size: 12px; }
+.grafico-sono .faixa-referencia {
+  fill: var(--cor-primaria);
+  fill-opacity: 0.14;
+  stroke: var(--cor-primaria);
+  stroke-dasharray: 4 3;
+}
+.grafico-sono .faixa-rotulo { fill: var(--cor-primaria); font-size: 12px; font-weight: 500; }
+.grafico-sono .barra { fill: var(--cor-primaria); }
+.grafico-sono .barra--destaque {
+  fill: url(#hachura-sono);
+  stroke: var(--cor-atencao);
+  stroke-width: 1.5;
+}
+.grafico-sono .hachura-fundo { fill: var(--cor-superficie); }
+.grafico-sono .hachura-linha { stroke: var(--cor-atencao); stroke-width: 3; }
+.grafico-sono .barra--local {
+  fill: var(--cor-superficie);
+  stroke: var(--cor-texto);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.grafico-sono .valor-barra { fill: var(--cor-texto); font-size: 12px; font-weight: 500; }
+
+/* Legenda em HTML: amostras com o mesmo desenho das barras. */
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-4);
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+}
+
+.legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.amostra {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+.amostra--barra { background: var(--cor-primaria); }
+.amostra--destaque {
+  border: 1.5px solid var(--cor-atencao);
+  background: repeating-linear-gradient(45deg, var(--cor-atencao) 0 2px, var(--cor-superficie) 2px 5px);
+}
+.amostra--local { border: 1.5px dashed var(--cor-texto); }
+.amostra--faixa {
+  border: 1px dashed var(--cor-primaria);
+  background: var(--cor-divisor);
+}
+
+.tabela-dados summary {
+  cursor: pointer;
+  color: var(--cor-primaria);
+  font-weight: 500;
+}
+
+/* A tabela rola na horizontal no celular, sem alargar a página. */
+.tabela-rolagem {
+  overflow-x: auto;
+  margin-top: var(--espaco-3);
+}
+
+.tabela-dados table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-dados caption {
+  text-align: left;
+  color: var(--cor-texto-suave);
+  padding-bottom: var(--espaco-2);
+}
+
+.tabela-dados th,
+.tabela-dados td {
+  text-align: left;
+  padding: var(--espaco-2);
+  border-bottom: var(--borda);
+  white-space: nowrap;
+}
+
+.tabela-dados thead th {
+  font-weight: 500;
+}
+
+/* ==========================================================
+   3. Avaliação e orientação
+   ========================================================== */
+#avaliacao-conteudo,
+#avaliacao-dados-bloco,
+.orientacao {
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+#avaliacao-conteudo {
+  gap: var(--espaco-3);
+}
+
+.orientacao {
+  border-top: var(--borda);
+  padding-top: var(--espaco-3);
+}
+
+.orientacao h3:not(:first-child) {
+  margin-top: var(--espaco-2);
+}
+
+/* ==========================================================
+   4. Formulário do check-in
+   ========================================================== */
+.formulario {
+  display: grid;
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-2);
+}
+
+.campo {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.campo > label,
+.campo legend {
+  font-weight: 500;
+  padding: 0;
+}
+
+.formulario input[type="date"],
+.formulario input[type="number"] {
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  justify-self: start;
+}
+
+.formulario input[aria-invalid="true"] {
+  border-color: var(--cor-critico);
+  border-width: 2px;
+}
+
+.duracao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+
+.duracao-parte {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.duracao-parte input {
+  width: 5.5rem;
+}
+
+/* Escala de 1 a 5 em botões grandes (área de toque de 44px). */
+.escala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.escala label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--cor-divisor);
+  border-radius: var(--raio);
+  cursor: pointer;
+}
+
+.escala input {
+  accent-color: var(--cor-primaria);
+  margin: 0;
+}
+
+.escala label:has(input:checked) {
+  border-color: var(--cor-primaria);
+  box-shadow: inset 0 0 0 1px var(--cor-primaria);
+}
+
+.erro-campo {
+  color: var(--cor-critico);
+  font-size: var(--texto-pequeno);
+  font-weight: 500;
+}
+
+.erro-campo:empty {
+  display: none;
+}
+
+.botao {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-4);
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--cor-primaria);
+  color: var(--cor-fundo);
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: var(--texto-base);
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.checkin-mensagem {
+  font-weight: 500;
+}

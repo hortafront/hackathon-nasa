@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monitoramento de saúde</title>
+  <title>Raga: painel da astronauta</title>
 
   <!-- As fontes (Prata, Inter e Public Sans) ficam no próprio projeto,
        em static/vendor/fonts/, e são declaradas no style.css.
@@ -13,6 +13,8 @@
        página fica em "/" e o caminho vira /static/..., e também no
        Live Server, que abre o arquivo direto da pasta templates/. -->
   <link rel="stylesheet" href="../static/css/style.css">
+  <!-- Estilos só desta página (áreas, sono, avaliação, check-in). -->
+  <link rel="stylesheet" href="../static/css/painel.css">
 
   <!-- O tema é carregado aqui no <head>, sem defer, para aplicar
        claro/escuro antes de a página aparecer (evita "piscar"). -->
@@ -22,7 +24,7 @@
   <!-- Cabeçalho: marca, links das seções e botão de tema. -->
   <header class="cabecalho">
     <div class="nav">
-      <a class="marca" href="#">
+      <a class="marca" href="index.html">
         <!-- Ícone de órbita (decorativo, por isso aria-hidden). -->
         <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
           <circle cx="13" cy="13" r="5" fill="currentColor"/>
@@ -32,9 +34,11 @@
       </a>
 
       <nav class="links" aria-label="Seções do painel">
-        <a href="#cartao-leitura">Leitura</a>
-        <a href="#historico">Histórico</a>
-        <a href="#sobre-os-dados">Sobre os dados</a>
+        <a href="#areas">Áreas</a>
+        <a href="#sono">Sono</a>
+        <a href="#checkin">Check-in</a>
+        <a href="#sobre-os-dados">Sobre</a>
+        <a href="equipe-medica.html">Equipe médica</a>
       </nav>
 
       <!-- aria-pressed diz ao leitor de tela se o tema escuro está ligado.
@@ -51,54 +55,196 @@
   <!-- Título grande: o elemento de destaque da página. -->
   <div class="hero">
     <h1>Monitoramento de saúde</h1>
-    <p>Acompanhe sua frequência cardíaca durante a missão.</p>
+    <p>Demonstração com dados simulados de uma astronauta fictícia.</p>
   </div>
 
-  <main class="painel">
-    <!-- Cartão da última leitura.
-         O dashboard.js troca o atributo data-estado entre:
-         carregando | vazio | ok | erro.
-         O style.css decide o que aparece em cada estado. -->
-    <section id="cartao-leitura" class="cartao" data-estado="carregando" aria-labelledby="titulo-leitura">
-      <h2 id="titulo-leitura">Frequência cardíaca</h2>
+  <!-- O dashboard.js troca data-estado entre:
+       carregando | vazio | insuficiente | ok | erro.
+       data-tem-dados="nao" esconde as seções enquanto nada foi recebido. -->
+  <main id="painel" class="painel" data-estado="carregando" data-tem-dados="nao">
 
-      <!-- Valor e unidade preenchidos pelo dashboard.js. -->
-      <p class="leitura">
-        <span id="leitura-valor" class="leitura-valor">--</span>
-        <span id="leitura-unidade" class="leitura-unidade">bpm</span>
+    <!-- Aviso geral (carregando, falha de atualização).
+         role="status" faz o leitor de tela anunciar a mudança. -->
+    <p id="aviso-painel" class="aviso" role="status">Carregando dados da demonstração…</p>
+
+    <!-- Identificação da astronauta fictícia. -->
+    <section id="astronauta" class="cartao identificacao depende-dados" aria-labelledby="nome-astronauta">
+      <p class="etiqueta-simulada">Dados simulados</p>
+      <h2 id="nome-astronauta">—</h2>
+      <p class="identificacao-detalhe">
+        Personagem fictícia. <span id="missao">—</span>, dia <span id="dia-missao">—</span>.
+      </p>
+      <p class="leitura-detalhe">Atualizado em <time id="atualizado-em">—</time></p>
+    </section>
+
+    <!-- Painel das cinco áreas do Raga. -->
+    <section id="areas" class="areas depende-dados" aria-labelledby="titulo-areas">
+      <h2 id="titulo-areas">Áreas acompanhadas</h2>
+      <div class="estado-geral">
+        <p class="estado-geral-titulo">Estado geral</p>
+        <p id="estado-geral-selo"></p>
+        <p id="estado-geral-texto" class="leitura-detalhe"></p>
+      </div>
+      <!-- Itens criados pelo dashboard.js, um por área. -->
+      <ul id="lista-areas" class="lista-areas"></ul>
+    </section>
+
+    <!-- Sono: referência fictícia e histórico. -->
+    <section id="sono" class="cartao depende-dados" aria-labelledby="titulo-sono">
+      <h2 id="titulo-sono">Sono</h2>
+
+      <p id="sono-vazio" class="mensagem-vazia" hidden>
+        Ainda não há registros de sono. <a href="#checkin">Faça o primeiro check-in da manhã.</a>
       </p>
 
-      <!-- Origem e horário: obrigatórios mesmo para dados antigos (docs/api.md). -->
-      <p class="leitura-detalhe">Origem: <span id="leitura-origem">—</span></p>
-      <p class="leitura-detalhe">Registrado em <time id="leitura-horario">—</time></p>
+      <div id="sono-conteudo">
+        <p class="referencia">
+          Referência fictícia desta astronauta: <strong id="referencia-texto">—</strong>
+        </p>
+        <p id="referencia-descricao" class="leitura-detalhe"></p>
 
-      <!-- Mensagem de estado. role="status" faz o leitor de tela
-           anunciar a mudança sem interromper o usuário. -->
-      <p id="leitura-mensagem" class="leitura-mensagem" role="status">Carregando leitura…</p>
+        <figure class="grafico-figura">
+          <!-- O chart.js desenha o SVG aqui. -->
+          <div id="grafico-sono" class="grafico-area"></div>
+          <figcaption class="legenda">
+            <span class="legenda-item"><span class="amostra amostra--barra" aria-hidden="true"></span>Noite registrada</span>
+            <span class="legenda-item"><span class="amostra amostra--destaque" aria-hidden="true"></span>Motivou a avaliação (hachurada)</span>
+            <span class="legenda-item"><span class="amostra amostra--local" aria-hidden="true"></span>Check-in desta aba, ainda não avaliado (tracejada)</span>
+            <span class="legenda-item"><span class="amostra amostra--faixa" aria-hidden="true"></span>Faixa de referência fictícia</span>
+          </figcaption>
+        </figure>
+
+        <details class="tabela-dados">
+          <summary>Ver os dados em tabela</summary>
+          <div class="tabela-rolagem">
+            <table>
+              <caption>Registros de sono, da noite mais antiga para a mais recente</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Noite</th>
+                  <th scope="col">Duração</th>
+                  <th scope="col">Qualidade informada</th>
+                  <th scope="col">Origem</th>
+                  <th scope="col">Situação</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-sono"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </section>
 
-    <!-- Área do gráfico do histórico, desenhado pelo chart.js. -->
-    <section id="historico" class="historico" aria-labelledby="titulo-historico">
-      <h2 id="titulo-historico">Histórico</h2>
-      <canvas id="grafico-historico" aria-label="Gráfico do histórico da frequência cardíaca">
-        <!-- Texto exibido só se o navegador não suportar canvas. -->
-        Seu navegador não consegue exibir o gráfico.
-      </canvas>
+    <!-- Avaliação, orientação e reavaliação (demonstrativas). -->
+    <section id="avaliacao" class="cartao depende-dados" aria-labelledby="titulo-avaliacao">
+      <h2 id="titulo-avaliacao">Avaliação do sono</h2>
+      <p class="etiqueta-demo">Demonstrativa: não é diagnóstico</p>
+
+      <p id="avaliacao-ausente" class="mensagem-vazia" hidden>
+        Ainda não há avaliação. Ela aparece depois que houver registros de sono avaliados.
+      </p>
+
+      <div id="avaliacao-conteudo">
+        <p id="avaliacao-selo"></p>
+        <p id="avaliacao-explicacao"></p>
+
+        <div id="avaliacao-dados-bloco">
+          <h3>Dados que motivaram a indicação</h3>
+          <ul id="avaliacao-dados" class="lista-dados"></ul>
+        </div>
+
+        <p id="avaliacao-regra" class="nota"></p>
+        <p id="avaliacao-pendente" class="nota nota--pendente" hidden></p>
+
+        <div id="orientacao-bloco" class="orientacao">
+          <h3>Orientação demonstrativa</h3>
+          <p id="orientacao-texto"></p>
+          <p id="orientacao-origem" class="nota"></p>
+
+          <h3>Reavaliação prevista</h3>
+          <p><time id="reavaliar-em">—</time>, depois do check-in da manhã.</p>
+          <p class="nota nota--urgente">
+            Em situação urgente, não espere a reavaliação: procure a equipe médica imediatamente.
+          </p>
+        </div>
+
+        <p class="leitura-detalhe">Avaliado em <time id="avaliado-em">—</time></p>
+      </div>
     </section>
 
-    <!-- Sobre os dados: origem, limites e fonte de referência
-         (pedidos no planejamento e no checklist da banca). -->
+    <!-- Check-in da manhã: duração e qualidade do sono. -->
+    <section id="checkin" class="cartao depende-dados" aria-labelledby="titulo-checkin">
+      <h2 id="titulo-checkin">Check-in da manhã</h2>
+      <p>Conte como foi a sua última noite de sono.</p>
+
+      <!-- novalidate: a validação e as mensagens ficam no dashboard.js,
+           em português e ligadas a cada campo. -->
+      <form id="form-checkin" class="formulario" novalidate>
+        <div class="campo">
+          <label for="checkin-noite">Noite de</label>
+          <input id="checkin-noite" name="noite" type="date" required aria-describedby="erro-noite">
+          <p id="erro-noite" class="erro-campo"></p>
+        </div>
+
+        <fieldset class="campo" aria-describedby="erro-duracao">
+          <legend>Quanto tempo você dormiu?</legend>
+          <div class="duracao">
+            <label class="duracao-parte">
+              <input id="checkin-horas" name="horas" type="number" inputmode="numeric" min="0" max="16" step="1">
+              <span>horas</span>
+            </label>
+            <label class="duracao-parte">
+              <input id="checkin-minutos" name="minutos" type="number" inputmode="numeric" min="0" max="59" step="1">
+              <span>minutos</span>
+            </label>
+          </div>
+          <p id="erro-duracao" class="erro-campo"></p>
+        </fieldset>
+
+        <fieldset class="campo" aria-describedby="erro-qualidade">
+          <legend>Como foi a qualidade do sono?</legend>
+          <div class="escala">
+            <label><input type="radio" name="qualidade" value="1"><span>1. Muito ruim</span></label>
+            <label><input type="radio" name="qualidade" value="2"><span>2. Ruim</span></label>
+            <label><input type="radio" name="qualidade" value="3"><span>3. Regular</span></label>
+            <label><input type="radio" name="qualidade" value="4"><span>4. Boa</span></label>
+            <label><input type="radio" name="qualidade" value="5"><span>5. Muito boa</span></label>
+          </div>
+          <p id="erro-qualidade" class="erro-campo"></p>
+        </fieldset>
+
+        <p class="nota">
+          Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor
+          e some ao recarregar a página.
+        </p>
+
+        <button type="submit" class="botao">Registrar check-in</button>
+        <p id="checkin-mensagem" class="checkin-mensagem" role="status"></p>
+      </form>
+    </section>
+
+    <!-- Sobre os dados: origem, limites e fontes. -->
     <section id="sobre-os-dados" class="sobre" aria-labelledby="titulo-sobre">
       <h2 id="titulo-sobre">Sobre os dados</h2>
       <dl>
         <dt>De onde vêm</dt>
-        <dd>As leituras desta demonstração são simuladas. A origem de cada uma aparece no cartão.</dd>
+        <dd>A astronauta e todos os registros são fictícios, criados para a demonstração. Não há sensor, relógio ou EEG conectado, nem monitoramento real de 24 horas.</dd>
+
+        <dt>Como ler as cores</dt>
+        <dd>Cada estado tem texto e ícone próprios. Verde significa só que nenhuma regra ilustrativa foi acionada nos dados disponíveis, não que a saúde está comprovada. Sem dados suficientes, a área não fica verde.</dd>
 
         <dt>O que não mostram</dt>
-        <dd>A frequência cardíaca sozinha não descreve a saúde geral. Este painel não faz diagnóstico.</dd>
+        <dd>Avaliações e orientações são exemplos para o protótipo. Não fazem diagnóstico, não são validadas clinicamente e nenhum aviso é enviado de verdade à equipe médica.</dd>
 
-        <dt>Fonte de referência</dt>
-        <dd>Em definição pela equipe.</dd>
+        <dt>Fontes de referência</dt>
+        <dd>
+          O caso de três noites de sono alterado segue o documento norte do
+          Project Raga (pasta docs/ do repositório).
+          Para contexto sobre sono e fadiga em missões, a equipe consultou a NASA:
+          <a href="https://www.nasa.gov/reference/fundamentals-of-human-health/">fundamentos da saúde humana</a> e
+          <a href="https://www.nasa.gov/human-systems-integration-division/human-performance/fatigue-countermeasures-laboratory/">laboratório de fadiga</a>.
+          Essas fontes não validam as regras do Raga.
+        </dd>
       </dl>
     </section>
   </main>
@@ -108,7 +254,11 @@
     <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
   </footer>
 
-  <script src="../static/js/dashboard.js" defer></script>
+  <!-- Ordem importa (todos com defer, executam nesta sequência):
+       dados fictícios → formatação → gráfico → lógica do painel. -->
+  <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/formato.js" defer></script>
   <script src="../static/js/chart.js" defer></script>
+  <script src="../static/js/dashboard.js" defer></script>
 </body>
 </html>
