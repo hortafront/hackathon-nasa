@@ -7,6 +7,8 @@
 
 Combinem mudanças em arquivos compartilhados. Criem branches por tarefa, façam revisão entre colegas e integrem partes pequenas.
 
+Leiam também [Fundamentação e próximos passos](fundamentacao-e-proximos-passos.md): o documento apresenta as fontes da NASA, o recorte do protótipo, ideias para o painel e questões a confirmar com a organização.
+
 ## Primeiros passos
 
 1. Criar o repositório e dar acesso à equipe.
