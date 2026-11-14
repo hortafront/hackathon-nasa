@@ -1,6 +1,6 @@
 # Front-end — caso de sono
 
-Primeira entrega do front-end do Raga: o caso de três noites de sono alterado ([docs/raga.md](raga.md)), da astronauta fictícia ao check-in e à prévia da visão médica. A interface usa dados fictícios locais em `static/js/dados-demo.js` e ainda não está conectada à rota de avaliação descrita em [docs/api.md](api.md). Nada disso vem de sensor, relógio ou da NASA.
+Primeira entrega do front-end do Raga: o caso de três noites de sono alterado ([docs/raga.md](raga.md)), da astronauta fictícia ao check-in e à prévia da visão médica. `static/js/dados-api.js` liga a interface à API Flask; quando uma rota ainda não existe, usa os dados fictícios locais de `static/js/dados-demo.js` e avisa na tela. O que falta no back-end está em [integracao-front-api.md](integracao-front-api.md). Nada disso vem de sensor, relógio ou da NASA.
 
 ## Páginas e arquivos
 
@@ -9,13 +9,15 @@ Primeira entrega do front-end do Raga: o caso de três noites de sono alterado (
 | Painel da astronauta (áreas, sono, avaliação, check-in) | `templates/index.html` | `static/css/painel.css` | `static/js/dashboard.js`, `static/js/chart.js` |
 | Visão da equipe médica (prévia) | `templates/equipe-medica.html` | `static/css/equipe-medica.css` | `static/js/equipe-medica.js` |
 
-Compartilhados: `static/css/style.css` (tokens, tema, cabeçalho, rodapé, selos de estado), `static/js/tema.js`, `static/js/formato.js` (datas, durações e rótulos dos estados) e `static/js/dados-demo.js` (dados fictícios).
+Compartilhados: `static/css/style.css` (tokens, tema, cabeçalho, rodapé, selos de estado), `static/js/tema.js`, `static/js/formato.js` (datas, durações e rótulos dos estados), `static/js/dados-api.js` (chamadas à API e escolha da fonte) e `static/js/dados-demo.js` (dados fictícios locais).
 
 O gráfico é SVG desenhado em `chart.js`, sem biblioteca externa: funciona offline e acompanha o tema. Os mesmos dados ficam numa tabela, para leitores de tela.
 
 ## Como abrir e testar
 
-Abra `templates/index.html` com o Live Server. Para ver cada estado, acrescente ao endereço:
+**Com a API:** rode o Flask (passos em [integracao-front-api.md](integracao-front-api.md#como-testar-a-ligação)) e abra `http://127.0.0.1:5000/`. A linha abaixo do título diz de onde vêm os dados. `?data=2026-11-10` avalia essa data (mostra o alerta amarelo do cenário); sem ela, avalia o despertar mais recente. `?fonte=demo` força os dados locais.
+
+**Sem a API:** abra `templates/index.html` com o Live Server. A página avisa que está usando os dados locais. Para ver cada estado, acrescente ao endereço (estes parâmetros sempre usam os dados locais):
 
 | Endereço | Estado |
 | --- | --- |
@@ -27,7 +29,9 @@ Abra `templates/index.html` com o Live Server. Para ver cada estado, acrescente 
 | `index.html?simular=erro` | 1ª carga funciona; a atualização seguinte (10 s) falha e os dados anteriores continuam na tela, com o horário |
 | `index.html?simular=erro-inicial` | Falha já na primeira carga |
 
-Os mesmos parâmetros funcionam em `equipe-medica.html`. O check-in feito na tela fica só na memória da aba (some ao recarregar), aparece no gráfico com contorno tracejado e é marcado como "ainda não avaliado": o front não recalcula a avaliação.
+Os mesmos parâmetros funcionam em `equipe-medica.html`. Com dados locais, o check-in fica só na memória da aba (some ao recarregar), aparece no gráfico com contorno tracejado e é marcado como "ainda não avaliado": o front não recalcula a avaliação. Com a API, o check-in é gravado pelo POST e a avaliação vem do servidor.
+
+Depois que a API respondeu uma vez, uma falha seguinte não troca para os dados locais: a tela mantém os últimos dados, mostra o horário e a mensagem de erro da API.
 
 ## O que o front faz e o que não faz
 
