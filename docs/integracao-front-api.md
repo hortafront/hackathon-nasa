@@ -16,6 +16,7 @@ Todo o fluxo abaixo foi testado de ponta a ponta com o `app.py` atual (rota de a
 | 2 | Script que carrega o JSON fictício no banco | Hoje o banco começa vazio; o JSON só é usado nos testes | API responde, mas sem astronauta: 404 |
 | 3 | `GET /api/astronautas/<id>/sono/registros` — implementado | Astronauta, linha de base e histórico para o gráfico e a tabela | — |
 | 4 | `POST /api/astronautas/<id>/sono/registros` | Gravar o check-in da manhã | Check-in fica só na aba |
+| 4b | Rota `/checkin-noite.html` e `GET`/`POST /api/astronautas/<id>/mente/checkins` (seção 6) | Página nova do check-in da noite (saúde mental) | Página usa dados locais, com aviso |
 | 5 | (Depois) histórico de avaliações e visão médica | Mostrar o ciclo indicação → reavaliação e a lista da equipe médica com dados reais | Essas partes seguem com dados locais, com aviso |
 
 A rota de avaliação (`GET /api/astronautas/<id>/sono/avaliacao?data=AAAA-MM-DD`) já existe e o front usa exatamente o formato documentado em [api.md](api.md).
@@ -151,7 +152,37 @@ Validações sugeridas (o front já faz as mesmas, mas o servidor precisa repeti
 
 - **Histórico de avaliações**: hoje a API calcula na hora e não guarda nada. Para mostrar "10/11 indicação amarela → 11/11 reavaliação verde" com dados reais, o front precisa de uma lista (ex.: `GET .../sono/avaliacoes`, cada item no formato da rota de avaliação). Nos dados locais o front já mostra esse ciclo com `?simular=reavaliado`.
 - **Visão médica**: `GET /api/equipe-medica/sono` com `tripulantes` (formato em [front-caso-sono.md](front-caso-sono.md)). Depende da política de acesso; sem autenticação, só dados fictícios em ambiente local.
-- **Outras áreas e estado geral**: o front mostra Coração, Mente, Exercício e Cognição como "sem registros" e não calcula o estado geral.
+- **Outras áreas e estado geral**: o front mostra Coração, Mente, Exercício, Cognição e Metabolismo (6ª área do PDF norte v3) como "sem registros" e não calcula o estado geral.
+
+## 6. Check-in da noite (Mente e equipe) — novo
+
+Página `templates/checkin-noite.html` (CSS e JS próprios), ligada pelo menu e pelo cartão "Mente e equipe" do painel. Enquanto as rotas abaixo não existirem, ela usa dados locais com aviso, como as outras.
+
+**Rota da página** (mesmo padrão das outras, um só nível):
+
+```python
+@app.get('/checkin-noite.html')
+def pagina_checkin_noite():
+    return render_template('checkin-noite.html')
+```
+
+**`GET /api/astronautas/<id>/mente/checkins`** → `200`:
+
+```json
+{
+  "astronauta": { "id": 1, "identificacao": "RAGA-AST-001", "nome_exibicao": "Comandante Aurora", "origem": "ficticia" },
+  "checkins": [
+    { "id": 3, "data": "2026-11-10", "humor": 3, "estresse": 4, "convivencia": 3, "registrado_em": "2026-11-10T22:05:00-03:00", "origem": "simulada" }
+  ]
+}
+```
+
+**`POST /api/astronautas/<id>/mente/checkins`** recebe `{"data": "AAAA-MM-DD", "humor": 1-5, "estresse": 1-5, "convivencia": 1-5, "registrado_em": "ISO com fuso"}` e responde `201 {"checkin": {...}}`. Erros no formato `{"erro": "..."}` (`400`, `404`, `409` para data repetida, `503`). `origem` = `"autorrelato"`, definido pelo servidor.
+
+- **Escalas**: humor e convivência, 5 = melhor; estresse, 5 = mais estresse. O front mostra número e palavra.
+- **Diário**: o front **não envia** o diário. Ele fica só no `sessionStorage` da aba, até a equipe definir a política de privacidade (AGENTS.md e PDF: conversas psicológicas são confidenciais). Não criem campo de diário na API sem essa decisão.
+- **Banco**: precisa de uma tabela nova (ex.: `checkins_noite`: `id`, `astronauta_id`, `data`, `humor`, `estresse`, `convivencia`, `registrado_em`, `origem`), criada com `CREATE TABLE IF NOT EXISTS` para não apagar dados.
+- **Regra**: não há regra de demonstração para Mente e equipe; a página diz isso e não mostra cor. Se criarem uma (PDF: "humor em queda ou atrito por vários dias → amarelo"), o retorno pode seguir o formato da avaliação de sono.
 
 ## Como testar a ligação
 
