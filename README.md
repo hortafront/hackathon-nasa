@@ -9,14 +9,15 @@ O ciclo planejado é **medir → comparar com a linha de base individual → cla
 - [Norte e planejamento detalhado](docs/raga.md): problema, ciclo, telas, privacidade, decisões e demonstração.
 - [Divisão da equipe](docs/equipe.md): responsabilidades propostas para dois integrantes de back-end e dois de front-end.
 - [API e integração](docs/api.md): situação atual e necessidades a combinar.
+- [Dados e armazenamento](docs/dados.md): formato dos dados fictícios e funções disponíveis.
 - [Fundamentação e fontes](docs/fundamentacao-e-proximos-passos.md): evidências, limitações e afirmações a verificar.
 - [Instruções para agentes](AGENTS.md): regras compartilhadas para pessoas e IAs.
 
 ## Estado real do repositório
 
-- `database.py` e `schema.sql` implementam uma tabela de leituras numéricas e funções de gravação e consulta. Não modelam as cinco áreas, check-ins, linha de base ou alertas.
-- `app.py` contém somente uma rota fictícia de leitura recente, sem conexão ao banco. Ela usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. Não há rota para servir o painel nem API completa.
-- `avaliacao_sono.py` implementa uma primeira regra ilustrativa e isolada para duração do sono, ainda não conectada ao banco ou à API. Detalhes e limitações estão em [API e integração](docs/api.md).
+- `database.py` e `schema.sql` implementam leituras numéricas e armazenamento de astronautas fictícios, linha de base e registros de sono. As demais áreas, alertas e ciclo completo ainda não estão modelados.
+- `app.py` oferece uma rota de avaliação de sono conectada ao banco e uma rota antiga de leitura recente fictícia. Esta última usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. Não há rota para servir o painel nem API completa.
+- `avaliacao_sono.py` implementa uma regra ilustrativa para duração do sono; `servico_sono.py` conecta a avaliação aos dados salvos. Detalhes em [API e integração](docs/api.md).
 - `templates/index.html` e os estilos apresentam uma interface inicial de frequência cardíaca; `dashboard.js` e `chart.js` são esboços. `simulator.py` é apenas um esboço.
 - Nenhum ciclo completo do Raga, controle de acesso, notificação, execução de reavaliação ou integração com sensores está implementado. Não se deve anunciar o produto como operacional ou validado.
 
@@ -32,6 +33,6 @@ python database.py
 python -m unittest discover -s tests
 ```
 
-`database.py` cria `instance/saude.db` sem apagar leituras existentes. O banco local não deve ser versionado. `salvar_leitura(conexao, leitura)` recebe dicionário já validado; `buscar_ultima_leitura` devolve dicionário ou `None`; `buscar_historico` devolve lista cronológica ou vazia. Ambas as consultas ordenam em memória, solução adequada apenas a volumes pequenos. `python app.py` inicia o Flask de exemplo, mas não disponibiliza o painel nem implementa o Raga. Dependências do navegador, fontes e dados necessários à demonstração offline devem estar disponíveis localmente.
+`database.py` cria `instance/saude.db` sem apagar leituras existentes; não carrega automaticamente o JSON de exemplo. O banco local não deve ser versionado. `python app.py` inicia o Flask e a rota de avaliação documentada em `docs/api.md`, mas não disponibiliza o painel nem implementa o ciclo completo. A rota não tem autenticação: use somente dados fictícios em ambiente local. Dependências do navegador, fontes e dados necessários à demonstração offline devem estar disponíveis localmente.
 
 Não coloquem dados reais de saúde, credenciais, ambientes virtuais ou bancos locais no repositório. O software é um protótipo de apoio, não um diagnóstico ou ferramenta clínica validada.

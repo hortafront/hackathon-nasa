@@ -55,6 +55,7 @@ class TesteBanco(unittest.TestCase):
         self.assertEqual(database.buscar_historico(self.conexao, 1, "frequencia_cardiaca"), [])
 
     def test_sono_preserva_leituras_e_ordena_historico(self):
+        database.salvar_leitura(self.conexao, self.leitura)
         astronauta = database.salvar_astronauta(self.conexao, {
             "id": 1,
             "identificacao": "RAGA-AST-001",
