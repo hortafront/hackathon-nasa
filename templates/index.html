@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoramento de saúde</title>
+  <!-- Flask fornecerá os arquivos estáticos quando o servidor for implementado. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Monitoramento de saúde</h1>
+    <!-- Criar aqui o cartão da leitura, os estados e o gráfico do histórico. -->
+    <p>Painel em desenvolvimento. Os dados da demonstração serão identificados.</p>
+  </main>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/chart.js') }}" defer></script>
+</body>
+</html>

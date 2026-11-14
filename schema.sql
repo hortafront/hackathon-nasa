@@ -1,0 +1,3 @@
+-- A equipe Python definirá a tabela de leituras: id, astronauta_id,
+-- indicador, valor, unidade, registrado_em e origem. Guardar horário com fuso.
+-- Ainda não há comandos SQL implementados.

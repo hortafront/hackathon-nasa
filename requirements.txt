@@ -1,0 +1,2 @@
+# Dependência do servidor. Fixar uma versão depois de testá-la em equipe.
+Flask
