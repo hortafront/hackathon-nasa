@@ -1,6 +1,38 @@
 /* Estilos do painel: cores, tipografia, layout e adaptação a telas menores. */
 
 /* ==========================================================
+   0. Fontes locais (funcionam sem internet)
+   Arquivos em static/vendor/fonts/; origem e licença no
+   static/vendor/README.md. O caminho é relativo a este CSS.
+   font-display: swap mostra o texto na hora com a fonte reserva
+   e troca quando a fonte carrega.
+   ========================================================== */
+@font-face {
+  font-family: "Inter";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/inter-600-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Prata";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/prata-400-latin.woff2") format("woff2");
+}
+
+/* Public Sans é variável: um só arquivo cobre os pesos 400 e 500. */
+@font-face {
+  font-family: "Public Sans";
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/public-sans-latin.woff2") format("woff2");
+}
+
+/* ==========================================================
    1. Variáveis (tokens)
    Cores e fontes ficam só aqui; o resto do arquivo usa var(--nome).
    ========================================================== */
