@@ -1,14 +1,40 @@
 # Integração front-end ↔ API — o que falta no back-end
 
-**Atualização:** as páginas Flask e o `GET /api/astronautas/<id>/sono/registros` já foram implementados. Os exemplos abaixo registram a proposta original; o contrato vigente está em [api.md](api.md). O carregador, o POST, o histórico de avaliações e a API da visão médica ainda estão pendentes. A consulta de registros omite `observacao` até definição da política de acesso.
-
 Para: back-end (Alan e Rodrigo). Do: front-end (Andrew).
+
+## Próximos passos recomendados (14/11, noite — prazo 15/11 às 23h59)
+
+Já feito no back-end: páginas `/`, `/index.html` e `/equipe-medica.html`; `GET .../sono/registros` (sem `observacao`, até definir a política); `GET .../sono/avaliacao`. Já feito no front: painel com 6 áreas (PDF norte v3), check-in da manhã, **página nova do check-in da noite**, visão médica, e cores de exemplo nas áreas sem API (marcadas como "exemplo local").
+
+A ordem abaixo prioriza o que faz a **demonstração pelo Flask** funcionar com dados do servidor. A sugestão de quem faz segue os commits recentes; combinem entre vocês.
+
+| Prioridade | Tarefa | Quem (sugestão) | Esforço | Por que agora |
+| --- | --- | --- | --- | --- |
+| **1** | Rota `/checkin-noite.html` (seção 6) | API (Alan) | 3 linhas | Hoje o link "Check-in noite" do menu dá **404 no Flask** |
+| **2** | Script `carregar_dados_ficticios.py` (seção 2) | Dados (Rodrigo) | ~20 linhas, código pronto abaixo | Sem ele, o painel no Flask mostra "Astronauta não encontrado" |
+| **3** | `POST .../sono/registros` com `409` para data repetida (seção 4) | API (Alan) | rota + testes | Fecha o caso de sono de ponta a ponta: check-in → avaliação nova. Hoje a tela avisa que o servidor ainda não grava |
+| **4** | Tabela `checkins_noite` + `GET`/`POST .../mente/checkins` (seção 6) | Dados + API | tabela, 2 funções, 2 rotas | Leva a saúde mental para o servidor. **Sem campo de diário** |
+| 5 | Se der tempo: histórico de avaliações, API da visão médica, regras de outras áreas (seção 5) | — | maior | Hoje usam dados locais com aviso; não bloqueiam a demonstração |
+
+Fora do código, também antes da entrega:
+
+- **Atualizar `docs/raga.md` e colocar o PDF norte v3 no repositório.** O repositório ainda descreve 5 áreas; o v3 tem 6 (Metabolismo) e as 4 fases da missão. O AGENTS.md manda seguir o norte.
+- **Fixar a versão do Flask** em `requirements.txt`. O front foi testado com Flask 3.1.3 e os 18 testes passaram.
+- **Rota antiga `/api/leituras/recentes`** (com `astrounata_id`): o front não usa mais. Corrigir ou remover, e registrar em `api.md`.
+- **Confirmar com a organização** o uso de recurso da NASA e como declarar o uso de IA na submissão ([fundamentação](fundamentacao-e-proximos-passos.md)).
+- **Regras de outras áreas**, se forem feitas: o PDF dá exemplos ("oxigênio baixo → vermelho", "exercício abaixo de 2 h → amarelo"). Documentem origem e limites, como no sono; vermelho não espera reavaliação.
+
+**Como conferir cada passo:** rode `python app.py`, abra `http://127.0.0.1:5000/` e olhe a linha abaixo do título. "Dados do servidor do Raga" quer dizer que a rota respondeu; "A API não respondeu" quer dizer que alguma rota ainda falta. Detalhes no fim deste documento.
+
+## Histórico desta integração
+
+As páginas Flask e o `GET .../sono/registros` foram implementados a partir das seções abaixo; os exemplos registram a proposta original e o contrato vigente está em [api.md](api.md).
 
 O front já está ligado à API. `static/js/dados-api.js` chama as rotas abaixo; se uma rota ainda não existir, a página usa os dados fictícios locais (`dados-demo.js`) **e avisa na tela** que eles não vieram do servidor. Por isso nada quebra enquanto as rotas não chegam, e cada rota nova passa a ser usada sozinha, sem mudar o front.
 
 Todo o fluxo abaixo foi testado de ponta a ponta com o `app.py` atual (rota de avaliação do Alan) mais as rotas sugeridas, num servidor temporário fora do repositório: banco temporário com `data/astronautas-ficticios.json`, painel servido pelo Flask, avaliação de 10/11 em amarelo, check-in gravado e avaliação refeita. Os 18 testes existentes continuam passando. **O `app.py` do repositório não foi alterado.**
 
-## O que fazer, em ordem
+## Lista original (referência)
 
 | # | Tarefa | Por quê | Sem isso |
 | --- | --- | --- | --- |
