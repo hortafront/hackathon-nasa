@@ -60,7 +60,7 @@
       var li = document.createElement("li");
       li.className = "area area--" + area.estado;
       // Áreas com tela própria viram link.
-      var destino = { sono: "#sono", mente: "checkin-noite.html" }[area.id];
+      var destino = { sono: "#sono", mente: "checkin-noite.html", cognicao: "teste-reacao.html" }[area.id];
       var nome = document.createElement(destino ? "a" : "p");
       nome.className = "area-nome";
       nome.textContent = area.nome;

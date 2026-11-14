@@ -1,0 +1,163 @@
+/* Estilos só do teste de reação (templates/teste-reacao.html).
+   Depende do style.css, carregado antes. */
+
+/* ==========================================================
+   1. Instruções
+   ========================================================== */
+.instrucoes {
+  margin: 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+/* ==========================================================
+   2. Área de resposta
+   Cada fase muda cor, borda E texto: a cor nunca é a única pista.
+   ========================================================== */
+.alvo {
+  width: 100%;
+  min-height: 12rem;
+  margin-top: var(--espaco-3);
+  display: grid;
+  place-content: center;
+  gap: var(--espaco-2);
+  border: 2px solid var(--cor-divisor);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
+  /* Sem atraso de toque duplo no celular e sem selecionar texto. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.alvo-texto {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.alvo-detalhe {
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+}
+
+/* Parado / fim: parece um botão para começar. */
+.alvo[data-fase="parado"],
+.alvo[data-fase="fim"] {
+  border-color: var(--cor-primaria);
+}
+
+.alvo[data-fase="parado"] .alvo-texto,
+.alvo[data-fase="fim"] .alvo-texto {
+  color: var(--cor-primaria);
+}
+
+/* Esperando: quadro apagado, borda tracejada. */
+.alvo[data-fase="esperando"] {
+  border-style: dashed;
+  border-color: var(--cor-texto-suave);
+}
+
+/* Sinal: inversão total de cores e borda grossa. */
+.alvo[data-fase="sinal"] {
+  background: var(--cor-texto);
+  color: var(--cor-fundo);
+  border: 6px solid var(--cor-destaque);
+}
+
+.alvo[data-fase="sinal"] .alvo-detalhe {
+  color: var(--cor-fundo);
+}
+
+/* Antecipou: barra lateral de aviso, como os erros do painel. */
+.alvo[data-fase="antecipou"] {
+  border-color: var(--cor-critico);
+  border-left: 8px solid var(--cor-destaque);
+}
+
+.alvo[data-fase="antecipou"] .alvo-texto {
+  color: var(--cor-critico);
+}
+
+/* Resposta registrada: número em destaque. */
+.alvo[data-fase="resposta"] .alvo-texto {
+  font-variant-numeric: tabular-nums;
+}
+
+.botao-secundario {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-4);
+  border: 1px solid currentColor;
+  border-radius: var(--raio);
+  background: none;
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ==========================================================
+   3. Resultado
+   ========================================================== */
+.numeros {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--espaco-3);
+}
+
+.numeros div {
+  border: var(--borda);
+  border-radius: var(--raio);
+  padding: var(--espaco-2) var(--espaco-3);
+}
+
+.numeros dt {
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+}
+
+.numeros dd {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: var(--titulo-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================
+   4. Histórico
+   ========================================================== */
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+.tabela-reacao {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-reacao caption {
+  text-align: left;
+  color: var(--cor-texto-suave);
+  padding-bottom: var(--espaco-2);
+}
+
+.tabela-reacao th,
+.tabela-reacao td {
+  text-align: left;
+  padding: var(--espaco-2);
+  border-bottom: var(--borda);
+  white-space: nowrap;
+}
+
+.tabela-reacao thead th {
+  font-weight: 500;
+}
