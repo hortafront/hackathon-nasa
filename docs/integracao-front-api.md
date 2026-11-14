@@ -11,7 +11,7 @@ A ordem abaixo prioriza o que faz a **demonstração pelo Flask** funcionar com 
 | Prioridade | Tarefa | Quem (sugestão) | Esforço | Por que agora |
 | --- | --- | --- | --- | --- |
 | **1** | Rota `/checkin-noite.html` (seção 6) | API (Alan) | 3 linhas | Hoje o link "Check-in noite" do menu dá **404 no Flask** |
-| **2** | Script `carregar_dados_ficticios.py` (seção 2) | Dados (Rodrigo) | ~20 linhas, código pronto abaixo | Sem ele, o painel no Flask mostra "Astronauta não encontrado" |
+| **2** | Comando para rodar `database.carregar_dados_ficticios(conexao)`, que já existe (ex.: `python carregar_dados_ficticios.py` ou uma opção em `database.py`) | Dados (Rodrigo) | poucas linhas | Sem um comando, quem for apresentar não consegue preencher o banco, e o painel no Flask mostra "Astronauta não encontrado" |
 | **3** | `POST .../sono/registros` com `409` para data repetida (seção 4) | API (Alan) | rota + testes | Fecha o caso de sono de ponta a ponta: check-in → avaliação nova. Hoje a tela avisa que o servidor ainda não grava |
 | **4** | Tabela `checkins_noite` + `GET`/`POST .../mente/checkins` (seção 6) | Dados + API | tabela, 2 funções, 2 rotas | Leva a saúde mental para o servidor. **Sem campo de diário** |
 | 5 | Se der tempo: rota `/teste-reacao.html` + `GET`/`POST .../cognicao/testes` (seção 7); histórico de avaliações, API da visão médica, regras de outras áreas (seção 5) | — | maior | Hoje usam dados locais com aviso; não bloqueiam a demonstração. A rota da página (3 linhas) vale fazer junto com a prioridade 1, para o link não dar 404 |
