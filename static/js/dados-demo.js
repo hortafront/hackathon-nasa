@@ -113,6 +113,15 @@
     { id: 3, data: "2026-11-10", humor: 3, estresse: 4, convivencia: 3, registrado_em: "2026-11-10T22:05:00-03:00", origem: "simulada" }
   ];
 
+  // Testes de reação fictícios (Cognição), inspirados no PVT.
+  // Tempos em milissegundos; linha de base fictícia de 285 ms.
+  var linhaBaseReacaoMs = 285;
+  var testesReacao = [
+    { id: 1, realizado_em: "2026-11-08T08:10:00-03:00", tentativas: 10, mediana_ms: 281, mais_rapida_ms: 242, mais_lenta_ms: 356, acima_500ms: 0, antecipacoes: 0, origem: "simulada" },
+    { id: 2, realizado_em: "2026-11-09T08:05:00-03:00", tentativas: 10, mediana_ms: 290, mais_rapida_ms: 251, mais_lenta_ms: 388, acima_500ms: 0, antecipacoes: 1, origem: "simulada" },
+    { id: 3, realizado_em: "2026-11-10T08:12:00-03:00", tentativas: 10, mediana_ms: 286, mais_rapida_ms: 248, mais_lenta_ms: 371, acima_500ms: 0, antecipacoes: 0, origem: "simulada" }
+  ];
+
   function copiar(obj) {
     return JSON.parse(JSON.stringify(obj));
   }
@@ -270,6 +279,30 @@
     // Cada uma vem marcada como local, para a tela avisar.
     areasLocais: function () {
       return copiar(outrasAreas).map(function (a) { a.local = true; return a; });
+    },
+
+    // Testes de reação (Cognição): lista cronológica e linha de base fictícia.
+    buscarTestesReacao: function () {
+      chamadas += 1;
+      if (simular === "carregando") return new Promise(function () {});
+      if (deveFalhar()) return responder(falha, 300);
+      return responder(function () {
+        return {
+          modo: "demonstracao-local",
+          atualizado_em: new Date().toISOString(),
+          astronauta: copiar(astronauta),
+          linha_base_ms: simular === "vazio" ? null : linhaBaseReacaoMs,
+          testes: simular === "vazio" ? [] : copiar(testesReacao)
+        };
+      }, 400);
+    },
+
+    enviarTesteReacao: function (teste) {
+      return responder(function () {
+        var registro = Object.assign({ id: "local-" + Date.now(), origem: "autorrelato (só nesta aba)" }, teste);
+        testesReacao.push(registro);
+        return { situacao: "registrado_localmente", teste: copiar(registro) };
+      }, 300);
     },
 
     // Check-ins da noite: lista cronológica (vazia com ?simular=vazio).

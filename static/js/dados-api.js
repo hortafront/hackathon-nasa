@@ -170,6 +170,30 @@
       });
     },
 
+    // Teste de reação (Cognição). Rotas recomendadas em
+    // docs/integracao-front-api.md, seção 7.
+    buscarTestesReacao: function () {
+      return comReserva(function () { return pedir(BASE + "/cognicao/testes"); }, demo.buscarTestesReacao);
+    },
+
+    enviarTesteReacao: function (teste) {
+      if (estado.fonte === "demo") return demo.enviarTesteReacao(teste);
+      return pedir(BASE + "/cognicao/testes", {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(teste)
+      }).then(function (corpo) {
+        return { situacao: "salvo_no_servidor", teste: corpo.teste };
+      }, function (erro) {
+        if (erro.rotaAusente) {
+          var pendente = new Error("O servidor ainda não grava o teste de reação: essa parte depende do back-end.");
+          pendente.semRota = true;
+          throw pendente;
+        }
+        throw erro;
+      });
+    },
+
     // Rota ainda não existe: recomendada em docs/integracao-front-api.md.
     buscarVisaoMedica: function () {
       return comReserva(function () { return pedir("/api/equipe-medica/sono"); }, demo.buscarVisaoMedica);
