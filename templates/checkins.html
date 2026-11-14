@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raga: check-ins do dia</title>
+
+  <!-- Mesmos caminhos relativos do index.html. No Flask, esta página
+       precisa de rota de um só nível: /checkins.html. -->
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/checkins.css">
+  <script src="../static/js/tema.js"></script>
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="nav">
+      <a class="marca" href="index.html">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="13" r="5" fill="currentColor"/>
+          <ellipse cx="13" cy="13" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 13 13)"/>
+        </svg>
+        Raga
+      </a>
+
+      <nav class="links" aria-label="Páginas">
+        <a href="index.html">Painel</a>
+        <a href="checkins.html" aria-current="page">Check-ins</a>
+        <a href="teste-reacao.html">Teste de reação</a>
+        <a href="equipe-medica.html">Equipe médica</a>
+      </nav>
+
+      <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
+        </svg>
+        Tema escuro
+      </button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Check-ins do dia</h1>
+    <p>De manhã, como foi o sono. À noite, como foi o dia. Cada um leva menos de um minuto.</p>
+  </div>
+
+  <!-- data-estado: carregando | ok | erro (checkins.js).
+       Cada seção (manhã e noite) também tem o próprio estado. -->
+  <main id="painel-checkins" class="painel" data-estado="carregando" data-tem-dados="nao">
+    <p id="aviso-checkins" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
+
+    <!-- Atalhos para as duas partes da página. -->
+    <nav class="atalhos depende-dados" aria-label="Partes desta página">
+      <a href="#manha" class="atalho">
+        <span class="atalho-titulo">Manhã</span>
+        <span class="atalho-texto">Sono: horários, interrupções e qualidade</span>
+      </a>
+      <a href="#noite" class="atalho">
+        <span class="atalho-titulo">Noite</span>
+        <span class="atalho-texto">Mente e equipe: humor, estresse e convivência</span>
+      </a>
+    </nav>
+
+    <!-- ===================== MANHÃ ===================== -->
+    <section id="manha" class="grupo-checkin depende-dados" aria-labelledby="titulo-manha">
+      <h2 id="titulo-manha" class="grupo-titulo">Check-in da manhã <span class="grupo-area">Área: Sono</span></h2>
+
+      <div class="cartao">
+        <h3>Como foi a sua última noite de sono, <span class="nome-astronauta">—</span>?</h3>
+
+        <!-- novalidate: as mensagens ficam no checkins.js, em português.
+             Campos alinhados com registros_sono (schema.sql); a duração
+             é calculada a partir dos horários. -->
+        <form id="form-manha" class="formulario" novalidate>
+          <div class="campo">
+            <label for="manha-data">Data em que você acordou</label>
+            <input id="manha-data" name="data" type="date" required aria-describedby="erro-manha-data">
+            <p id="erro-manha-data" class="erro-campo"></p>
+          </div>
+
+          <fieldset class="campo" aria-describedby="erro-manha-horario manha-duracao">
+            <legend>Que horas você dormiu e acordou?</legend>
+            <div class="duracao">
+              <label class="duracao-parte">
+                <span>Dormi às</span>
+                <input id="manha-inicio" name="inicio" type="time" required>
+              </label>
+              <label class="duracao-parte">
+                <span>Acordei às</span>
+                <input id="manha-fim" name="fim" type="time" required>
+              </label>
+            </div>
+            <p id="manha-duracao" class="nota">Duração calculada: —</p>
+            <p id="erro-manha-horario" class="erro-campo"></p>
+          </fieldset>
+
+          <div class="campo">
+            <label for="manha-interrupcoes">Quantas vezes você acordou durante a noite?</label>
+            <input id="manha-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-manha-interrupcoes">
+            <p id="erro-manha-interrupcoes" class="erro-campo"></p>
+          </div>
+
+          <fieldset class="campo" aria-describedby="erro-manha-qualidade">
+            <legend>Como foi a qualidade do sono?</legend>
+            <div class="escala">
+              <label><input type="radio" name="qualidade" value="1"><span>1. Muito ruim</span></label>
+              <label><input type="radio" name="qualidade" value="2"><span>2. Ruim</span></label>
+              <label><input type="radio" name="qualidade" value="3"><span>3. Regular</span></label>
+              <label><input type="radio" name="qualidade" value="4"><span>4. Boa</span></label>
+              <label><input type="radio" name="qualidade" value="5"><span>5. Muito boa</span></label>
+            </div>
+            <p id="erro-manha-qualidade" class="erro-campo"></p>
+          </fieldset>
+
+          <p id="manha-nota-fonte" class="nota"></p>
+
+          <button type="submit" class="botao">Registrar check-in da manhã</button>
+          <p id="manha-mensagem" class="checkin-mensagem" role="status"></p>
+        </form>
+      </div>
+
+      <div class="cartao">
+        <h3>Últimos check-ins da manhã</h3>
+        <p id="manha-vazio" class="mensagem-vazia" hidden>Ainda não há registros de sono. Registre o primeiro acima.</p>
+        <div id="manha-tabela-bloco" class="tabela-rolagem">
+          <table class="tabela-checkin">
+            <caption>Do mais antigo para o mais recente</caption>
+            <thead>
+              <tr>
+                <th scope="col">Despertar em</th>
+                <th scope="col">Duração</th>
+                <th scope="col">Dormiu e acordou</th>
+                <th scope="col">Qualidade</th>
+                <th scope="col">Interrupções</th>
+                <th scope="col">Origem</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-manha"></tbody>
+          </table>
+        </div>
+        <p class="nota">A avaliação do sono, com cor e orientação, aparece no <a href="index.html#avaliacao">painel</a>.</p>
+      </div>
+    </section>
+
+    <!-- ===================== NOITE ===================== -->
+    <section id="noite" class="grupo-checkin depende-dados" aria-labelledby="titulo-noite">
+      <h2 id="titulo-noite" class="grupo-titulo">Check-in da noite <span class="grupo-area">Área: Mente e equipe</span></h2>
+
+      <div class="cartao">
+        <h3>Como você está hoje, <span class="nome-astronauta">—</span>?</h3>
+        <p class="nota">Não existe resposta certa. Escolha o que mais se parece com o seu dia.</p>
+
+        <form id="form-noite" class="formulario" novalidate>
+          <div class="campo">
+            <label for="noite-data">Data</label>
+            <input id="noite-data" name="data" type="date" required aria-describedby="erro-noite-data">
+            <p id="erro-noite-data" class="erro-campo"></p>
+          </div>
+
+          <!-- Escalas de 1 a 5. O texto de cada opção diz o sentido,
+               porque no estresse o 5 é o pior e nos outros o 5 é o melhor. -->
+          <fieldset class="campo" aria-describedby="erro-humor">
+            <legend>Como está o seu humor?</legend>
+            <div class="escala">
+              <label><input type="radio" name="humor" value="1"><span>1. Muito ruim</span></label>
+              <label><input type="radio" name="humor" value="2"><span>2. Ruim</span></label>
+              <label><input type="radio" name="humor" value="3"><span>3. Neutro</span></label>
+              <label><input type="radio" name="humor" value="4"><span>4. Bom</span></label>
+              <label><input type="radio" name="humor" value="5"><span>5. Muito bom</span></label>
+            </div>
+            <p id="erro-humor" class="erro-campo"></p>
+          </fieldset>
+
+          <fieldset class="campo" aria-describedby="erro-estresse">
+            <legend>Quanto estresse você sentiu?</legend>
+            <div class="escala">
+              <label><input type="radio" name="estresse" value="1"><span>1. Nenhum</span></label>
+              <label><input type="radio" name="estresse" value="2"><span>2. Pouco</span></label>
+              <label><input type="radio" name="estresse" value="3"><span>3. Moderado</span></label>
+              <label><input type="radio" name="estresse" value="4"><span>4. Muito</span></label>
+              <label><input type="radio" name="estresse" value="5"><span>5. Demais</span></label>
+            </div>
+            <p id="erro-estresse" class="erro-campo"></p>
+          </fieldset>
+
+          <fieldset class="campo" aria-describedby="erro-convivencia">
+            <legend>Como foi a convivência com a equipe?</legend>
+            <div class="escala">
+              <label><input type="radio" name="convivencia" value="1"><span>1. Muito difícil</span></label>
+              <label><input type="radio" name="convivencia" value="2"><span>2. Difícil</span></label>
+              <label><input type="radio" name="convivencia" value="3"><span>3. Normal</span></label>
+              <label><input type="radio" name="convivencia" value="4"><span>4. Boa</span></label>
+              <label><input type="radio" name="convivencia" value="5"><span>5. Muito boa</span></label>
+            </div>
+            <p id="erro-convivencia" class="erro-campo"></p>
+          </fieldset>
+
+          <!-- Diário opcional: privado. Nunca é enviado ao servidor nesta
+               versão e não aparece na visão da equipe médica. -->
+          <div class="campo diario">
+            <label for="noite-diario">Diário (opcional)</label>
+            <p id="diario-ajuda" class="nota">
+              Privado: fica só neste navegador, nesta aba. Não é enviado ao servidor
+              e não aparece para a equipe médica.
+            </p>
+            <textarea id="noite-diario" name="diario" rows="4" maxlength="1000" aria-describedby="diario-ajuda diario-contador"></textarea>
+            <p id="diario-contador" class="nota">0 de 1000 caracteres</p>
+          </div>
+
+          <p id="noite-nota-fonte" class="nota"></p>
+
+          <button type="submit" class="botao">Registrar check-in da noite</button>
+          <p id="noite-mensagem" class="checkin-mensagem" role="status"></p>
+        </form>
+      </div>
+
+      <div class="cartao">
+        <h3>Últimos check-ins da noite</h3>
+        <p id="noite-vazio" class="mensagem-vazia" hidden>Ainda não há check-ins da noite. Registre o primeiro acima.</p>
+        <div id="noite-tabela-bloco" class="tabela-rolagem">
+          <table class="tabela-checkin">
+            <caption>Do mais antigo para o mais recente</caption>
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Humor</th>
+                <th scope="col">Estresse</th>
+                <th scope="col">Convivência</th>
+                <th scope="col">Diário</th>
+                <th scope="col">Origem</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-noite"></tbody>
+          </table>
+        </div>
+        <p class="nota">
+          Ainda não há regra no back-end para a área Mente e equipe. A cor dessa área no
+          painel é um exemplo escrito à mão nos dados de demonstração, não um cálculo
+          feito a partir destas respostas.
+        </p>
+      </div>
+    </section>
+
+    <section class="sobre depende-dados" aria-labelledby="titulo-sobre-checkins">
+      <h2 id="titulo-sobre-checkins">Sobre os check-ins</h2>
+      <dl>
+        <dt>Para que servem</dt>
+        <dd>Registrar como você está, para perceber mudanças ao longo dos dias. Inspirados no questionário de sono ao acordar e de humor e equipe antes de dormir usados em pesquisas da NASA.</dd>
+
+        <dt>O que não são</dt>
+        <dd>Não são testes psicológicos nem diagnóstico, e não substituem a conversa com o psicólogo ou a equipe médica da missão.</dd>
+
+        <dt>Se o dia foi muito difícil</dt>
+        <dd>Não espere o próximo check-in: procure a equipe médica ou o psicólogo da missão. Este protótipo não envia avisos a ninguém.</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+  </footer>
+
+  <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/dados-api.js" defer></script>
+  <script src="../static/js/formato.js" defer></script>
+  <script src="../static/js/checkins.js" defer></script>
+</body>
+</html>

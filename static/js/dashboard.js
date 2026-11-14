@@ -1,7 +1,7 @@
 // Painel da astronauta: caso de sono.
 // Busca os dados (por enquanto em dados-demo.js), mostra os estados
-// carregando | vazio | insuficiente | ok | erro, atualiza a cada 10 s e
-// envia o check-in da manhã.
+// carregando | vazio | insuficiente | ok | erro e atualiza a cada 10 s.
+// O check-in da manhã fica na página de check-ins (checkins.js).
 // O front não calcula avaliação nem aplica regra clínica: só mostra o que
 // os dados trazem (formato de avaliacao_sono.py e schema.sql).
 (function () {
@@ -60,7 +60,7 @@
       var li = document.createElement("li");
       li.className = "area area--" + area.estado;
       // Áreas com tela própria viram link.
-      var destino = { sono: "#sono", mente: "checkin-noite.html", cognicao: "teste-reacao.html" }[area.id];
+      var destino = { sono: "#sono", mente: "checkins.html#noite", cognicao: "teste-reacao.html" }[area.id];
       var nome = document.createElement(destino ? "a" : "p");
       nome.className = "area-nome";
       nome.textContent = area.nome;
@@ -241,13 +241,9 @@
     return "ok";
   }
 
-  // Avisa de onde vêm os dados e o que acontece com o check-in.
+  // Avisa de onde vêm os dados.
   function mostrarFonte() {
-    var f = window.RagaDados.fonte();
-    $("aviso-fonte").textContent = F.textoFonte(f);
-    $("checkin-nota-fonte").textContent = f.fonte === "api"
-      ? "O check-in é gravado no servidor (dados fictícios, ambiente local) e a avaliação é refeita pela API."
-      : "Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor e some ao recarregar a página.";
+    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte("sono"));
   }
 
   function mostrar(dados) {
@@ -294,149 +290,9 @@
     }, 150);
   });
 
-  // ---------- Check-in da manhã ----------
-
-  var form = $("form-checkin");
-  var mensagem = $("checkin-mensagem");
-  var campoData = $("checkin-data");
-  var campoInicio = $("checkin-inicio");
-  var campoFim = $("checkin-fim");
-  var campoInterrupcoes = $("checkin-interrupcoes");
-
-  function dataTexto(d) {
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  }
-
-  // "2026-11-10" + "06:30" → "2026-11-10T06:30:00-03:00", com o fuso do navegador.
-  function isoLocal(dia, horaTexto) {
-    var p = dia.split("-").map(Number);
-    var h = horaTexto.split(":").map(Number);
-    var d = new Date(p[0], p[1] - 1, p[2], h[0], h[1]);
-    var minutos = -d.getTimezoneOffset();
-    var sinal = minutos >= 0 ? "+" : "-";
-    var abs = Math.abs(minutos);
-    return dataTexto(d) + "T" + String(d.getHours()).padStart(2, "0") + ":" +
-      String(d.getMinutes()).padStart(2, "0") + ":00" + sinal +
-      String(Math.floor(abs / 60)).padStart(2, "0") + ":" + String(abs % 60).padStart(2, "0");
-  }
-
-  // Se a hora de dormir for igual ou maior que a de acordar,
-  // a pessoa dormiu no dia anterior.
-  function calcularHorario() {
-    if (!campoData.value || !campoInicio.value || !campoFim.value) return null;
-    var fimDia = campoData.value;
-    var inicioDia = fimDia;
-    if (campoInicio.value >= campoFim.value) {
-      var p = fimDia.split("-").map(Number);
-      inicioDia = dataTexto(new Date(p[0], p[1] - 1, p[2] - 1));
-    }
-    var inicio = isoLocal(inicioDia, campoInicio.value);
-    var fim = isoLocal(fimDia, campoFim.value);
-    var horas = (new Date(fim) - new Date(inicio)) / 3600000;
-    return { inicio: inicio, fim: fim, horas: Math.round(horas * 100) / 100 };
-  }
-
-  function atualizarDuracao() {
-    var h = calcularHorario();
-    $("checkin-duracao").textContent = "Duração calculada: " + (h ? F.duracao(h.horas) : "—");
-  }
-
-  function prepararFormulario() {
-    var hoje = dataTexto(new Date());
-    campoData.max = hoje;
-    campoData.value = hoje;
-    atualizarDuracao();
-  }
-
-  [campoData, campoInicio, campoFim].forEach(function (c) {
-    c.addEventListener("input", atualizarDuracao);
-  });
-
-  function marcarErro(idErro, campos, texto) {
-    $(idErro).textContent = texto;
-    campos.forEach(function (c) { c.setAttribute("aria-invalid", texto ? "true" : "false"); });
-  }
-
-  // Validação de interface, para ajudar quem preenche.
-  // O servidor ainda precisará validar de novo (salvar_registro_sono).
-  function validar() {
-    var erros = [];
-    var escolhida = form.querySelector('input[name="qualidade"]:checked');
-
-    var erroData = "";
-    if (!campoData.value) erroData = "Informe a data em que você acordou.";
-    else if (campoData.value > dataTexto(new Date())) erroData = "A data não pode ser no futuro.";
-    marcarErro("erro-data", [campoData], erroData);
-    if (erroData) erros.push(campoData);
-
-    var horario = calcularHorario();
-    var erroHorario = "";
-    if (!campoInicio.value || !campoFim.value) erroHorario = "Informe a hora em que dormiu e a hora em que acordou.";
-    else if (horario && horario.horas > 16) erroHorario = "A duração passou de 16 horas. Confira os horários.";
-    marcarErro("erro-horario", [campoInicio, campoFim], erroHorario);
-    if (erroHorario) erros.push(campoInicio.value ? campoFim : campoInicio);
-
-    var interrupcoes = campoInterrupcoes.value;
-    var erroInterrupcoes = "";
-    if (!/^\d+$/.test(interrupcoes)) erroInterrupcoes = "Informe um número inteiro (0 se não acordou).";
-    else if (Number(interrupcoes) > 30) erroInterrupcoes = "Informe no máximo 30.";
-    marcarErro("erro-interrupcoes", [campoInterrupcoes], erroInterrupcoes);
-    if (erroInterrupcoes) erros.push(campoInterrupcoes);
-
-    var erroQualidade = escolhida ? "" : "Escolha uma opção de 1 a 5.";
-    marcarErro("erro-qualidade", [], erroQualidade);
-    if (erroQualidade) erros.push(form.querySelector('input[name="qualidade"]'));
-
-    if (erros.length || !horario) {
-      if (erros.length) erros[0].focus();
-      return null;
-    }
-    return {
-      noite_em: isoLocal(campoData.value, "00:00"),
-      inicio_sono: horario.inicio,
-      fim_sono: horario.fim,
-      duracao_horas: horario.horas,
-      qualidade: Number(escolhida.value),
-      interrupcoes: Number(interrupcoes)
-    };
-  }
-
-  form.addEventListener("submit", function (evento) {
-    evento.preventDefault();
-    mensagem.textContent = "";
-    var checkin = validar();
-    if (!checkin) {
-      mensagem.textContent = "Confira os campos destacados.";
-      return;
-    }
-    var botao = form.querySelector('button[type="submit"]');
-    botao.disabled = true;
-    window.RagaDados.enviarCheckinSono(checkin).then(function (resposta) {
-      mensagem.textContent = resposta.situacao === "salvo_no_servidor"
-        ? "Check-in salvo no servidor para o despertar de " + F.dia(checkin.noite_em) +
-          ". O painel foi atualizado com a avaliação da API."
-        : "Check-in registrado para o despertar de " + F.dia(checkin.noite_em) +
-          ". Ele aparece no histórico como check-in desta aba, ainda não avaliado.";
-      form.reset();
-      prepararFormulario();
-      return carregar();
-    }).catch(function (erro) {
-      if (erro && erro.semRota) {
-        // Não adianta tentar de novo: falta a rota no servidor.
-        mensagem.textContent = erro.message + " Seus dados continuam no formulário.";
-        return;
-      }
-      // Erro de validação da API (400) vem com mensagem própria.
-      var motivo = erro && erro.status ? " O servidor respondeu: " + erro.message : "";
-      mensagem.textContent = "Não foi possível registrar o check-in." + motivo +
-        " Seus dados continuam no formulário; tente de novo.";
-    }).then(function () {
-      botao.disabled = false;
-    });
-  });
+  // O check-in da manhã fica em checkins.js (página checkins.html).
 
   // ---------- Início ----------
-  prepararFormulario();
   carregar();
   setInterval(carregar, INTERVALO_MS);
 })();

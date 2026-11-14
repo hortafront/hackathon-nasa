@@ -181,7 +181,7 @@
   // ---------- Histórico ----------
 
   function mostrarFonte() {
-    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte());
+    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte("reacao"));
   }
 
   function mostrar(dados) {

@@ -648,6 +648,13 @@ p {
   cursor: progress;
 }
 
+/* Link com cara de botão (ex.: "Fazer check-in" no painel). */
+.botao-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .checkin-mensagem {
   font-weight: 500;
 }

@@ -1,0 +1,116 @@
+/* Estilos só da página de check-ins (templates/checkins.html).
+   Formulário, escalas e botão vêm do style.css (seção 7b),
+   que deve ser carregado antes deste arquivo. */
+
+/* ==========================================================
+   1. Atalhos Manhã / Noite
+   ========================================================== */
+.atalhos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.atalho {
+  display: grid;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3);
+  border: var(--borda);
+  border-top: 4px solid var(--cor-primaria);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  text-decoration: none;
+}
+
+.atalho:hover .atalho-titulo {
+  text-decoration: underline;
+}
+
+.atalho-titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: var(--titulo-2);
+}
+
+.atalho-texto {
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+}
+
+/* ==========================================================
+   2. Grupos (manhã e noite)
+   Cada grupo tem título próprio e uma linha que o separa do outro.
+   ========================================================== */
+.grupo-checkin {
+  display: grid;
+  gap: var(--espaco-3);
+  padding-top: var(--espaco-4);
+  border-top: 2px solid var(--cor-divisor);
+  /* Ao seguir o atalho, o título não fica colado no topo da tela. */
+  scroll-margin-top: var(--espaco-4);
+}
+
+.grupo-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espaco-2) var(--espaco-3);
+  font-size: var(--titulo-1);
+}
+
+.grupo-area {
+  font-family: var(--fonte-texto);
+  font-weight: 500;
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+}
+
+/* ==========================================================
+   3. Diário opcional
+   ========================================================== */
+.diario textarea {
+  font: inherit;
+  width: 100%;
+  min-height: 7rem;
+  padding: var(--espaco-2);
+  border: 1px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  resize: vertical;
+}
+
+/* ==========================================================
+   4. Tabelas dos últimos check-ins
+   ========================================================== */
+
+/* Rola na horizontal no celular, sem alargar a página. */
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+.tabela-checkin {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-checkin caption {
+  text-align: left;
+  color: var(--cor-texto-suave);
+  padding-bottom: var(--espaco-2);
+}
+
+.tabela-checkin th,
+.tabela-checkin td {
+  text-align: left;
+  padding: var(--espaco-2);
+  border-bottom: var(--borda);
+  white-space: nowrap;
+}
+
+.tabela-checkin thead th {
+  font-weight: 500;
+}

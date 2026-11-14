@@ -36,8 +36,8 @@
       <nav class="links" aria-label="Seções do painel">
         <a href="#areas">Áreas</a>
         <a href="#sono">Sono</a>
-        <a href="#checkin">Check-in manhã</a>
-        <a href="checkin-noite.html">Check-in noite</a>
+        <a href="checkins.html">Check-ins</a>
+        <a href="teste-reacao.html">Teste de reação</a>
         <a href="equipe-medica.html">Equipe médica</a>
       </nav>
 
@@ -103,7 +103,7 @@
       <h2 id="titulo-sono">Sono</h2>
 
       <p id="sono-vazio" class="mensagem-vazia" hidden>
-        Ainda não há registros de sono. <a href="#checkin">Faça o primeiro check-in da manhã.</a>
+        Ainda não há registros de sono. <a href="checkins.html#manha">Faça o primeiro check-in da manhã.</a>
       </p>
 
       <div id="sono-conteudo">
@@ -192,63 +192,11 @@
       </div>
     </section>
 
-    <!-- Check-in da manhã: duração e qualidade do sono. -->
+    <!-- Os check-ins (manhã e noite) ficam em checkins.html. -->
     <section id="checkin" class="cartao depende-dados" aria-labelledby="titulo-checkin">
-      <h2 id="titulo-checkin">Check-in da manhã</h2>
-      <p>Conte como foi a sua última noite de sono.</p>
-
-      <!-- novalidate: a validação e as mensagens ficam no dashboard.js,
-           em português e ligadas a cada campo. -->
-      <form id="form-checkin" class="formulario" novalidate>
-        <!-- Campos alinhados com registros_sono (schema.sql):
-             data do despertar, início, fim, qualidade e interrupções.
-             A duração é calculada a partir dos horários. -->
-        <div class="campo">
-          <label for="checkin-data">Data em que você acordou</label>
-          <input id="checkin-data" name="data" type="date" required aria-describedby="erro-data">
-          <p id="erro-data" class="erro-campo"></p>
-        </div>
-
-        <fieldset class="campo" aria-describedby="erro-horario checkin-duracao">
-          <legend>Que horas você dormiu e acordou?</legend>
-          <div class="duracao">
-            <label class="duracao-parte">
-              <span>Dormi às</span>
-              <input id="checkin-inicio" name="inicio" type="time" required>
-            </label>
-            <label class="duracao-parte">
-              <span>Acordei às</span>
-              <input id="checkin-fim" name="fim" type="time" required>
-            </label>
-          </div>
-          <p id="checkin-duracao" class="nota">Duração calculada: —</p>
-          <p id="erro-horario" class="erro-campo"></p>
-        </fieldset>
-
-        <div class="campo">
-          <label for="checkin-interrupcoes">Quantas vezes você acordou durante a noite?</label>
-          <input id="checkin-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-interrupcoes">
-          <p id="erro-interrupcoes" class="erro-campo"></p>
-        </div>
-
-        <fieldset class="campo" aria-describedby="erro-qualidade">
-          <legend>Como foi a qualidade do sono?</legend>
-          <div class="escala">
-            <label><input type="radio" name="qualidade" value="1"><span>1. Muito ruim</span></label>
-            <label><input type="radio" name="qualidade" value="2"><span>2. Ruim</span></label>
-            <label><input type="radio" name="qualidade" value="3"><span>3. Regular</span></label>
-            <label><input type="radio" name="qualidade" value="4"><span>4. Boa</span></label>
-            <label><input type="radio" name="qualidade" value="5"><span>5. Muito boa</span></label>
-          </div>
-          <p id="erro-qualidade" class="erro-campo"></p>
-        </fieldset>
-
-        <!-- Texto trocado pelo dashboard.js conforme a fonte (API ou local). -->
-        <p id="checkin-nota-fonte" class="nota"></p>
-
-        <button type="submit" class="botao">Registrar check-in</button>
-        <p id="checkin-mensagem" class="checkin-mensagem" role="status"></p>
-      </form>
+      <h2 id="titulo-checkin">Check-ins do dia</h2>
+      <p>De manhã, conte como foi o sono. À noite, como foram o humor, o estresse e a convivência com a equipe.</p>
+      <a class="botao botao-link" href="checkins.html">Fazer check-in</a>
     </section>
 
     <!-- Sobre os dados: origem, limites e fontes. -->
