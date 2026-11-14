@@ -122,18 +122,42 @@
     return registro.fim_sono.slice(0, 10);
   }
 
+  // As outras 5 áreas: cores ESCRITAS À MÃO, como exemplos da tabela
+  // "Do sinal à ação" do PDF norte v3. Não há regra no back-end para elas;
+  // os valores são fictícios e não são limites clínicos.
+  var outrasAreas = [
+    { id: "coracao", nome: "Coração", estado: "vermelho",
+      resumo: "Oxigênio simulado de 90% em repouso, abaixo da linha de base fictícia (97%)." },
+    { id: "mente", nome: "Mente e equipe", estado: "amarelo",
+      resumo: "Humor em queda e estresse em alta nos 3 últimos check-ins da noite." },
+    { id: "exercicio", nome: "Exercício", estado: "verde",
+      resumo: "Treino de 2 h 10 min ontem, dentro do plano fictício de 2 h por dia." },
+    { id: "cognicao", nome: "Cognição", estado: "verde",
+      resumo: "Tempo de reação simulado de 285 ms, igual à linha de base fictícia." },
+    // 6ª área do PDF norte v3 (tag de glicose).
+    { id: "metabolismo", nome: "Metabolismo", estado: "verde",
+      resumo: "Glicose simulada estável nos últimos 3 dias, como na linha de base fictícia." }
+  ];
+
   // Áreas e estado geral ainda não existem no back-end: proposta do front.
   function areas(estadoSono, resumoSono) {
-    var semDados = "Sem registros nesta demonstração.";
-    return [
-      { id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono },
-      { id: "coracao", nome: "Coração", estado: "sem_registros", resumo: semDados },
-      { id: "mente", nome: "Mente e equipe", estado: "sem_registros", resumo: semDados },
-      { id: "exercicio", nome: "Exercício", estado: "sem_registros", resumo: semDados },
-      { id: "cognicao", nome: "Cognição", estado: "sem_registros", resumo: semDados },
-      // 6ª área do PDF norte v3 (tag de glicose); ainda sem dados.
-      { id: "metabolismo", nome: "Metabolismo", estado: "sem_registros", resumo: semDados }
-    ];
+    var sono = { id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono };
+    if (simular === "vazio") {
+      return [sono].concat(outrasAreas.map(function (a) {
+        return { id: a.id, nome: a.nome, estado: "sem_registros", resumo: "Sem registros nesta demonstração." };
+      }));
+    }
+    return [sono].concat(copiar(outrasAreas));
+  }
+
+  function estadoGeral() {
+    if (simular === "vazio") {
+      return { estado: "dados_insuficientes", explicacao: "Ainda não há registros nesta demonstração, então o estado geral não é calculado." };
+    }
+    return {
+      estado: "vermelho",
+      explicacao: "Exemplo de demonstração: o estado geral repete a área mais grave (Coração). A regra do estado geral ainda será definida pela equipe."
+    };
   }
 
   // Um check-in local substitui o registro da mesma data.
@@ -174,10 +198,7 @@
       modo: "demonstracao-local",
       atualizado_em: new Date().toISOString(),
       astronauta: copiar(astronauta),
-      estado_geral: {
-        estado: "dados_insuficientes",
-        explicacao: "5 das 6 áreas ainda não têm dados nesta demonstração, então o estado geral não é calculado."
-      },
+      estado_geral: estadoGeral(),
       areas: areas(estadoSono, resumoSono),
       sono: {
         linha_base: copiar(linhaBase),
@@ -245,6 +266,12 @@
       }, 300);
     },
 
+    // Áreas além do sono, para o modo API (que ainda só tem sono).
+    // Cada uma vem marcada como local, para a tela avisar.
+    areasLocais: function () {
+      return copiar(outrasAreas).map(function (a) { a.local = true; return a; });
+    },
+
     // Check-ins da noite: lista cronológica (vazia com ?simular=vazio).
     buscarCheckinsNoite: function () {
       chamadas += 1;
@@ -279,36 +306,32 @@
       if (simular === "carregando") return new Promise(function () {});
       if (deveFalhar()) return responder(falha, 300);
       return responder(function () {
-        var aurora = simular === "reavaliado"
-          ? {
-              estado: "verde",
-              motivo: reavaliacao.explicacao + " Houve indicação amarela em 10/11.",
-              dados_compartilhados: [
-                "Durações consideradas em 11/11: 5 h 30 min, 4 h 30 min e 7 h 30 min",
-                "Linha de base fictícia: 7 h 30 min"
-              ],
-              data_avaliacao: reavaliacao.data_avaliacao,
-              reavaliar_em_horas: null
-            }
-          : {
-              estado: "amarelo",
-              motivo: alerta.explicacao,
-              dados_compartilhados: [
-                "Durações das 3 noites: 6 h, 5 h 30 min e 4 h 30 min",
-                "Linha de base fictícia: 7 h 30 min"
-              ],
-              data_avaliacao: alerta.data_avaliacao,
-              reavaliar_em_horas: alerta.reavaliar_em_horas
-            };
-
+        // Exemplos escritos à mão: um tripulante de cada cor, do mais
+        // grave para o menos grave. Só o estado e o motivo resumido;
+        // respostas dos check-ins e diário não aparecem.
         return {
           modo: "demonstracao-local",
           atualizado_em: new Date().toISOString(),
-          ordem: "Ordem definida pelos dados de demonstração. O critério de prioridade ainda será definido pelo back-end.",
+          ordem: "Ordem dos dados de demonstração: vermelho, amarelo, verde. O critério de prioridade ainda será definido pelo back-end.",
           tripulantes: [
-            Object.assign({ id: 1, identificacao: "RAGA-AST-001", nome_exibicao: "Comandante Aurora", origem: "ficticia", area: "Sono" }, aurora),
-            { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: null, estado: "sem_registros", motivo: "Sem registros nesta demonstração.", dados_compartilhados: [], data_avaliacao: null, reavaliar_em_horas: null },
-            { id: 3, identificacao: "RAGA-AST-003", nome_exibicao: "Engenheira Lyra", origem: "ficticia", area: null, estado: "sem_registros", motivo: "Sem registros nesta demonstração.", dados_compartilhados: [], data_avaliacao: null, reavaliar_em_horas: null }
+            { id: 1, identificacao: "RAGA-AST-001", nome_exibicao: "Comandante Aurora", origem: "ficticia", area: "Coração",
+              estado: "vermelho",
+              motivo: "Oxigênio simulado abaixo da linha de base fictícia (exemplo de alerta imediato do PDF norte). Também em amarelo: Sono e Mente e equipe.",
+              dados_compartilhados: [
+                "Oxigênio simulado em repouso: 90% (linha de base fictícia: 97%)",
+                "Sono: 3 noites abaixo da linha de base fictícia de 7 h 30 min"
+              ],
+              data_avaliacao: alerta.data_avaliacao, reavaliar_em_horas: null },
+            { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: "Exercício",
+              estado: "amarelo",
+              motivo: "Treino abaixo do plano fictício de 2 h por dia nos 3 últimos dias.",
+              dados_compartilhados: ["Média de treino: 1 h 20 min por dia (plano fictício: 2 h)"],
+              data_avaliacao: "2026-11-10", reavaliar_em_horas: 24 },
+            { id: 3, identificacao: "RAGA-AST-003", nome_exibicao: "Engenheira Lyra", origem: "ficticia", area: null,
+              estado: "verde",
+              motivo: "Nenhuma regra ilustrativa acionada nos dados disponíveis. Isso não comprova saúde.",
+              dados_compartilhados: [],
+              data_avaliacao: "2026-11-10", reavaliar_em_horas: null }
           ],
           nao_exibido: [
             "Respostas detalhadas dos check-ins (qualidade informada, interrupções, horários)",

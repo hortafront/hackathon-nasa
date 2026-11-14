@@ -70,23 +70,15 @@
 
   // ---------- Caso de sono ----------
 
-  // A API ainda não tem as outras áreas: o front as mostra como sem
-  // registros e não calcula estado geral.
+  // A API só tem o sono. As outras 5 áreas vêm de dados-demo.js,
+  // marcadas como locais (local: true) para a tela avisar.
   function areasDaApi(registros, avaliacao) {
-    var semDados = "Ainda sem dados na API.";
     var estadoSono = avaliacao ? avaliacao.estado : (registros.length ? "dados_insuficientes" : "sem_registros");
     var resumoSono = avaliacao
       ? "Avaliado com dados até " + window.RagaFormato.dia(avaliacao.data_avaliacao) + "."
       : "Nenhum registro de sono ainda.";
-    return [
-      { id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono },
-      { id: "coracao", nome: "Coração", estado: "sem_registros", resumo: semDados },
-      { id: "mente", nome: "Mente e equipe", estado: "sem_registros", resumo: semDados },
-      { id: "exercicio", nome: "Exercício", estado: "sem_registros", resumo: semDados },
-      { id: "cognicao", nome: "Cognição", estado: "sem_registros", resumo: semDados },
-      // 6ª área do PDF norte v3 (tag de glicose); ainda sem dados.
-      { id: "metabolismo", nome: "Metabolismo", estado: "sem_registros", resumo: semDados }
-    ];
+    return [{ id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono }]
+      .concat(demo.areasLocais());
   }
 
   // GET /sono/registros (recomendada) + GET /sono/avaliacao (já existe),
@@ -106,7 +98,7 @@
           astronauta: historico.astronauta,
           estado_geral: {
             estado: "dados_insuficientes",
-            explicacao: "5 das 6 áreas ainda não têm dados na API, então o estado geral não é calculado."
+            explicacao: "Só a área Sono vem da API; as outras são exemplos locais. Por isso o estado geral não é calculado."
           },
           areas: areasDaApi(registros, av),
           sono: {
