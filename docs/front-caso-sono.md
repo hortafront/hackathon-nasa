@@ -8,7 +8,7 @@ Primeira entrega do front-end do Raga: o caso de três noites de sono alterado (
 | --- | --- | --- | --- |
 | Painel da astronauta (áreas, sono, avaliação, check-in) | `templates/index.html` | `static/css/painel.css` | `static/js/dashboard.js`, `static/js/chart.js` |
 | Visão da equipe médica (prévia) | `templates/equipe-medica.html` | `static/css/equipe-medica.css` | `static/js/equipe-medica.js` |
-| Check-in da noite (Mente e equipe) | `templates/checkin-noite.html` | `static/css/checkin-noite.css` | `static/js/checkin-noite.js` |
+| Check-ins do dia: manhã (Sono) e noite (Mente e equipe), em seções separadas | `templates/checkins.html` | `static/css/checkins.css` | `static/js/checkins.js` |
 | Teste de reação (Cognição), inspirado no PVT | `templates/teste-reacao.html` | `static/css/teste-reacao.css` | `static/js/teste-reacao.js` |
 
 Formulários, escalas de 1 a 5 e botão ficam no `style.css` (seção 7b), porque os dois check-ins usam.

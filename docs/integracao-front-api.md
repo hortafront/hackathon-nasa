@@ -10,7 +10,7 @@ A ordem abaixo prioriza o que faz a **demonstração pelo Flask** funcionar com 
 
 | Prioridade | Tarefa | Quem (sugestão) | Esforço | Por que agora |
 | --- | --- | --- | --- | --- |
-| **1** | Rota `/checkin-noite.html` (seção 6) | API (Alan) | 3 linhas | Hoje o link "Check-in noite" do menu dá **404 no Flask** |
+| **1** | Rotas `/checkins.html` e `/teste-reacao.html` (seções 6 e 7) | API (Alan) | 6 linhas | Hoje os links "Check-ins" e "Teste de reação" do menu dão **404 no Flask**. O formulário da manhã saiu do painel e está em `checkins.html` |
 | **2** | Comando para rodar `database.carregar_dados_ficticios(conexao)`, que já existe (ex.: `python carregar_dados_ficticios.py` ou uma opção em `database.py`) | Dados (Rodrigo) | poucas linhas | Sem um comando, quem for apresentar não consegue preencher o banco, e o painel no Flask mostra "Astronauta não encontrado" |
 | **3** | `POST .../sono/registros` com `409` para data repetida (seção 4) | API (Alan) | rota + testes | Fecha o caso de sono de ponta a ponta: check-in → avaliação nova. Hoje a tela avisa que o servidor ainda não grava |
 | **4** | Tabela `checkins_noite` + `GET`/`POST .../mente/checkins` (seção 6) | Dados + API | tabela, 2 funções, 2 rotas | Leva a saúde mental para o servidor. **Sem campo de diário** |
@@ -42,7 +42,7 @@ Todo o fluxo abaixo foi testado de ponta a ponta com o `app.py` atual (rota de a
 | 2 | Script que carrega o JSON fictício no banco | Hoje o banco começa vazio; o JSON só é usado nos testes | API responde, mas sem astronauta: 404 |
 | 3 | `GET /api/astronautas/<id>/sono/registros` — implementado | Astronauta, linha de base e histórico para o gráfico e a tabela | — |
 | 4 | `POST /api/astronautas/<id>/sono/registros` | Gravar o check-in da manhã | Check-in fica só na aba |
-| 4b | Rota `/checkin-noite.html` e `GET`/`POST /api/astronautas/<id>/mente/checkins` (seção 6) | Página nova do check-in da noite (saúde mental) | Página usa dados locais, com aviso |
+| 4b | Rota `/checkins.html` e `GET`/`POST /api/astronautas/<id>/mente/checkins` (seção 6) | Página nova do check-in da noite (saúde mental) | Página usa dados locais, com aviso |
 | 5 | (Depois) histórico de avaliações e visão médica | Mostrar o ciclo indicação → reavaliação e a lista da equipe médica com dados reais | Essas partes seguem com dados locais, com aviso |
 
 A rota de avaliação (`GET /api/astronautas/<id>/sono/avaliacao?data=AAAA-MM-DD`) já existe e o front usa exatamente o formato documentado em [api.md](api.md).
@@ -182,14 +182,14 @@ Validações sugeridas (o front já faz as mesmas, mas o servidor precisa repeti
 
 ## 6. Check-in da noite (Mente e equipe) — novo
 
-Página `templates/checkin-noite.html` (CSS e JS próprios), ligada pelo menu e pelo cartão "Mente e equipe" do painel. Enquanto as rotas abaixo não existirem, ela usa dados locais com aviso, como as outras.
+Os dois check-ins (manhã e noite) ficam juntos em `templates/checkins.html` (CSS e JS próprios), em seções separadas, cada uma com formulário e histórico. A página é ligada pelo menu e pelos cartões do painel. Cada parte decide a própria fonte: a manhã já usa as rotas de sono; a noite usa as rotas abaixo. Enquanto as rotas abaixo não existirem, ela usa dados locais com aviso, como as outras.
 
 **Rota da página** (mesmo padrão das outras, um só nível):
 
 ```python
-@app.get('/checkin-noite.html')
+@app.get('/checkins.html')
 def pagina_checkin_noite():
-    return render_template('checkin-noite.html')
+    return render_template('checkins.html')
 ```
 
 **`GET /api/astronautas/<id>/mente/checkins`** → `200`:
