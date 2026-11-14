@@ -1,5 +1,6 @@
 """Inicialização e acesso ao banco local de leituras."""
 
+import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,6 +10,7 @@ from pathlib import Path
 PASTA_PROJETO = Path(__file__).resolve().parent
 CAMINHO_BANCO = PASTA_PROJETO / "instance" / "saude.db"
 CAMINHO_SCHEMA = PASTA_PROJETO / "schema.sql"
+CAMINHO_DADOS = PASTA_PROJETO / "data" / "astronautas-ficticios.json"
 
 
 def _instante_com_fuso(valor, campo):
@@ -130,7 +132,9 @@ def conectar_banco(caminho=CAMINHO_BANCO):
     """Abre o banco; quem chamar esta função deve fechar a conexão."""
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
-    return sqlite3.connect(caminho)
+    conexao = sqlite3.connect(caminho)
+    conexao.execute("PRAGMA foreign_keys = ON")
+    return conexao
 
 
 def inicializar_banco(caminho=CAMINHO_BANCO):
@@ -142,6 +146,88 @@ def inicializar_banco(caminho=CAMINHO_BANCO):
         conexao.commit()
     finally:
         conexao.close()
+
+
+def _ler_fixture(caminho):
+    caminho = Path(caminho)
+    try:
+        dados = json.loads(caminho.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as erro:
+        raise ValueError("Nao foi possivel ler a fixture de dados ficticios.") from erro
+    astronautas = dados.get("astronautas") if isinstance(dados, dict) else None
+    if not isinstance(astronautas, list) or not astronautas:
+        raise ValueError("A fixture deve conter uma lista nao vazia de astronautas.")
+    return astronautas
+
+
+def _inserir_ou_confirmar(conexao, tabela, chaves, colunas, valores):
+    """Insere uma entidade ou confirma que a copia existente e identica."""
+    placeholders = ", ".join("?" for _ in colunas)
+    conexao.execute(
+        f"INSERT OR IGNORE INTO {tabela} ({', '.join(colunas)}) VALUES ({placeholders})",
+        valores,
+    )
+    where = " AND ".join(f"{campo} = ?" for campo in chaves)
+    atual = conexao.execute(
+        f"SELECT {', '.join(colunas)} FROM {tabela} WHERE {where}",
+        tuple(valores[colunas.index(campo)] for campo in chaves),
+    ).fetchone()
+    if atual != tuple(valores):
+        raise ValueError(f"Conflito ao carregar {tabela}.")
+
+
+def carregar_dados_ficticios(conexao, caminho=CAMINHO_DADOS):
+    """Carrega a fixture de forma idempotente e transacional.
+
+    A funcao nao inicializa o banco. Qualquer erro desfaz a carga inteira.
+    """
+    astronautas = _ler_fixture(caminho)
+    inseridos = {"astronautas": 0, "linhas_base_sono": 0, "registros_sono": 0}
+    ignorados = {tabela: 0 for tabela in inseridos}
+    with conexao:
+        for astronauta in astronautas:
+            astro = (astronauta["id"], astronauta["identificacao"],
+                     astronauta["nome_exibicao"], astronauta["origem"])
+            antes = conexao.total_changes
+            _inserir_ou_confirmar(
+                conexao, "astronautas", ("id",),
+                ("id", "identificacao", "nome_exibicao", "origem"), astro,
+            )
+            (inseridos if conexao.total_changes > antes else ignorados)["astronautas"] += 1
+
+            base = astronauta["linha_base_sono"]
+            valores_base = (astro[0], base["duracao_media_horas"], base["qualidade_media"],
+                            base["periodo_inicio"], base["periodo_fim"], base["origem"])
+            _instante_com_fuso(valores_base[3], "periodo_inicio")
+            _instante_com_fuso(valores_base[4], "periodo_fim")
+            antes = conexao.total_changes
+            _inserir_ou_confirmar(
+                conexao, "linhas_base_sono", ("astronauta_id",),
+                ("astronauta_id", "duracao_media_horas", "qualidade_media",
+                 "periodo_inicio", "periodo_fim", "origem"), valores_base,
+            )
+            (inseridos if conexao.total_changes > antes else ignorados)["linhas_base_sono"] += 1
+
+            for registro in astronauta["registros_sono"]:
+                colunas = ("astronauta_id", "noite_em", "inicio_sono", "fim_sono",
+                           "duracao_horas", "qualidade", "interrupcoes", "origem", "observacao")
+                valores = tuple(
+                    registro.get("astronauta_id", astro[0]) if campo == "astronauta_id"
+                    else registro.get(campo)
+                    for campo in colunas
+                )
+                if valores[0] != astro[0]:
+                    raise ValueError("O registro de sono referencia outro astronauta.")
+                _instante_com_fuso(valores[1], "noite_em")
+                inicio = _instante_com_fuso(valores[2], "inicio_sono")
+                fim = _instante_com_fuso(valores[3], "fim_sono")
+                if fim <= inicio:
+                    raise ValueError("fim_sono deve ser posterior a inicio_sono.")
+                antes = conexao.total_changes
+                _inserir_ou_confirmar(conexao, "registros_sono",
+                                      ("astronauta_id", "noite_em"), colunas, valores)
+                (inseridos if conexao.total_changes > antes else ignorados)["registros_sono"] += 1
+    return {"inseridos": inseridos, "ignorados": ignorados}
 
 
 def salvar_leitura(conexao, leitura):
