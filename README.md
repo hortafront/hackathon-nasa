@@ -1,6 +1,6 @@
 # Monitoramento de saúde de astronautas
 
-Estrutura inicial para um sistema web que acompanha frequência cardíaca. Os arquivos são pontos de partida: a aplicação, o banco, o simulador e o gráfico ainda precisam ser implementados.
+Estrutura inicial para um sistema web que acompanha frequência cardíaca. O esquema do banco e sua inicialização estão implementados; as consultas, a aplicação, o simulador e o gráfico ainda precisam ser implementados.
 
 ## Fluxo
 
@@ -35,6 +35,8 @@ py -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-A aplicação ainda não inicia: a equipe implementará o Flask em `app.py` e documentará aqui o comando de execução e a criação do banco. Primeiro, façam uma leitura simulada ser salva e exibida com unidade, origem e horário; depois adicionem histórico e atualização automática.
+Para criar o banco local e suas tabelas, execute `python database.py`. O arquivo é criado em `instance/saude.db`; executar o comando novamente preserva as leituras existentes. Outros módulos podem chamar `inicializar_banco()` e `conectar_banco()` de `database.py`; quem abrir uma conexão deve fechá-la após o uso.
+
+A aplicação ainda não inicia: a equipe implementará o Flask em `app.py` e documentará aqui o comando de execução. Primeiro, façam uma leitura simulada ser salva e exibida com unidade, origem e horário; depois adicionem histórico e atualização automática.
 
 Não enviem dados reais de saúde ou credenciais ao repositório. Frequência cardíaca isolada não descreve a saúde geral; o sistema não oferece diagnóstico.
