@@ -1,2 +1,439 @@
-/* Estilos do painel: cores, tipografia, layout e adaptação a telas menores.
-   A interface ainda será desenvolvida pela equipe de front-end. */
+/* Estilos do painel: cores, tipografia, layout e adaptação a telas menores. */
+
+/* ==========================================================
+   0. Fontes locais (funcionam sem internet)
+   Arquivos em static/vendor/fonts/; origem e licença no
+   static/vendor/README.md. O caminho é relativo a este CSS.
+   font-display: swap mostra o texto na hora com a fonte reserva
+   e troca quando a fonte carrega.
+   ========================================================== */
+@font-face {
+  font-family: "Inter";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/inter-600-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Prata";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/prata-400-latin.woff2") format("woff2");
+}
+
+/* Public Sans é variável: um só arquivo cobre os pesos 400 e 500. */
+@font-face {
+  font-family: "Public Sans";
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("../vendor/fonts/public-sans-latin.woff2") format("woff2");
+}
+
+/* ==========================================================
+   1. Variáveis (tokens)
+   Cores e fontes ficam só aqui; o resto do arquivo usa var(--nome).
+   ========================================================== */
+:root {
+  /* Cores da identidade visual */
+  --cor-fundo: #FFFFFF;
+  --cor-texto: #000000;
+  --cor-texto-suave: #555555;   /* textos secundários (origem, horário) */
+  --cor-divisor: #E3E3E3;       /* linhas que separam blocos */
+  --cor-primaria: #0B3D91;      /* botões, links e foco */
+  --cor-destaque: #FC3D21;      /* só detalhes pequenos, nunca fundo */
+
+  /* Cores de status (para quando houver classificação) */
+  --cor-normal: #1E8E3E;
+  --cor-atencao: #B26A00;
+  --cor-critico: #C5221F;
+
+  /* Superfícies: fundo do cartão, cabeçalho e rodapé */
+  --cor-superficie: #FFFFFF;
+  /* No tema claro, topo e rodapé ficam pretos (identidade visual). */
+  --cor-cabecalho-fundo: #000000;
+  --cor-cabecalho-texto: #FFFFFF;
+  --cor-rodape-fundo: #000000;
+  --cor-rodape-texto: #FFFFFF;
+  /* Linha entre o topo/rodapé e o conteúdo: no claro some no preto. */
+  --cor-moldura-borda: #000000;
+
+  /* Fontes: se o Google Fonts não carregar (sem internet),
+     o navegador usa as fontes reservas que vêm depois da vírgula. */
+  --fonte-display: "Prata", Georgia, serif; /* só o título grande */
+  --fonte-titulo: "Inter", "Segoe UI", Arial, sans-serif;
+  --fonte-texto: "Public Sans", "Segoe UI", Arial, sans-serif;
+
+  /* Tamanhos de texto */
+  --texto-pequeno: 0.875rem;  /* 14px */
+  --texto-base: 1.0625rem;    /* 17px */
+  --titulo-2: 1.25rem;        /* 20px */
+  --titulo-1: 1.5625rem;      /* 25px */
+  --leitura-numero: 3rem;     /* 48px: o valor da leitura */
+
+  /* Espaçamentos (múltiplos de 4px) */
+  --espaco-1: 0.25rem;  /* 4px */
+  --espaco-2: 0.5rem;   /* 8px */
+  --espaco-3: 1rem;     /* 16px */
+  --espaco-4: 1.5rem;   /* 24px */
+  --espaco-5: 2rem;     /* 32px */
+
+  /* Bordas */
+  --raio: 6px;
+  --borda: 1px solid var(--cor-divisor);
+
+  /* Avisa o navegador que este é um tema claro (barras de rolagem etc.). */
+  color-scheme: light;
+}
+
+/* ==========================================================
+   1b. Tema escuro
+   O tema.js coloca data-tema="escuro" na tag <html>.
+   Aqui só trocamos os valores das variáveis; o resto do CSS
+   continua igual e se adapta sozinho.
+   ========================================================== */
+[data-tema="escuro"] {
+  --cor-fundo: #000000;
+  --cor-texto: #FFFFFF;
+  --cor-texto-suave: #B8B8B8;
+  --cor-divisor: #3A3A3A;
+  --cor-superficie: #000000;
+  --cor-cabecalho-fundo: transparent; /* deixa as estrelas aparecerem */
+  --cor-cabecalho-texto: #FFFFFF;
+  --cor-rodape-fundo: #000000;
+  --cor-rodape-texto: #FFFFFF;
+  --cor-moldura-borda: #3A3A3A; /* separa o topo das estrelas */
+
+  /* O azul e os status originais ficam escuros demais no preto;
+     estes tons mais claros mantêm a leitura (contraste AA). */
+  --cor-primaria: #8FB3F0;
+  --cor-normal: #5BC27A;
+  --cor-atencao: #E0A33A;
+  --cor-critico: #FF7A6B;
+
+  color-scheme: dark;
+}
+
+/* Céu estrelado feito só com CSS (sem foto: funciona offline).
+   Cada grupo de estrelas se repete num tamanho diferente,
+   para o padrão não formar uma grade visível. */
+[data-tema="escuro"] body {
+  background-image:
+    radial-gradient(1px 1px at 23px 41px, #fff, transparent),
+    radial-gradient(1px 1px at 97px 13px, #ccc, transparent),
+    radial-gradient(1px 1px at 151px 88px, #fff, transparent),
+    radial-gradient(1px 1px at 61px 127px, #999, transparent),
+    radial-gradient(1.5px 1.5px at 37px 71px, #fff, transparent),
+    radial-gradient(1px 1px at 211px 149px, #bbb, transparent),
+    radial-gradient(1px 1px at 113px 201px, #fff, transparent),
+    radial-gradient(2px 2px at 301px 63px, #fff, transparent),
+    radial-gradient(1px 1px at 257px 233px, #aaa, transparent),
+    radial-gradient(1.5px 1.5px at 413px 311px, #ddd, transparent);
+  background-size:
+    173px 151px, 173px 151px, 173px 151px, 173px 151px,
+    263px 239px, 263px 239px, 263px 239px,
+    431px 397px, 431px 397px, 431px 397px;
+}
+
+/* ==========================================================
+   2. Base
+   ========================================================== */
+
+/* Faz largura e altura incluírem a borda e o espaçamento interno. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-base);
+  line-height: 1.55;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--titulo-1); }
+h2 { font-size: var(--titulo-2); }
+
+p {
+  margin: 0;
+}
+
+/* Contorno visível para quem navega pelo teclado (Tab). */
+:focus-visible {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
+   3. Layout da página
+   ========================================================== */
+
+/* Cabeçalho e rodapé usam variáveis próprias para mudar com o tema. */
+.cabecalho {
+  background: var(--cor-cabecalho-fundo);
+  color: var(--cor-cabecalho-texto);
+  border-bottom: 1px solid var(--cor-moldura-borda);
+  padding: var(--espaco-3) var(--espaco-4);
+}
+
+/* No fundo preto, o foco azul quase não aparece: usamos a cor do texto. */
+.cabecalho :focus-visible {
+  outline-color: currentColor;
+}
+
+.rodape {
+  background: var(--cor-rodape-fundo);
+  color: var(--cor-rodape-texto);
+  border-top: 1px solid var(--cor-moldura-borda);
+  padding: var(--espaco-3) var(--espaco-4);
+  font-size: var(--texto-pequeno);
+}
+
+/* Área central: largura máxima para o texto não ficar espalhado
+   em telas grandes; centralizada na página. */
+.painel {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--espaco-5) var(--espaco-3);
+  display: grid;
+  gap: var(--espaco-5);
+}
+
+/* Cabeçalho: marca à esquerda, links no meio, botão à direita. */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: inherit;
+  text-decoration: none;
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.links {
+  display: flex;
+  gap: var(--espaco-4);
+  font-size: var(--texto-pequeno);
+}
+
+.links a {
+  color: inherit;
+  text-decoration: none;
+  padding: var(--espaco-1) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.links a:hover {
+  border-bottom-color: currentColor;
+}
+
+/* Botão de tema: contorno quando desligado, preenchido quando ligado. */
+.botao-tema {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 2.75rem; /* área de toque de 44px */
+  padding: 0 var(--espaco-3);
+  border: 1px solid currentColor;
+  border-radius: var(--raio);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+}
+
+.botao-tema[aria-pressed="true"] {
+  background: var(--cor-texto);
+  color: var(--cor-fundo);
+  border-color: var(--cor-texto);
+}
+
+/* Título grande centralizado, na fonte Prata. */
+.hero {
+  text-align: center;
+  padding: var(--espaco-5) var(--espaco-3) 0;
+}
+
+.hero h1 {
+  font-family: var(--fonte-display);
+  font-weight: 400;
+  font-size: 2.75rem; /* 44px */
+  line-height: 1.15;
+}
+
+.hero p {
+  margin-top: var(--espaco-2);
+  color: var(--cor-texto-suave);
+}
+
+/* ==========================================================
+   4. Cartão da leitura
+   ========================================================== */
+.cartao {
+  background: var(--cor-superficie); /* esconde as estrelas atrás dos dados */
+  border: var(--borda);
+  border-radius: var(--raio);
+  padding: var(--espaco-4);
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+/* Valor grande + unidade menor na mesma linha, alinhados pela base. */
+.leitura {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espaco-2);
+  margin: var(--espaco-2) 0;
+}
+
+.leitura-valor {
+  font-family: var(--fonte-titulo);
+  font-size: var(--leitura-numero);
+  font-weight: 600;
+  line-height: 1;
+  /* Números com a mesma largura: o valor não "pula" ao atualizar. */
+  font-variant-numeric: tabular-nums;
+}
+
+.leitura-unidade {
+  color: var(--cor-texto-suave);
+  font-size: var(--titulo-2);
+}
+
+.leitura-detalhe {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+
+/* Origem em destaque: deixa claro se o dado é simulado ou real. */
+#leitura-origem {
+  color: var(--cor-texto);
+  font-weight: 500;
+}
+
+.leitura-mensagem {
+  font-size: var(--texto-pequeno);
+  margin-top: var(--espaco-2);
+}
+
+/* ==========================================================
+   5. Estados do cartão
+   O dashboard.js troca data-estado; aqui definimos o visual.
+   ========================================================== */
+
+/* Carregando: valor esmaecido enquanto a primeira resposta não chega. */
+.cartao[data-estado="carregando"] .leitura {
+  opacity: 0.4;
+}
+
+/* Vazio: não há leitura, então escondemos valor, origem e horário
+   e mostramos só a mensagem "Ainda não há leituras". */
+.cartao[data-estado="vazio"] .leitura,
+.cartao[data-estado="vazio"] .leitura-detalhe {
+  display: none;
+}
+
+/* Ok: tudo certo, a mensagem não é necessária. */
+.cartao[data-estado="ok"] .leitura-mensagem {
+  display: none;
+}
+
+/* Erro: a última leitura continua visível (exigência do contrato)
+   e a mensagem ganha uma barra vermelha pequena à esquerda. */
+.cartao[data-estado="erro"] .leitura-mensagem {
+  color: var(--cor-critico);
+  font-weight: 500;
+  border-left: 4px solid var(--cor-destaque);
+  padding-left: var(--espaco-2);
+}
+
+/* ==========================================================
+   6. Histórico (gráfico)
+   ========================================================== */
+.historico {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+/* O canvas ocupa toda a largura disponível; o Chart.js ajusta a altura. */
+#grafico-historico {
+  width: 100%;
+  max-height: 20rem;
+}
+
+/* ==========================================================
+   6b. Sobre os dados
+   Lista de termos (dt) e explicações (dd).
+   ========================================================== */
+.sobre {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.sobre dl {
+  margin: 0;
+  display: grid;
+  gap: var(--espaco-1) 0;
+}
+
+.sobre dt {
+  font-weight: 500;
+}
+
+.sobre dd {
+  margin: 0 0 var(--espaco-3);
+  color: var(--cor-texto-suave);
+  max-width: 65ch; /* linhas curtas são mais fáceis de ler */
+}
+
+/* ==========================================================
+   7. Telas pequenas (celular)
+   ========================================================== */
+@media (max-width: 30rem) {
+  :root {
+    --leitura-numero: 2.5rem; /* 40px */
+  }
+
+  .cartao {
+    padding: var(--espaco-3);
+  }
+
+  .cabecalho {
+    padding: var(--espaco-3);
+  }
+
+  /* Links descem para uma segunda linha, ocupando toda a largura. */
+  .links {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hero h1 {
+    font-size: 2rem; /* 32px */
+  }
+}
