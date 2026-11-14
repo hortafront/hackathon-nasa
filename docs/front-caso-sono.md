@@ -20,7 +20,7 @@ O gráfico é SVG desenhado em `chart.js`, sem biblioteca externa: funciona offl
 
 ## Como abrir e testar
 
-**Com a API:** rode o Flask e abra `http://127.0.0.1:5000/`. O banco precisa ter sido preenchido com dados fictícios; o carregador ainda está pendente. A linha abaixo do título diz de onde vêm os dados. `?data=2026-11-10` avalia essa data (mostra o alerta amarelo do cenário); sem ela, avalia o despertar mais recente. `?fonte=demo` força os dados locais.
+**Com a API:** rode o Flask e abra `http://127.0.0.1:5000/`. O banco precisa ter sido preenchido com dados fictícios; há uma função de carga em [dados.md](dados.md), mas ainda não um comando próprio. A linha abaixo do título diz de onde vêm os dados. `?data=2026-11-10` avalia essa data (mostra o alerta amarelo do cenário); sem ela, avalia o despertar mais recente. `?fonte=demo` força os dados locais.
 
 **Sem a API:** abra `templates/index.html` com o Live Server. A página avisa que está usando os dados locais. Para ver cada estado, acrescente ao endereço (estes parâmetros sempre usam os dados locais):
 

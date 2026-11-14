@@ -220,7 +220,7 @@ python database.py
 python app.py
 ```
 
-O carregador sugerido neste documento ainda não existe. Para consultar o cenário no servidor, é necessário primeiro inserir dados fictícios no banco; um banco recém-criado não contém astronautas.
+O script sugerido neste documento ainda não existe. A função `database.carregar_dados_ficticios(conexao)` permite a carga explícita, conforme [dados.md](dados.md); um banco recém-criado não contém astronautas.
 
 Abrir `http://127.0.0.1:5000/`:
 

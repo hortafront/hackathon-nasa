@@ -101,6 +101,7 @@ class TesteApiSono(unittest.TestCase):
         conexao = database.conectar_banco(self.caminho)
         try:
             registro = database.buscar_historico_sono(conexao, 1)[3]
+            registro['noite_em'] = '2026-11-08T00:01:00-03:00'
             database.salvar_registro_sono(conexao, registro)
         finally:
             conexao.close()

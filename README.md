@@ -33,6 +33,6 @@ python database.py
 python -m unittest discover -s tests
 ```
 
-`database.py` cria `instance/saude.db` sem apagar leituras existentes; não carrega automaticamente o JSON de exemplo. O banco local não deve ser versionado. `python app.py` inicia o Flask; acesse `http://127.0.0.1:5000/`. Para dados do servidor, o banco precisa conter astronauta, linha de base e registros fictícios; o carregador ainda está pendente. Sem esses dados, a API pode retornar 404. As rotas não têm autenticação: use somente dados fictícios em ambiente local. O ciclo completo não está implementado.
+`database.py` cria `instance/saude.db` sem apagar leituras existentes; não carrega automaticamente o JSON de exemplo. A função `database.carregar_dados_ficticios(conexao)` permite carga explícita; veja [dados e armazenamento](docs/dados.md). Não há comando próprio de carga ainda. Bancos antigos com noites duplicadas podem impedir a criação do novo índice e exigem resolução consciente. O banco local não deve ser versionado. `python app.py` inicia o Flask; acesse `http://127.0.0.1:5000/`. Sem dados fictícios carregados, a API pode retornar 404. As rotas não têm autenticação: use somente dados fictícios em ambiente local. O ciclo completo não está implementado.
 
 Não coloquem dados reais de saúde, credenciais, ambientes virtuais ou bancos locais no repositório. O software é um protótipo de apoio, não um diagnóstico ou ferramenta clínica validada.

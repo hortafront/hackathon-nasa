@@ -10,6 +10,14 @@ Este documento descreve a interface Python entre o armazenamento e a futura API.
 
 O arquivo `data/astronautas-ficticios.json` é uma fixture. Ele não é carregado automaticamente no banco e não representa dados reais.
 
+## Carga explicita e unicidade
+
+Use `database.carregar_dados_ficticios(conexao)` somente quando quiser carregar a fixture. A funcao e idempotente, usa uma transacao e desfaz toda a carga se houver falha. Ela retorna contagens em `inseridos` e `ignorados`.
+
+`registros_sono` possui indice unico por `(astronauta_id, noite_em)`, comparando o texto completo do horario. Ele nao garante uma unica data local de despertar se os textos de `noite_em` forem diferentes: a avaliacao ainda rejeita registros com o mesmo dia de `fim_sono`. Uma duplicata identica e ignorada pela carga; conflito com dados diferentes interrompe a transacao. Bases antigas com duplicatas precisam ser corrigidas conscientemente antes da criacao do indice.
+
+Check-ins continuam pendentes de alinhamento com Alan: campos, limites, autoria de `astronauta_id` e `origem`, duplicidade e erros.
+
 ## Funções para o back-end 2
 
 - `salvar_astronauta(conexao, astronauta)` retorna o registro salvo.

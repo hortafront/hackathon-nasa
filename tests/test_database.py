@@ -109,6 +109,45 @@ class TesteBanco(unittest.TestCase):
         alterados = [registro for registro in registros if "alterada" in registro["observacao"]]
         self.assertEqual(len(alterados), 3)
 
+    def test_carga_da_fixture_e_idempotente(self):
+        primeira = database.carregar_dados_ficticios(self.conexao)
+        segunda = database.carregar_dados_ficticios(self.conexao)
+        self.assertEqual(primeira["inseridos"]["astronautas"], 1)
+        self.assertEqual(primeira["inseridos"]["registros_sono"], 7)
+        self.assertEqual(segunda["ignorados"]["astronautas"], 1)
+        self.assertEqual(segunda["ignorados"]["registros_sono"], 7)
+        self.assertEqual(len(database.buscar_historico_sono(self.conexao, 1)), 7)
+
+    def test_carga_com_falha_desfaz_tudo(self):
+        caminho = self.pasta.name + "/fixture-invalida.json"
+        dados = json.loads((Path(__file__).parents[1] / "data" / "astronautas-ficticios.json").read_text(encoding="utf-8"))
+        dados["astronautas"][0]["registros_sono"][0]["fim_sono"] = "horario-invalido"
+        Path(caminho).write_text(json.dumps(dados), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            database.carregar_dados_ficticios(self.conexao, caminho)
+        self.assertIsNone(database.buscar_linha_base_sono(self.conexao, 1))
+        self.assertEqual(database.buscar_historico_sono(self.conexao, 1), [])
+
+    def test_duplicata_de_noite_com_conteudo_diferente_e_rejeitada(self):
+        database.carregar_dados_ficticios(self.conexao)
+        registro = {
+            "astronauta_id": 1,
+            "noite_em": "2026-11-08T00:00:00-03:00",
+            "inicio_sono": "2026-11-07T23:50:00-03:00",
+            "fim_sono": "2026-11-08T05:50:00-03:00",
+            "duracao_horas": 99,
+            "qualidade": 2,
+            "interrupcoes": 4,
+            "origem": "simulada",
+            "observacao": "conflito",
+        }
+        caminho = self.pasta.name + "/fixture-conflitante.json"
+        dados = json.loads((Path(__file__).parents[1] / "data" / "astronautas-ficticios.json").read_text(encoding="utf-8"))
+        dados["astronautas"][0]["registros_sono"][3] = registro
+        Path(caminho).write_text(json.dumps(dados), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            database.carregar_dados_ficticios(self.conexao, caminho)
+
 
 if __name__ == "__main__":
     unittest.main()

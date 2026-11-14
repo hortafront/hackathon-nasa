@@ -36,7 +36,8 @@ class TesteServicoSono(unittest.TestCase):
         self.assertEqual(avaliar_sono_do_astronauta(self.conexao, 1, date(2026, 11, 14))["estado"], "dados_insuficientes")
 
     def test_registros_duplicados_na_janela_sao_rejeitados(self):
-        database.salvar_registro_sono(self.conexao, {"astronauta_id": 1, **self.registros[3]})
+        registro = {"astronauta_id": 1, **self.registros[3], "noite_em": "2026-11-08T00:01:00-03:00"}
+        database.salvar_registro_sono(self.conexao, registro)
         with self.assertRaises(ValueError):
             avaliar_sono_do_astronauta(self.conexao, 1, date(2026, 11, 10))
 

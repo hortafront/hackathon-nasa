@@ -45,3 +45,8 @@ CREATE TABLE IF NOT EXISTS registros_sono (
 
 CREATE INDEX IF NOT EXISTS idx_registros_sono_astronauta_noite
     ON registros_sono (astronauta_id, noite_em);
+
+-- Uma noite por astronauta e por data local de despertar.
+-- Bases antigas com duplicatas devem ser corrigidas conscientemente.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_registros_sono_astronauta_noite
+    ON registros_sono (astronauta_id, noite_em);
