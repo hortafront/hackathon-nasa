@@ -1,9 +1,8 @@
-// DADOS FICTÍCIOS LOCAIS — só para demonstração do front-end.
-// A API do caso de sono ainda não existe (docs/api.md). Este arquivo faz o
-// papel do servidor e devolve respostas no formato proposto em
-// docs/front-caso-sono.md. Quando a API existir, basta trocar o corpo das
-// funções de window.RagaDados por fetch(); dashboard.js e equipe-medica.js
-// não precisam mudar.
+// DADOS FICTÍCIOS LOCAIS — reserva e modo de demonstração do front-end.
+// dados-api.js usa este arquivo quando a API não está disponível, quando a
+// página é aberta com ?fonte=demo ou com ?simular=... (testes de estado).
+// As respostas têm o mesmo formato das rotas descritas em
+// docs/integracao-front-api.md, e a tela avisa que os dados são locais.
 //
 // Os nomes dos campos seguem o back-end:
 // - astronauta, linha de base e registros: schema.sql / docs/dados.md;
@@ -199,7 +198,7 @@
     return simular === "erro-inicial" || (simular === "erro" && chamadas > 1);
   }
 
-  window.RagaDados = {
+  window.RagaDadosDemo = {
     modo: "demonstracao-local",
 
     // Futuro: GET do caso de sono (rota a combinar com o back-end).
