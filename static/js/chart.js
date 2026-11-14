@@ -16,15 +16,20 @@
     return n;
   }
 
-  // noites: [{ id, noite, duracao_min, nao_avaliado? }]
-  // referencia: { minimo_min, maximo_min }
-  // destacadas: ids das noites que motivaram a avaliação
-  function desenharSono(alvo, noites, referencia, destacadas) {
+  // Data local do despertar, tirada de fim_sono como em servico_sono.py.
+  function dataDe(registro) {
+    return registro.fim_sono.slice(0, 10);
+  }
+
+  // registros: [{ noite_em, duracao_horas, nao_avaliado? }] (de schema.sql)
+  // linhaBaseHoras: duracao_media_horas da linha de base, ou null
+  // destacadas: datas ("AAAA-MM-DD") que motivaram a indicação
+  function desenharSono(alvo, registros, linhaBaseHoras, destacadas) {
     var F = window.RagaFormato;
     var largura = Math.max(alvo.clientWidth, 280);
     var areaL = largura - MARGEM.esquerda - MARGEM.direita;
     var areaA = ALTURA - MARGEM.topo - MARGEM.base;
-    var y = function (min) { return MARGEM.topo + areaA - (min / 60 / MAX_HORAS) * areaA; };
+    var y = function (horas) { return MARGEM.topo + areaA - (horas / MAX_HORAS) * areaA; };
 
     var svg = el("svg", {
       class: "grafico-sono",
@@ -32,10 +37,10 @@
       height: ALTURA,
       viewBox: "0 0 " + largura + " " + ALTURA,
       role: "img",
-      "aria-label": resumo(noites, referencia, destacadas)
+      "aria-label": resumo(registros, linhaBaseHoras, destacadas)
     });
 
-    // Hachura das noites que motivaram a avaliação: diferença de
+    // Hachura das noites que motivaram a indicação: diferença de
     // padrão, não só de cor.
     var defs = el("defs");
     var padrao = el("pattern", { id: "hachura-sono", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" });
@@ -46,33 +51,23 @@
 
     // Linhas de grade a cada 2 h.
     for (var h = 0; h <= MAX_HORAS; h += 2) {
-      var gy = y(h * 60);
+      var gy = y(h);
       svg.appendChild(el("line", { class: "grade", x1: MARGEM.esquerda, x2: largura - MARGEM.direita, y1: gy, y2: gy }));
       svg.appendChild(el("text", { class: "eixo", x: MARGEM.esquerda - 8, y: gy + 4, "text-anchor": "end" }, h + " h"));
     }
 
-    // Faixa de referência fictícia.
-    var topoFaixa = y(referencia.maximo_min);
-    svg.appendChild(el("rect", {
-      class: "faixa-referencia",
-      x: MARGEM.esquerda,
-      y: topoFaixa,
-      width: areaL,
-      height: y(referencia.minimo_min) - topoFaixa
-    }));
-    svg.appendChild(el("text", { class: "faixa-rotulo", x: largura - MARGEM.direita - 4, y: topoFaixa - 6, "text-anchor": "end" }, "Referência fictícia"));
-
     // Barras. Em telas estreitas, o rótulo do eixo aparece em noites alternadas.
-    var passo = areaL / Math.max(noites.length, 1);
+    var passo = areaL / Math.max(registros.length, 1);
     var larguraBarra = Math.min(passo * 0.6, 36);
     var pularRotulo = passo < 34;
 
-    noites.forEach(function (n, i) {
+    registros.forEach(function (r, i) {
       var cx = MARGEM.esquerda + passo * i + passo / 2;
-      var topo = y(n.duracao_min);
+      var topo = y(r.duracao_horas);
+      var destacada = destacadas.indexOf(dataDe(r)) !== -1;
       var classe = "barra";
-      if (destacadas.indexOf(n.id) !== -1) classe += " barra--destaque";
-      if (n.nao_avaliado) classe += " barra--local";
+      if (destacada) classe += " barra--destaque";
+      if (r.nao_avaliado) classe += " barra--local";
 
       svg.appendChild(el("rect", {
         class: classe,
@@ -85,31 +80,40 @@
 
       // Valor escrito acima das barras destacadas e locais. Em telas
       // estreitas os textos se sobrepõem; os valores ficam na tabela.
-      if (passo >= 40 && (destacadas.indexOf(n.id) !== -1 || n.nao_avaliado)) {
-        svg.appendChild(el("text", { class: "valor-barra", x: cx, y: topo - 6, "text-anchor": "middle" }, F.duracaoCurta(n.duracao_min)));
+      if (passo >= 40 && (destacada || r.nao_avaliado)) {
+        svg.appendChild(el("text", { class: "valor-barra", x: cx, y: topo - 6, "text-anchor": "middle" }, F.duracaoCurta(r.duracao_horas)));
       }
 
       // Conta a partir da última noite, que sempre ganha rótulo.
-      if (!pularRotulo || (noites.length - 1 - i) % 2 === 0) {
-        svg.appendChild(el("text", { class: "eixo", x: cx, y: ALTURA - MARGEM.base + 18, "text-anchor": "middle" }, F.noite(n.noite)));
+      if (!pularRotulo || (registros.length - 1 - i) % 2 === 0) {
+        svg.appendChild(el("text", { class: "eixo", x: cx, y: ALTURA - MARGEM.base + 18, "text-anchor": "middle" }, F.dia(r.noite_em)));
       }
     });
+
+    // Linha de base por cima das barras, para continuar visível.
+    if (linhaBaseHoras !== null && linhaBaseHoras !== undefined) {
+      var by = y(linhaBaseHoras);
+      svg.appendChild(el("line", { class: "linha-base", x1: MARGEM.esquerda, x2: largura - MARGEM.direita, y1: by, y2: by }));
+      svg.appendChild(el("text", { class: "linha-base-rotulo", x: largura - MARGEM.direita - 4, y: by - 8, "text-anchor": "end" },
+        "Linha de base fictícia: " + F.duracaoCurta(linhaBaseHoras)));
+    }
 
     alvo.replaceChildren(svg);
   }
 
   // Frase que resume o gráfico para leitores de tela.
-  function resumo(noites, referencia, destacadas) {
+  function resumo(registros, linhaBaseHoras, destacadas) {
     var F = window.RagaFormato;
-    if (!noites.length) return "Gráfico de sono sem registros.";
-    var abaixo = noites.filter(function (n) { return destacadas.indexOf(n.id) !== -1; });
-    var texto = "Duração do sono em " + noites.length + " noites, de " +
-      F.noite(noites[0].noite) + " a " + F.noite(noites[noites.length - 1].noite) +
-      ". Faixa de referência fictícia: " + F.duracao(referencia.minimo_min) +
-      " a " + F.duracao(referencia.maximo_min) + ".";
-    if (abaixo.length) {
-      texto += " Noites que motivaram a avaliação: " + abaixo.map(function (n) {
-        return F.noite(n.noite) + " com " + F.duracao(n.duracao_min);
+    if (!registros.length) return "Gráfico de sono sem registros.";
+    var texto = "Duração do sono em " + registros.length + " noites, de " +
+      F.dia(registros[0].noite_em) + " a " + F.dia(registros[registros.length - 1].noite_em) + ".";
+    if (linhaBaseHoras !== null && linhaBaseHoras !== undefined) {
+      texto += " Linha de base fictícia: " + F.duracao(linhaBaseHoras) + ".";
+    }
+    var marcadas = registros.filter(function (r) { return destacadas.indexOf(dataDe(r)) !== -1; });
+    if (marcadas.length) {
+      texto += " Noites que motivaram a indicação: " + marcadas.map(function (r) {
+        return F.dia(r.noite_em) + " com " + F.duracao(r.duracao_horas);
       }).join("; ") + ".";
     }
     return texto + " Os mesmos dados estão na tabela abaixo do gráfico.";
