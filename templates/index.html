@@ -12,12 +12,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Prata&family=Public+Sans:wght@400;500&display=swap">
 
-  <!-- Flask fornece os arquivos estáticos pela função url_for. -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Caminhos relativos (../static/...): funcionam no Flask, onde a
+       página fica em "/" e o caminho vira /static/..., e também no
+       Live Server, que abre o arquivo direto da pasta templates/. -->
+  <link rel="stylesheet" href="../static/css/style.css">
 
   <!-- O tema é carregado aqui no <head>, sem defer, para aplicar
        claro/escuro antes de a página aparecer (evita "piscar"). -->
-  <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+  <script src="../static/js/tema.js"></script>
 </head>
 <body>
   <!-- Cabeçalho: marca, links das seções e botão de tema. -->
@@ -109,7 +111,7 @@
     <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
   </footer>
 
-  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/chart.js') }}" defer></script>
+  <script src="../static/js/dashboard.js" defer></script>
+  <script src="../static/js/chart.js" defer></script>
 </body>
 </html>
