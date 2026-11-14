@@ -10,7 +10,9 @@ Primeira entrega do front-end do Raga: o caso de três noites de sono alterado (
 | Visão da equipe médica (prévia) | `templates/equipe-medica.html` | `static/css/equipe-medica.css` | `static/js/equipe-medica.js` |
 | Check-in da noite (Mente e equipe) | `templates/checkin-noite.html` | `static/css/checkin-noite.css` | `static/js/checkin-noite.js` |
 
-Formulários, escalas de 1 a 5 e botão ficam no `style.css` (seção 7b), porque os dois check-ins usam. O painel segue o PDF norte v3: seis áreas (Metabolismo incluída, ainda sem dados) e fase da missão "durante".
+Formulários, escalas de 1 a 5 e botão ficam no `style.css` (seção 7b), porque os dois check-ins usam.
+
+**Cores das outras áreas (exemplos):** Coração em vermelho, Mente e equipe em amarelo, Exercício, Cognição e Metabolismo em verde. São valores **escritos à mão** em `dados-demo.js` a partir da tabela "Do sinal à ação" do PDF norte v3, para a demonstração mostrar as três cores. Não existe regra no back-end para essas áreas, e os números não são limites clínicos. No modo API, o Sono vem do servidor e as outras áreas aparecem com o aviso "Exemplo local, sem API para esta área". Quando há área em vermelho, o painel mostra um aviso para procurar a equipe médica imediatamente, sem esperar a reavaliação (nenhum aviso é enviado de verdade). A visão médica mostra um tripulante de cada cor. O painel segue o PDF norte v3: seis áreas (Metabolismo incluída, ainda sem dados) e fase da missão "durante".
 
 Compartilhados: `static/css/style.css` (tokens, tema, cabeçalho, rodapé, selos de estado), `static/js/tema.js`, `static/js/formato.js` (datas, durações e rótulos dos estados), `static/js/dados-api.js` (chamadas à API e escolha da fonte) e `static/js/dados-demo.js` (dados fictícios locais).
 
