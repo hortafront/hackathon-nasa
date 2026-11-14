@@ -402,6 +402,11 @@
       prepararFormulario();
       return carregar();
     }).catch(function (erro) {
+      if (erro && erro.semRota) {
+        // Não adianta tentar de novo: falta a rota no servidor.
+        mensagem.textContent = erro.message + " Seus dados continuam no formulário.";
+        return;
+      }
       // Erro de validação da API (400) vem com mensagem própria.
       var motivo = erro && erro.status ? " O servidor respondeu: " + erro.message : "";
       mensagem.textContent = "Não foi possível registrar o check-in." + motivo +

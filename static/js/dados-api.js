@@ -126,6 +126,14 @@
       body: JSON.stringify(checkin)
     }).then(function (corpo) {
       return { situacao: "salvo_no_servidor", registro: corpo.registro };
+    }, function (erro) {
+      // Sem JSON (ex.: 405 em HTML) = o servidor ainda não tem o POST.
+      if (erro.rotaAusente) {
+        var pendente = new Error("O servidor ainda não grava check-in: essa parte depende do back-end (POST em /sono/registros).");
+        pendente.semRota = true;
+        throw pendente;
+      }
+      throw erro;
     });
   }
 
