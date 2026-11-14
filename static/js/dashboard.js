@@ -3,7 +3,7 @@
 // carregando | vazio | insuficiente | ok | erro, atualiza a cada 10 s e
 // envia o check-in da manhã.
 // O front não calcula avaliação nem aplica regra clínica: só mostra o que
-// os dados trazem. As regras oficiais são do back-end.
+// os dados trazem (formato de avaliacao_sono.py e schema.sql).
 (function () {
   var INTERVALO_MS = 10000;
   var F = window.RagaFormato;
@@ -13,18 +13,38 @@
 
   function $(id) { return document.getElementById(id); }
 
+  // Data local do despertar, tirada de fim_sono como em servico_sono.py.
+  function dataDe(registro) {
+    return registro.fim_sono.slice(0, 10);
+  }
+
   function definirEstado(estado) {
     painel.setAttribute("data-estado", estado);
     painel.setAttribute("data-tem-dados", ultimo ? "sim" : "nao");
+  }
+
+  // Avaliação atual = a mais recente da lista.
+  function avaliacaoAtual(sono) {
+    return sono.avaliacoes.length ? sono.avaliacoes[sono.avaliacoes.length - 1] : null;
+  }
+
+  // Noites a destacar no gráfico: as da indicação amarela mais recente.
+  function datasDestacadas(sono) {
+    var amarelas = sono.avaliacoes.filter(function (a) { return a.estado === "amarelo"; });
+    if (!amarelas.length) return [];
+    return amarelas[amarelas.length - 1].noites_consideradas.map(function (n) { return n.data_sono; });
+  }
+
+  function linhaBaseHoras(sono) {
+    return sono.linha_base ? sono.linha_base.duracao_media_horas : null;
   }
 
   // ---------- Desenho da tela ----------
 
   function mostrarAstronauta(dados) {
     var a = dados.astronauta;
-    $("nome-astronauta").textContent = a.nome;
-    $("missao").textContent = a.missao;
-    $("dia-missao").textContent = a.dia_missao;
+    $("nome-astronauta").textContent = a.nome_exibicao;
+    $("identificacao-astronauta").textContent = a.identificacao;
     var t = $("atualizado-em");
     t.dateTime = dados.atualizado_em;
     t.textContent = F.dataHora(dados.atualizado_em);
@@ -53,56 +73,70 @@
     });
   }
 
-  function idsUsados(sono) {
-    return sono.avaliacao ? sono.avaliacao.noites_usadas : [];
+  function desenharGrafico(sono) {
+    window.RagaGrafico.desenharSono($("grafico-sono"), sono.registros, linhaBaseHoras(sono), datasDestacadas(sono));
   }
 
   function mostrarSono(sono) {
-    var vazio = sono.noites.length === 0;
+    var vazio = sono.registros.length === 0;
     $("sono-vazio").hidden = !vazio;
     $("sono-conteudo").hidden = vazio;
     if (vazio) return;
 
-    var ref = sono.referencia;
-    $("referencia-texto").textContent = F.duracao(ref.minimo_min) + " a " + F.duracao(ref.maximo_min) + " por noite";
-    $("referencia-descricao").textContent = ref.descricao;
+    var lb = sono.linha_base;
+    if (lb) {
+      $("linha-base-texto").textContent = F.duracao(lb.duracao_media_horas) + " por noite";
+      $("linha-base-descricao").textContent = "Média fictícia de " + F.dia(lb.periodo_inicio) +
+        " a " + F.dia(lb.periodo_fim) + ", qualidade média " + lb.qualidade_media +
+        " (origem: " + lb.origem + "). O método real de linha de base ainda será definido pela equipe.";
+    } else {
+      $("linha-base-texto").textContent = "não disponível";
+      $("linha-base-descricao").textContent = "Sem linha de base, a regra de demonstração não avalia o sono.";
+    }
 
-    window.RagaGrafico.desenharSono($("grafico-sono"), sono.noites, ref, idsUsados(sono));
+    desenharGrafico(sono);
     mostrarTabela(sono);
   }
 
   function mostrarTabela(sono) {
-    var usados = idsUsados(sono);
+    var destacadas = datasDestacadas(sono);
     var corpo = $("tabela-sono");
     corpo.replaceChildren();
-    sono.noites.forEach(function (n) {
+    sono.registros.forEach(function (r) {
       var situacao = "—";
-      if (usados.indexOf(n.id) !== -1) situacao = "Motivou a avaliação";
-      if (n.nao_avaliado) situacao = "Check-in desta aba, ainda não avaliado";
+      if (destacadas.indexOf(dataDe(r)) !== -1) situacao = "Motivou a indicação amarela";
+      if (r.nao_avaliado) situacao = "Check-in desta aba, ainda não avaliado";
       var tr = document.createElement("tr");
-      [F.noite(n.noite), F.duracao(n.duracao_min), n.qualidade + " de 5", n.origem, situacao]
-        .forEach(function (texto, i) {
-          var celula = document.createElement(i === 0 ? "th" : "td");
-          if (i === 0) celula.scope = "row";
-          celula.textContent = texto;
-          tr.appendChild(celula);
-        });
+      [
+        F.dia(r.noite_em),
+        F.duracao(r.duracao_horas),
+        F.hora(r.inicio_sono) + " às " + F.hora(r.fim_sono),
+        String(r.qualidade),
+        String(r.interrupcoes),
+        r.origem,
+        situacao
+      ].forEach(function (texto, i) {
+        var celula = document.createElement(i === 0 ? "th" : "td");
+        if (i === 0) celula.scope = "row";
+        celula.textContent = texto;
+        tr.appendChild(celula);
+      });
       corpo.appendChild(tr);
     });
   }
 
   function mostrarAvaliacao(sono) {
-    var av = sono.avaliacao;
+    var av = avaliacaoAtual(sono);
+    var pendente = $("avaliacao-pendente");
     $("avaliacao-ausente").hidden = !!av;
     $("avaliacao-conteudo").hidden = !av;
 
     // Check-ins locais chegaram depois da avaliação e não foram avaliados.
-    var locais = sono.noites.filter(function (n) { return n.nao_avaliado; });
-    var pendente = $("avaliacao-pendente");
+    var locais = sono.registros.filter(function (r) { return r.nao_avaliado; });
     pendente.hidden = locais.length === 0;
     if (locais.length) {
-      pendente.textContent = "O check-in da noite de " +
-        locais.map(function (n) { return F.noite(n.noite); }).join(", ") +
+      pendente.textContent = "O check-in de " +
+        locais.map(function (r) { return F.dia(r.noite_em); }).join(", ") +
         " ainda não foi avaliado. Sem servidor, esta demonstração não recalcula a avaliação.";
     }
     if (!av) {
@@ -114,37 +148,77 @@
 
     $("avaliacao-selo").innerHTML = F.selo(av.estado);
     $("avaliacao-explicacao").textContent = av.explicacao;
-    $("avaliacao-regra").textContent = "Regra usada: " + av.regra;
+    $("avaliacao-regra").textContent = F.origemRegra(av.origem_regra);
 
-    var usadas = sono.noites.filter(function (n) { return av.noites_usadas.indexOf(n.id) !== -1; });
-    $("avaliacao-dados-bloco").hidden = usadas.length === 0;
+    // Noites usadas pela regra, com os detalhes do registro de cada uma.
+    var noites = av.noites_consideradas;
+    $("avaliacao-dados-bloco").hidden = noites.length === 0;
+    $("avaliacao-dados-titulo").textContent = av.estado === "amarelo"
+      ? "Dados que motivaram a indicação"
+      : "Noites consideradas";
     var lista = $("avaliacao-dados");
     lista.replaceChildren();
-    usadas.forEach(function (n) {
+    noites.forEach(function (n) {
+      var registro = sono.registros.filter(function (r) { return dataDe(r) === n.data_sono; })[0];
+      var texto = "Despertar em " + F.dia(n.data_sono) + ": " + F.duracao(n.duracao_horas);
+      if (registro) {
+        texto += ", qualidade " + registro.qualidade + ", " + registro.interrupcoes +
+          " interrupções (" + registro.origem + ")";
+      }
       var li = document.createElement("li");
-      li.textContent = "Noite de " + F.noite(n.noite) + ": " + F.duracao(n.duracao_min) +
-        ", qualidade " + n.qualidade + " de 5 (" + n.origem + ")";
+      li.textContent = texto;
       lista.appendChild(li);
     });
+    if (noites.length && av.linha_base_horas !== null) {
+      var item = document.createElement("li");
+      item.textContent = "Linha de base fictícia: " + F.duracao(av.linha_base_horas);
+      lista.appendChild(item);
+    }
 
     var temOrientacao = !!av.orientacao;
     $("orientacao-bloco").hidden = !temOrientacao;
     if (temOrientacao) {
       $("orientacao-texto").textContent = av.orientacao;
-      $("orientacao-origem").textContent = av.orientacao_origem;
-      var r = $("reavaliar-em");
-      r.dateTime = av.reavaliar_em;
-      r.textContent = F.dataHora(av.reavaliar_em);
+      $("reavaliar-texto").textContent = av.reavaliar_em_horas
+        ? "Em " + av.reavaliar_em_horas + " h: a partir de " +
+          F.diaMaisHoras(av.data_avaliacao, av.reavaliar_em_horas) + ", com o registro da próxima noite."
+        : "Sem prazo informado.";
     }
 
     var t = $("avaliado-em");
-    t.dateTime = av.avaliado_em;
-    t.textContent = F.dataHora(av.avaliado_em);
+    t.dateTime = av.data_avaliacao;
+    t.textContent = F.dia(av.data_avaliacao);
+
+    mostrarAcompanhamento(sono.avaliacoes);
+  }
+
+  // Lista do ciclo: indicação → reavaliação (só se houver mais de uma).
+  function mostrarAcompanhamento(avaliacoes) {
+    $("acompanhamento-bloco").hidden = avaliacoes.length < 2;
+    var lista = $("lista-acompanhamento");
+    lista.replaceChildren();
+    avaliacoes.forEach(function (av, i) {
+      var li = document.createElement("li");
+      var titulo = document.createElement("p");
+      titulo.className = "acompanhamento-titulo";
+      var quando = document.createElement("time");
+      quando.dateTime = av.data_avaliacao;
+      quando.textContent = F.dia(av.data_avaliacao);
+      titulo.append(quando, document.createTextNode(i === 0 ? ": indicação" : ": reavaliação"));
+      var selo = document.createElement("p");
+      selo.innerHTML = F.selo(av.estado); // rótulos fixos de formato.js
+      var texto = document.createElement("p");
+      texto.className = "area-resumo";
+      texto.textContent = av.explicacao + (av.orientacao ? " Orientação: " + av.orientacao : "");
+      li.append(titulo, selo, texto);
+      lista.appendChild(li);
+    });
   }
 
   function estadoDos(dados) {
-    if (dados.sono.noites.length === 0) return "vazio";
-    if (dados.sono.avaliacao && dados.sono.avaliacao.estado === "insuficiente") return "insuficiente";
+    if (dados.sono.registros.length === 0) return "vazio";
+    var av = avaliacaoAtual(dados.sono);
+    if (av && av.estado === "dados_insuficientes") return "insuficiente";
     return "ok";
   }
 
@@ -185,9 +259,7 @@
   window.addEventListener("resize", function () {
     clearTimeout(espera);
     espera = setTimeout(function () {
-      if (ultimo && ultimo.sono.noites.length) {
-        window.RagaGrafico.desenharSono($("grafico-sono"), ultimo.sono.noites, ultimo.sono.referencia, idsUsados(ultimo.sono));
-      }
+      if (ultimo && ultimo.sono.registros.length) desenharGrafico(ultimo.sono);
     }, 150);
   });
 
@@ -195,66 +267,107 @@
 
   var form = $("form-checkin");
   var mensagem = $("checkin-mensagem");
+  var campoData = $("checkin-data");
+  var campoInicio = $("checkin-inicio");
+  var campoFim = $("checkin-fim");
+  var campoInterrupcoes = $("checkin-interrupcoes");
 
-  function hojeTexto() {
-    var d = new Date();
+  function dataTexto(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
 
-  function ontemTexto() {
-    var d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  // "2026-11-10" + "06:30" → "2026-11-10T06:30:00-03:00", com o fuso do navegador.
+  function isoLocal(dia, horaTexto) {
+    var p = dia.split("-").map(Number);
+    var h = horaTexto.split(":").map(Number);
+    var d = new Date(p[0], p[1] - 1, p[2], h[0], h[1]);
+    var minutos = -d.getTimezoneOffset();
+    var sinal = minutos >= 0 ? "+" : "-";
+    var abs = Math.abs(minutos);
+    return dataTexto(d) + "T" + String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0") + ":00" + sinal +
+      String(Math.floor(abs / 60)).padStart(2, "0") + ":" + String(abs % 60).padStart(2, "0");
   }
 
-  var campoNoite = $("checkin-noite");
-  campoNoite.max = hojeTexto();
-  campoNoite.value = ontemTexto();
+  // Se a hora de dormir for igual ou maior que a de acordar,
+  // a pessoa dormiu no dia anterior.
+  function calcularHorario() {
+    if (!campoData.value || !campoInicio.value || !campoFim.value) return null;
+    var fimDia = campoData.value;
+    var inicioDia = fimDia;
+    if (campoInicio.value >= campoFim.value) {
+      var p = fimDia.split("-").map(Number);
+      inicioDia = dataTexto(new Date(p[0], p[1] - 1, p[2] - 1));
+    }
+    var inicio = isoLocal(inicioDia, campoInicio.value);
+    var fim = isoLocal(fimDia, campoFim.value);
+    var horas = (new Date(fim) - new Date(inicio)) / 3600000;
+    return { inicio: inicio, fim: fim, horas: Math.round(horas * 100) / 100 };
+  }
 
-  function marcarErro(idErro, campo, texto) {
+  function atualizarDuracao() {
+    var h = calcularHorario();
+    $("checkin-duracao").textContent = "Duração calculada: " + (h ? F.duracao(h.horas) : "—");
+  }
+
+  function prepararFormulario() {
+    var hoje = dataTexto(new Date());
+    campoData.max = hoje;
+    campoData.value = hoje;
+    atualizarDuracao();
+  }
+
+  [campoData, campoInicio, campoFim].forEach(function (c) {
+    c.addEventListener("input", atualizarDuracao);
+  });
+
+  function marcarErro(idErro, campos, texto) {
     $(idErro).textContent = texto;
-    if (campo) campo.setAttribute("aria-invalid", texto ? "true" : "false");
-  }
-
-  function inteiro(valor) {
-    return /^\d+$/.test(valor) ? Number(valor) : NaN;
+    campos.forEach(function (c) { c.setAttribute("aria-invalid", texto ? "true" : "false"); });
   }
 
   // Validação de interface, para ajudar quem preenche.
-  // O servidor ainda precisará validar de novo.
+  // O servidor ainda precisará validar de novo (salvar_registro_sono).
   function validar() {
     var erros = [];
-    var noite = campoNoite.value;
-    var horasCampo = $("checkin-horas");
-    var minutosCampo = $("checkin-minutos");
-    var horas = inteiro(horasCampo.value || "0");
-    var minutos = inteiro(minutosCampo.value || "0");
     var escolhida = form.querySelector('input[name="qualidade"]:checked');
 
-    var erroNoite = "";
-    if (!noite) erroNoite = "Informe a data da noite.";
-    else if (noite > hojeTexto()) erroNoite = "A data não pode ser no futuro.";
-    marcarErro("erro-noite", campoNoite, erroNoite);
-    if (erroNoite) erros.push(campoNoite);
+    var erroData = "";
+    if (!campoData.value) erroData = "Informe a data em que você acordou.";
+    else if (campoData.value > dataTexto(new Date())) erroData = "A data não pode ser no futuro.";
+    marcarErro("erro-data", [campoData], erroData);
+    if (erroData) erros.push(campoData);
 
-    var erroDuracao = "";
-    if (isNaN(horas) || isNaN(minutos)) erroDuracao = "Use apenas números inteiros.";
-    else if (minutos > 59) erroDuracao = "Os minutos vão de 0 a 59.";
-    else if (horas * 60 + minutos === 0) erroDuracao = "Informe quanto tempo você dormiu.";
-    else if (horas * 60 + minutos > 16 * 60) erroDuracao = "Informe no máximo 16 horas.";
-    marcarErro("erro-duracao", horasCampo, erroDuracao);
-    minutosCampo.setAttribute("aria-invalid", erroDuracao ? "true" : "false");
-    if (erroDuracao) erros.push(horasCampo);
+    var horario = calcularHorario();
+    var erroHorario = "";
+    if (!campoInicio.value || !campoFim.value) erroHorario = "Informe a hora em que dormiu e a hora em que acordou.";
+    else if (horario && horario.horas > 16) erroHorario = "A duração passou de 16 horas. Confira os horários.";
+    marcarErro("erro-horario", [campoInicio, campoFim], erroHorario);
+    if (erroHorario) erros.push(campoInicio.value ? campoFim : campoInicio);
+
+    var interrupcoes = campoInterrupcoes.value;
+    var erroInterrupcoes = "";
+    if (!/^\d+$/.test(interrupcoes)) erroInterrupcoes = "Informe um número inteiro (0 se não acordou).";
+    else if (Number(interrupcoes) > 30) erroInterrupcoes = "Informe no máximo 30.";
+    marcarErro("erro-interrupcoes", [campoInterrupcoes], erroInterrupcoes);
+    if (erroInterrupcoes) erros.push(campoInterrupcoes);
 
     var erroQualidade = escolhida ? "" : "Escolha uma opção de 1 a 5.";
-    marcarErro("erro-qualidade", null, erroQualidade);
+    marcarErro("erro-qualidade", [], erroQualidade);
     if (erroQualidade) erros.push(form.querySelector('input[name="qualidade"]'));
 
-    if (erros.length) {
-      erros[0].focus();
+    if (erros.length || !horario) {
+      if (erros.length) erros[0].focus();
       return null;
     }
-    return { noite: noite, duracao_min: horas * 60 + minutos, qualidade: Number(escolhida.value) };
+    return {
+      noite_em: isoLocal(campoData.value, "00:00"),
+      inicio_sono: horario.inicio,
+      fim_sono: horario.fim,
+      duracao_horas: horario.horas,
+      qualidade: Number(escolhida.value),
+      interrupcoes: Number(interrupcoes)
+    };
   }
 
   form.addEventListener("submit", function (evento) {
@@ -268,10 +381,10 @@
     var botao = form.querySelector('button[type="submit"]');
     botao.disabled = true;
     window.RagaDados.enviarCheckinSono(checkin).then(function () {
-      mensagem.textContent = "Check-in registrado para a noite de " + F.noite(checkin.noite) +
+      mensagem.textContent = "Check-in registrado para o despertar de " + F.dia(checkin.noite_em) +
         ". Ele aparece no histórico como check-in desta aba, ainda não avaliado.";
       form.reset();
-      campoNoite.value = ontemTexto();
+      prepararFormulario();
       return carregar();
     }).catch(function () {
       mensagem.textContent = "Não foi possível registrar o check-in. Seus dados continuam no formulário; tente de novo.";
@@ -281,6 +394,7 @@
   });
 
   // ---------- Início ----------
+  prepararFormulario();
   carregar();
   setInterval(carregar, INTERVALO_MS);
 })();

@@ -57,7 +57,7 @@
 .area--verde { border-top-color: var(--cor-normal); }
 .area--amarelo { border-top-color: var(--cor-atencao); }
 .area--vermelho { border-top-color: var(--cor-critico); }
-.area--insuficiente,
+.area--dados_insuficientes,
 .area--sem_registros { border-top-style: dashed; border-top-color: var(--cor-texto-suave); }
 
 .area-nome {
@@ -104,13 +104,24 @@
 
 .grafico-sono .grade { stroke: var(--cor-divisor); }
 .grafico-sono .eixo { fill: var(--cor-texto-suave); font-size: 12px; }
-.grafico-sono .faixa-referencia {
-  fill: var(--cor-primaria);
-  fill-opacity: 0.14;
-  stroke: var(--cor-primaria);
-  stroke-dasharray: 4 3;
+/* Linha de base: tracejada na cor do texto, para aparecer
+   por cima das barras azuis nos dois temas. */
+.grafico-sono .linha-base {
+  stroke: var(--cor-texto);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
 }
-.grafico-sono .faixa-rotulo { fill: var(--cor-primaria); font-size: 12px; font-weight: 500; }
+/* O contorno na cor do fundo (paint-order) deixa o texto legível
+   mesmo quando passa por cima de uma barra. */
+.grafico-sono .linha-base-rotulo {
+  fill: var(--cor-texto);
+  font-size: 12px;
+  font-weight: 500;
+  paint-order: stroke;
+  stroke: var(--cor-superficie);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
 .grafico-sono .barra { fill: var(--cor-primaria); }
 .grafico-sono .barra--destaque {
   fill: url(#hachura-sono);
@@ -155,9 +166,38 @@
   background: repeating-linear-gradient(45deg, var(--cor-atencao) 0 2px, var(--cor-superficie) 2px 5px);
 }
 .amostra--local { border: 1.5px dashed var(--cor-texto); }
-.amostra--faixa {
-  border: 1px dashed var(--cor-primaria);
-  background: var(--cor-divisor);
+/* Amostra da linha de base: um traço tracejado, não um quadrado. */
+.amostra--linha {
+  height: 0;
+  width: 18px;
+  border-radius: 0;
+  border-top: 2px dashed var(--cor-texto);
+}
+
+/* ==========================================================
+   Acompanhamento: indicação → reavaliação, em ordem.
+   ========================================================== */
+.acompanhamento {
+  border-top: var(--borda);
+  padding-top: var(--espaco-3);
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.lista-acompanhamento {
+  margin: 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.lista-acompanhamento li {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.acompanhamento-titulo {
+  font-weight: 500;
 }
 
 .tabela-dados summary {
@@ -245,6 +285,7 @@
 }
 
 .formulario input[type="date"],
+.formulario input[type="time"],
 .formulario input[type="number"] {
   font: inherit;
   min-height: 2.75rem;
@@ -273,7 +314,7 @@
   gap: var(--espaco-2);
 }
 
-.duracao-parte input {
+.formulario input[type="number"] {
   width: 5.5rem;
 }
 

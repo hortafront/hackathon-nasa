@@ -72,7 +72,7 @@
       <p class="etiqueta-simulada">Dados simulados</p>
       <h2 id="nome-astronauta">—</h2>
       <p class="identificacao-detalhe">
-        Personagem fictícia. <span id="missao">—</span>, dia <span id="dia-missao">—</span>.
+        Personagem fictícia. Identificação <span id="identificacao-astronauta">—</span>.
       </p>
       <p class="leitura-detalhe">Atualizado em <time id="atualizado-em">—</time></p>
     </section>
@@ -89,7 +89,7 @@
       <ul id="lista-areas" class="lista-areas"></ul>
     </section>
 
-    <!-- Sono: referência fictícia e histórico. -->
+    <!-- Sono: linha de base fictícia e histórico. -->
     <section id="sono" class="cartao depende-dados" aria-labelledby="titulo-sono">
       <h2 id="titulo-sono">Sono</h2>
 
@@ -99,18 +99,18 @@
 
       <div id="sono-conteudo">
         <p class="referencia">
-          Referência fictícia desta astronauta: <strong id="referencia-texto">—</strong>
+          Linha de base fictícia desta astronauta: <strong id="linha-base-texto">—</strong>
         </p>
-        <p id="referencia-descricao" class="leitura-detalhe"></p>
+        <p id="linha-base-descricao" class="leitura-detalhe"></p>
 
         <figure class="grafico-figura">
           <!-- O chart.js desenha o SVG aqui. -->
           <div id="grafico-sono" class="grafico-area"></div>
           <figcaption class="legenda">
-            <span class="legenda-item"><span class="amostra amostra--barra" aria-hidden="true"></span>Noite registrada</span>
-            <span class="legenda-item"><span class="amostra amostra--destaque" aria-hidden="true"></span>Motivou a avaliação (hachurada)</span>
+            <span class="legenda-item"><span class="amostra amostra--barra" aria-hidden="true"></span>Noite registrada (data do despertar)</span>
+            <span class="legenda-item"><span class="amostra amostra--destaque" aria-hidden="true"></span>Motivou a indicação amarela (hachurada)</span>
             <span class="legenda-item"><span class="amostra amostra--local" aria-hidden="true"></span>Check-in desta aba, ainda não avaliado (tracejada)</span>
-            <span class="legenda-item"><span class="amostra amostra--faixa" aria-hidden="true"></span>Faixa de referência fictícia</span>
+            <span class="legenda-item"><span class="amostra amostra--linha" aria-hidden="true"></span>Linha de base fictícia</span>
           </figcaption>
         </figure>
 
@@ -121,9 +121,11 @@
               <caption>Registros de sono, da noite mais antiga para a mais recente</caption>
               <thead>
                 <tr>
-                  <th scope="col">Noite</th>
+                  <th scope="col">Despertar em</th>
                   <th scope="col">Duração</th>
+                  <th scope="col">Dormiu e acordou</th>
                   <th scope="col">Qualidade informada</th>
+                  <th scope="col">Interrupções</th>
                   <th scope="col">Origem</th>
                   <th scope="col">Situação</th>
                 </tr>
@@ -149,7 +151,8 @@
         <p id="avaliacao-explicacao"></p>
 
         <div id="avaliacao-dados-bloco">
-          <h3>Dados que motivaram a indicação</h3>
+          <!-- "Dados que motivaram a indicação" ou "Noites consideradas". -->
+          <h3 id="avaliacao-dados-titulo">Dados que motivaram a indicação</h3>
           <ul id="avaliacao-dados" class="lista-dados"></ul>
         </div>
 
@@ -159,16 +162,24 @@
         <div id="orientacao-bloco" class="orientacao">
           <h3>Orientação demonstrativa</h3>
           <p id="orientacao-texto"></p>
-          <p id="orientacao-origem" class="nota"></p>
+          <p class="nota">Texto genérico da regra de demonstração. Não substitui a avaliação da equipe médica.</p>
 
           <h3>Reavaliação prevista</h3>
-          <p><time id="reavaliar-em">—</time>, depois do check-in da manhã.</p>
+          <p id="reavaliar-texto"></p>
+          <p class="nota">É só um prazo sugerido: nada é agendado nem enviado à equipe médica.</p>
           <p class="nota nota--urgente">
             Em situação urgente, não espere a reavaliação: procure a equipe médica imediatamente.
           </p>
         </div>
 
-        <p class="leitura-detalhe">Avaliado em <time id="avaliado-em">—</time></p>
+        <p class="leitura-detalhe">Avaliado com dados até <time id="avaliado-em">—</time></p>
+
+        <!-- Aparece quando há mais de uma avaliação: mostra o ciclo
+             indicação → reavaliação, da mais antiga para a mais recente. -->
+        <div id="acompanhamento-bloco" class="acompanhamento" hidden>
+          <h3>Acompanhamento</h3>
+          <ol id="lista-acompanhamento" class="lista-acompanhamento"></ol>
+        </div>
       </div>
     </section>
 
@@ -180,26 +191,36 @@
       <!-- novalidate: a validação e as mensagens ficam no dashboard.js,
            em português e ligadas a cada campo. -->
       <form id="form-checkin" class="formulario" novalidate>
+        <!-- Campos alinhados com registros_sono (schema.sql):
+             data do despertar, início, fim, qualidade e interrupções.
+             A duração é calculada a partir dos horários. -->
         <div class="campo">
-          <label for="checkin-noite">Noite de</label>
-          <input id="checkin-noite" name="noite" type="date" required aria-describedby="erro-noite">
-          <p id="erro-noite" class="erro-campo"></p>
+          <label for="checkin-data">Data em que você acordou</label>
+          <input id="checkin-data" name="data" type="date" required aria-describedby="erro-data">
+          <p id="erro-data" class="erro-campo"></p>
         </div>
 
-        <fieldset class="campo" aria-describedby="erro-duracao">
-          <legend>Quanto tempo você dormiu?</legend>
+        <fieldset class="campo" aria-describedby="erro-horario checkin-duracao">
+          <legend>Que horas você dormiu e acordou?</legend>
           <div class="duracao">
             <label class="duracao-parte">
-              <input id="checkin-horas" name="horas" type="number" inputmode="numeric" min="0" max="16" step="1">
-              <span>horas</span>
+              <span>Dormi às</span>
+              <input id="checkin-inicio" name="inicio" type="time" required>
             </label>
             <label class="duracao-parte">
-              <input id="checkin-minutos" name="minutos" type="number" inputmode="numeric" min="0" max="59" step="1">
-              <span>minutos</span>
+              <span>Acordei às</span>
+              <input id="checkin-fim" name="fim" type="time" required>
             </label>
           </div>
-          <p id="erro-duracao" class="erro-campo"></p>
+          <p id="checkin-duracao" class="nota">Duração calculada: —</p>
+          <p id="erro-horario" class="erro-campo"></p>
         </fieldset>
+
+        <div class="campo">
+          <label for="checkin-interrupcoes">Quantas vezes você acordou durante a noite?</label>
+          <input id="checkin-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-interrupcoes">
+          <p id="erro-interrupcoes" class="erro-campo"></p>
+        </div>
 
         <fieldset class="campo" aria-describedby="erro-qualidade">
           <legend>Como foi a qualidade do sono?</legend>
