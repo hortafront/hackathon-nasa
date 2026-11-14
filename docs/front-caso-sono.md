@@ -19,7 +19,8 @@ Abra `templates/index.html` com o Live Server. Para ver cada estado, acrescente 
 
 | Endereço | Estado |
 | --- | --- |
-| `index.html` | Dados disponíveis (10 noites, 3 alteradas, avaliação amarela) |
+| `index.html` | Alerta de 10/11: 6 noites, 3 alteradas, avaliação amarela com orientação e reavaliação prevista |
+| `index.html?simular=reavaliado` | Ciclo completo: inclui a noite de 11/11 e a reavaliação verde, com o acompanhamento indicação → reavaliação |
 | `index.html?simular=carregando` | Carregando (a resposta nunca chega) |
 | `index.html?simular=vazio` | Sem registros de sono |
 | `index.html?simular=insuficiente` | 2 noites: dados insuficientes para avaliar |
@@ -37,39 +38,41 @@ Os mesmos parâmetros funcionam em `equipe-medica.html`. O check-in feito na tel
 
 ## Proposta de dados para a API (a combinar com o back-end)
 
-Os nomes abaixo são os que `dados-demo.js` usa hoje. São uma **proposta**: se o back-end preferir outros, basta ajustar `dados-demo.js`/a troca por `fetch()`; `dashboard.js` e `equipe-medica.js` leem só estes campos.
+Os nomes seguem o que o back-end já tem: astronauta, linha de base e registros vêm de `schema.sql`/[docs/dados.md](dados.md); cada avaliação é a saída de `avaliar_sono()` em `avaliacao_sono.py` ([docs/api.md](api.md)). Os valores de `dados-demo.js` são uma cópia de `data/astronautas-ficticios.json`. O que ainda é **proposta do front** está marcado abaixo. Quando a rota existir, basta trocar `dados-demo.js` por `fetch()`; `dashboard.js` e `equipe-medica.js` leem só estes campos.
 
 **Caso de sono da astronauta** (hoje `RagaDados.buscarCasoSono()`; rota sugerida `GET /api/astronautas/<id>/sono`):
 
 ```json
 {
   "atualizado_em": "2026-11-14T18:16:00-03:00",
-  "astronauta": { "id": 1, "nome": "Íris Andrade", "ficticia": true, "missao": "Missão simulada Raga-1", "dia_missao": 142 },
-  "estado_geral": { "estado": "insuficiente", "explicacao": "..." },
+  "astronauta": { "id": 1, "identificacao": "RAGA-AST-001", "nome_exibicao": "Comandante Aurora", "origem": "ficticia" },
+  "estado_geral": { "estado": "dados_insuficientes", "explicacao": "..." },
   "areas": [ { "id": "sono", "nome": "Sono", "estado": "amarelo", "resumo": "..." } ],
   "sono": {
-    "referencia": { "minimo_min": 420, "maximo_min": 480, "descricao": "..." },
-    "noites": [ { "id": 8, "noite": "2026-11-11", "duracao_min": 322, "qualidade": 2, "registrado_em": "...", "origem": "simulada" } ],
-    "avaliacao": {
-      "estado": "amarelo", "explicacao": "...", "regra": "...", "noites_usadas": [8, 9, 10],
-      "avaliado_em": "...", "orientacao": "...", "orientacao_origem": "...", "reavaliar_em": "..."
-    }
+    "linha_base": { "duracao_media_horas": 7.5, "qualidade_media": 4.0, "periodo_inicio": "...", "periodo_fim": "...", "origem": "simulada" },
+    "registros": [ { "id": 4, "noite_em": "2026-11-08T00:00:00-03:00", "inicio_sono": "...", "fim_sono": "...", "duracao_horas": 6.0, "qualidade": 2, "interrupcoes": 4, "origem": "simulada", "observacao": "..." } ],
+    "avaliacoes": [ { "area": "sono", "data_avaliacao": "2026-11-10", "linha_base_horas": 7.5, "origem_regra": "demonstracao_nao_clinica", "estado": "amarelo", "noites_consideradas": [ { "data_sono": "2026-11-08", "duracao_horas": 6.0 } ], "explicacao": "...", "orientacao": "...", "reavaliar_em_horas": 24 } ]
   }
 }
 ```
 
-- `estado`: `verde` | `amarelo` | `vermelho` | `insuficiente` | `sem_registros`.
-- `noites` em ordem cronológica; lista vazia quando não há registros. `avaliacao` é `null` quando não houve avaliação.
-- `noite` é a data em que a noite começou; horários em ISO 8601 com fuso.
+- `astronauta`, `linha_base` e `registros`: campos de `schema.sql`. `registros` em ordem cronológica, `[]` quando não há; `linha_base` é `null` quando não existe.
+- `avaliacoes`: lista de saídas de `avaliar_sono()`, da mais antiga para a mais recente; a última é a atual; `[]` sem avaliação. **Proposta do front:** guardar o histórico de avaliações para mostrar o ciclo indicação → reavaliação.
+- `estado_geral` e `areas`: **proposta do front**, ainda sem equivalente no back-end.
+- Estados: `verde`, `amarelo`, `dados_insuficientes` (de `avaliar_sono()`); `vermelho` e `sem_registros` são propostas.
+- A data do registro é a do despertar: como em `servico_sono.py`, o front usa a data de `fim_sono` (no fuso registrado) para ligar o registro ao `data_sono` da avaliação.
+- `qualidade` aparece como número; a escala ainda está em aberto em [docs/dados.md](dados.md). O check-in usa 1 a 5.
 
-**Check-in da manhã** (hoje `RagaDados.enviarCheckinSono()`; rota sugerida `POST /api/astronautas/<id>/sono/checkins`): envia `{ "noite": "2026-11-13", "duracao_min": 400, "qualidade": 3 }`. Precisamos combinar a resposta de sucesso e o formato de erro de validação.
+**Check-in da manhã** (hoje `RagaDados.enviarCheckinSono()`; rota sugerida `POST /api/astronautas/<id>/sono/registros`): envia os campos de `salvar_registro_sono()` — `noite_em`, `inicio_sono`, `fim_sono`, `duracao_horas` (calculada pelos horários), `qualidade` e `interrupcoes`. `origem` e `astronauta_id` devem ser definidos pelo servidor. Precisamos combinar a resposta de sucesso e o formato de erro de validação.
 
-**Visão médica** (hoje `RagaDados.buscarVisaoMedica()`): `atualizado_em`, `ordem` (texto explicando o critério), `tripulantes` (`nome`, `ficticio`, `area`, `estado`, `motivo`, `dados_compartilhados`, `avaliado_em`, `reavaliar_em`) e `nao_exibido` (lista do que fica oculto).
+**Visão médica** (hoje `RagaDados.buscarVisaoMedica()`): `atualizado_em`, `ordem` (texto explicando o critério), `tripulantes` (`identificacao`, `nome_exibicao`, `origem`, `area`, `estado`, `motivo`, `dados_compartilhados`, `data_avaliacao`, `reavaliar_em_horas`) e `nao_exibido` (lista do que fica oculto). Formato todo em proposta.
 
 ## Depende do back-end
 
 - Rotas, códigos HTTP e formato de erro das três operações acima.
-- Regras oficiais de classificação, linha de base, orientação e prazo de reavaliação (hoje são exemplos do PDF norte escritos à mão).
-- Gravação real do check-in, com validação no servidor, e recálculo da avaliação.
+- Rotas para astronauta, linha de base, histórico de registros e lista de avaliações. Hoje só existe `GET /api/astronautas/<id>/sono/avaliacao?data=AAAA-MM-DD` (uma avaliação por data); cada item de `avaliacoes` em `dados-demo.js` tem exatamente o formato da resposta dessa rota, então a avaliação pode ser a primeira parte trocada por `fetch()`.
+- Rota Flask que sirva as páginas: sem ela, o painel não consegue chamar a API pela mesma origem.
+- Gravação real do check-in com `salvar_registro_sono()`, validação no servidor e nova avaliação.
+- Execução e registro da reavaliação (hoje `reavaliar_em_horas` é só um prazo sugerido).
 - Política de acesso da visão médica e controle por perfil.
 - Rotas Flask para servir as páginas. Com os caminhos relativos `../static/`, cada página precisa de rota de um só nível: `/` para o painel e `/equipe-medica.html` para a visão médica (o link entre as páginas usa esse nome).
