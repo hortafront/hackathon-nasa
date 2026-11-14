@@ -89,7 +89,19 @@
       "<span>" + estado(nome).rotulo + "</span></span>";
   }
 
+  // Aviso de onde vêm os dados (ver dados-api.js).
+  function textoFonte(f) {
+    if (f.fonte === "api") {
+      return "Dados do servidor do Raga. Continuam fictícios: a origem aparece em cada registro.";
+    }
+    if (f.motivo === "escolhida") {
+      return "Modo demonstração: dados fictícios locais (dados-demo.js), escolhidos pelo endereço da página. Nada aqui veio do servidor.";
+    }
+    return "A API não respondeu nesta página. Mostrando dados fictícios locais (dados-demo.js); nada aqui veio do servidor.";
+  }
+
   window.RagaFormato = {
+    textoFonte: textoFonte,
     estado: estado,
     origemRegra: origemRegra,
     duracao: duracao,

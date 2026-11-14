@@ -44,7 +44,8 @@
 
   <!-- data-estado: carregando | ok | erro (equipe-medica.js). -->
   <main id="painel-medico" class="painel" data-estado="carregando" data-tem-dados="nao">
-    <p id="aviso-medico" class="aviso" role="status">Carregando dados da demonstração…</p>
+    <p id="aviso-medico" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
     <section class="depende-dados" aria-labelledby="titulo-tripulacao">
       <h2 id="titulo-tripulacao">Tripulação</h2>
@@ -67,6 +68,7 @@
   </footer>
 
   <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/dados-api.js" defer></script>
   <script src="../static/js/formato.js" defer></script>
   <script src="../static/js/equipe-medica.js" defer></script>
 </body>

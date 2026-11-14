@@ -222,7 +222,17 @@
     return "ok";
   }
 
+  // Avisa de onde vêm os dados e o que acontece com o check-in.
+  function mostrarFonte() {
+    var f = window.RagaDados.fonte();
+    $("aviso-fonte").textContent = F.textoFonte(f);
+    $("checkin-nota-fonte").textContent = f.fonte === "api"
+      ? "O check-in é gravado no servidor (dados fictícios, ambiente local) e a avaliação é refeita pela API."
+      : "Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor e some ao recarregar a página.";
+  }
+
   function mostrar(dados) {
+    mostrarFonte();
     mostrarAstronauta(dados);
     mostrarAreas(dados);
     mostrarSono(dados.sono);
@@ -239,15 +249,17 @@
       definirEstado(estadoDos(dados));
       aviso.textContent = "";
       mostrar(dados);
-    }).catch(function () {
+    }).catch(function (erro) {
       var agora = F.hora(new Date().toISOString());
+      // Mensagem da API ({"erro": ...}) é segura para mostrar; as outras não.
+      var motivo = erro && (erro.status || erro.rede) ? " (" + erro.message + ")" : "";
       if (ultimo) {
         // Mantém os últimos dados na tela e avisa de quando eles são.
-        aviso.textContent = "A atualização falhou às " + agora +
+        aviso.textContent = "A atualização falhou às " + agora + motivo +
           ". Os dados mostrados são de " + F.dataHora(ultimo.atualizado_em) +
           " e podem estar desatualizados. Nova tentativa em 10 segundos.";
       } else {
-        aviso.textContent = "Não foi possível carregar os dados às " + agora +
+        aviso.textContent = "Não foi possível carregar os dados às " + agora + motivo +
           ". Nova tentativa em 10 segundos.";
       }
       definirEstado("erro");
@@ -380,14 +392,20 @@
     }
     var botao = form.querySelector('button[type="submit"]');
     botao.disabled = true;
-    window.RagaDados.enviarCheckinSono(checkin).then(function () {
-      mensagem.textContent = "Check-in registrado para o despertar de " + F.dia(checkin.noite_em) +
-        ". Ele aparece no histórico como check-in desta aba, ainda não avaliado.";
+    window.RagaDados.enviarCheckinSono(checkin).then(function (resposta) {
+      mensagem.textContent = resposta.situacao === "salvo_no_servidor"
+        ? "Check-in salvo no servidor para o despertar de " + F.dia(checkin.noite_em) +
+          ". O painel foi atualizado com a avaliação da API."
+        : "Check-in registrado para o despertar de " + F.dia(checkin.noite_em) +
+          ". Ele aparece no histórico como check-in desta aba, ainda não avaliado.";
       form.reset();
       prepararFormulario();
       return carregar();
-    }).catch(function () {
-      mensagem.textContent = "Não foi possível registrar o check-in. Seus dados continuam no formulário; tente de novo.";
+    }).catch(function (erro) {
+      // Erro de validação da API (400) vem com mensagem própria.
+      var motivo = erro && erro.status ? " O servidor respondeu: " + erro.message : "";
+      mensagem.textContent = "Não foi possível registrar o check-in." + motivo +
+        " Seus dados continuam no formulário; tente de novo.";
     }).then(function () {
       botao.disabled = false;
     });

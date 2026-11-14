@@ -65,7 +65,10 @@
 
     <!-- Aviso geral (carregando, falha de atualização).
          role="status" faz o leitor de tela anunciar a mudança. -->
-    <p id="aviso-painel" class="aviso" role="status">Carregando dados da demonstração…</p>
+    <p id="aviso-painel" class="aviso" role="status">Carregando dados…</p>
+
+    <!-- De onde vêm os dados: API ou dados fictícios locais (dados-api.js). -->
+    <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
     <!-- Identificação da astronauta fictícia. -->
     <section id="astronauta" class="cartao identificacao depende-dados" aria-labelledby="nome-astronauta">
@@ -234,10 +237,8 @@
           <p id="erro-qualidade" class="erro-campo"></p>
         </fieldset>
 
-        <p class="nota">
-          Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor
-          e some ao recarregar a página.
-        </p>
+        <!-- Texto trocado pelo dashboard.js conforme a fonte (API ou local). -->
+        <p id="checkin-nota-fonte" class="nota"></p>
 
         <button type="submit" class="botao">Registrar check-in</button>
         <p id="checkin-mensagem" class="checkin-mensagem" role="status"></p>
@@ -276,8 +277,9 @@
   </footer>
 
   <!-- Ordem importa (todos com defer, executam nesta sequência):
-       dados fictícios → formatação → gráfico → lógica do painel. -->
+       dados fictícios → ligação com a API → formatação → gráfico → painel. -->
   <script src="../static/js/dados-demo.js" defer></script>
+  <script src="../static/js/dados-api.js" defer></script>
   <script src="../static/js/formato.js" defer></script>
   <script src="../static/js/chart.js" defer></script>
   <script src="../static/js/dashboard.js" defer></script>

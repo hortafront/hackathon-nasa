@@ -18,6 +18,7 @@
   }
 
   function mostrar(dados) {
+    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte());
     $("ordem-texto").textContent = dados.ordem;
     var t = $("medico-atualizado-em");
     t.dateTime = dados.atualizado_em;
