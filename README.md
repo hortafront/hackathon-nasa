@@ -1,6 +1,6 @@
 # Monitoramento de saúde de astronautas
 
-Estrutura inicial para um sistema web que acompanha frequência cardíaca. O esquema do banco e sua inicialização estão implementados; as consultas, a aplicação, o simulador e o gráfico ainda precisam ser implementados.
+Estrutura inicial para um sistema web que acompanha frequência cardíaca. O esquema, a inicialização e as consultas do banco estão implementados; a aplicação, o simulador e o gráfico ainda precisam ser implementados.
 
 ## Fluxo
 
@@ -36,6 +36,10 @@ python -m pip install -r requirements.txt
 ```
 
 Para criar o banco local e suas tabelas, execute `python database.py`. O arquivo é criado em `instance/saude.db`; executar o comando novamente preserva as leituras existentes. Outros módulos podem chamar `inicializar_banco()` e `conectar_banco()` de `database.py`; quem abrir uma conexão deve fechá-la após o uso.
+
+Para integrar o banco ao servidor, use `salvar_leitura(conexao, leitura)` com um dicionário já validado contendo `astronauta_id`, `indicador`, `valor`, `unidade`, `registrado_em` e `origem`. A função retorna esses campos e o `id` gerado. `buscar_ultima_leitura(conexao, astronauta_id)` retorna um dicionário ou `None`; `buscar_historico(conexao, astronauta_id, indicador)` retorna uma lista em ordem cronológica, vazia quando não houver leituras. Os dicionários das consultas também incluem `id`. Os horários devem ser válidos em formato ISO 8601 com fuso, pois a ordenação usa esse valor. A validação e a conversão das respostas HTTP ficam no servidor.
+
+As consultas ordenam as leituras em memória para comparar fusos e microssegundos. Essa abordagem é simples para a demonstração, mas deve ser revista se o volume de dados crescer. Execute os testes do banco com `python -m unittest discover -s tests`.
 
 A aplicação ainda não inicia: a equipe implementará o Flask em `app.py` e documentará aqui o comando de execução. Primeiro, façam uma leitura simulada ser salva e exibida com unidade, origem e horário; depois adicionem histórico e atualização automática.
 
