@@ -1,46 +1,36 @@
-# Monitoramento de saúde de astronautas
+# Project Raga
 
-Estrutura inicial para um sistema web que acompanha frequência cardíaca. O esquema, a inicialização e as consultas do banco estão implementados; a aplicação, o simulador e o gráfico ainda precisam ser implementados.
+Protótipo de apoio ao acompanhamento da saúde física e mental de astronautas em missões longas. O desafio é reunir indicadores, ajudar a perceber mudanças e orientar o acompanhamento mesmo sem comunicação imediata com a Terra. A referência da equipe é [Project Raga: o norte do projeto](docs/Project%20Raga%20-%20Norte%20do%20projeto.pdf), versão 2 de 14/11/2026. O planejamento anterior focado apenas em frequência cardíaca foi substituído.
 
-## Fluxo
+O ciclo planejado é **medir → comparar com a linha de base individual → classificar → recomendar → reavaliar**. O protótipo abrange sono, coração, mente, exercício e cognição, com cinco telas: painel, detalhe de área, check-ins/teste, alertas/recomendações e visão médica. Usará somente dados fictícios; integração real com sensores, diagnóstico e modelos complexos de IA estão fora do escopo do hackathon. Funcionamento a bordo e orientações são objetivos do projeto, não capacidades já verificadas.
 
-Relógio ou simulador → validação no Flask → SQLite → API → painel e gráfico no navegador. A integração com relógio ainda precisa ser investigada; comecem com leituras fictícias identificadas como simuladas.
+## Comece por aqui
 
-## Arquivos
+- [Norte e planejamento detalhado](docs/raga.md): problema, ciclo, telas, privacidade, decisões e demonstração.
+- [Divisão da equipe](docs/equipe.md): responsabilidades propostas para dois integrantes de back-end e dois de front-end.
+- [API e integração](docs/api.md): situação atual e necessidades a combinar.
+- [Fundamentação e fontes](docs/fundamentacao-e-proximos-passos.md): evidências, limitações e afirmações a verificar.
+- [Instruções para agentes](AGENTS.md): regras compartilhadas para pessoas e IAs.
 
-| Arquivo | Finalidade |
-| --- | --- |
-| `app.py` | Criar a aplicação Flask e as rotas. |
-| `database.py` | Acessar o SQLite, gravar e consultar leituras. |
-| `schema.sql` | Definir a tabela de leituras. |
-| `simulator.py` | Gerar leituras fictícias para demonstração. |
-| `requirements.txt` | Listar dependências Python. |
-| `templates/index.html` | Estruturar o painel. |
-| `static/css/style.css` | Estilizar a interface. |
-| `static/js/dashboard.js` | Consultar a API e atualizar o cartão e seus estados. |
-| `static/js/chart.js` | Construir e atualizar o gráfico do histórico. |
-| `static/vendor/README.md` | Orientar a organização de bibliotecas externas. |
-| `instance/README.md` | Explicar o banco local. |
-| `docs/api.md` | Registrar o contrato entre interface e servidor. |
-| `docs/equipe.md` | Dividir tarefas e orientar os próximos passos. |
-| `.gitignore` | Evitar versionar banco, ambiente virtual e credenciais. |
+## Estado real do repositório
 
-## Preparação
+- `database.py` e `schema.sql` implementam uma tabela de leituras numéricas e funções de gravação e consulta. Não modelam as cinco áreas, check-ins, linha de base ou alertas.
+- `app.py` contém somente uma rota fictícia de leitura recente, sem conexão ao banco. Ela usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. Não há rota para servir o painel nem API completa.
+- `templates/index.html` e os estilos apresentam uma interface inicial de frequência cardíaca; `dashboard.js` e `chart.js` são esboços. `simulator.py` é apenas um esboço.
+- Nenhum ciclo completo do Raga, controle de acesso, notificação, reavaliação ou integração com sensores está implementado. Não se deve anunciar o produto como operacional ou validado.
 
-Com Python instalado, no PowerShell dentro da pasta do projeto:
+## Preparação e verificação do código existente
+
+Com Python e PowerShell, na pasta do projeto:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+python database.py
+python -m unittest discover -s tests
 ```
 
-Para criar o banco local e suas tabelas, execute `python database.py`. O arquivo é criado em `instance/saude.db`; executar o comando novamente preserva as leituras existentes. Outros módulos podem chamar `inicializar_banco()` e `conectar_banco()` de `database.py`; quem abrir uma conexão deve fechá-la após o uso.
+`database.py` cria `instance/saude.db` sem apagar leituras existentes. O banco local não deve ser versionado. `salvar_leitura(conexao, leitura)` recebe dicionário já validado; `buscar_ultima_leitura` devolve dicionário ou `None`; `buscar_historico` devolve lista cronológica ou vazia. Ambas as consultas ordenam em memória, solução adequada apenas a volumes pequenos. `python app.py` inicia o Flask de exemplo, mas não disponibiliza o painel nem implementa o Raga. Dependências do navegador, fontes e dados necessários à demonstração offline devem estar disponíveis localmente.
 
-Para integrar o banco ao servidor, use `salvar_leitura(conexao, leitura)` com um dicionário já validado contendo `astronauta_id`, `indicador`, `valor`, `unidade`, `registrado_em` e `origem`. A função retorna esses campos e o `id` gerado. `buscar_ultima_leitura(conexao, astronauta_id)` retorna um dicionário ou `None`; `buscar_historico(conexao, astronauta_id, indicador)` retorna uma lista em ordem cronológica, vazia quando não houver leituras. Os dicionários das consultas também incluem `id`. Os horários devem ser válidos em formato ISO 8601 com fuso, pois a ordenação usa esse valor. A validação e a conversão das respostas HTTP ficam no servidor.
-
-As consultas ordenam as leituras em memória para comparar fusos e microssegundos. Essa abordagem é simples para a demonstração, mas deve ser revista se o volume de dados crescer. Execute os testes do banco com `python -m unittest discover -s tests`.
-
-A aplicação ainda não inicia: a equipe implementará o Flask em `app.py` e documentará aqui o comando de execução. Primeiro, façam uma leitura simulada ser salva e exibida com unidade, origem e horário; depois adicionem histórico e atualização automática.
-
-Não enviem dados reais de saúde ou credenciais ao repositório. Frequência cardíaca isolada não descreve a saúde geral; o sistema não oferece diagnóstico.
+Não coloquem dados reais de saúde, credenciais, ambientes virtuais ou bancos locais no repositório. O software é um protótipo de apoio, não um diagnóstico ou ferramenta clínica validada.

@@ -1,40 +1,24 @@
 # Fundamentação e próximos passos
 
-Este documento reúne a proposta para a equipe e distingue o que já existe do que ainda precisa ser desenvolvido. O objetivo inicial é um protótipo web de acompanhamento de frequência cardíaca em uma missão espacial, com leituras fictícias identificadas como simuladas.
+O [PDF norte](Project%20Raga%20-%20Norte%20do%20projeto.pdf) reúne hipóteses, referências e exemplos. A [descrição do desafio](https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/) pede software que reúna indicadores e permita ao astronauta avaliar e agir. O resumo indexado foi consultado; a página completa retornou erro durante a análise. Confirmem requisitos e recursos na versão acessível do desafio e nas instruções oficiais de submissão.
 
-## Por que acompanhar a frequência cardíaca?
+## Evidências consultadas e uso
 
-O desafio [Create Health Monitoring Software for Astronauts on Space Missions](https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/) propõe reunir indicadores de saúde e ajudar astronautas a avaliar sua condição e agir a partir das informações. Em missões longas, há diferentes riscos à saúde; frequência cardíaca é um recorte inicial, não uma medida da saúde geral.
+- [NASA: cuidados médicos no espaço](https://www.nasa.gov/missions/station/faq-the-real-story-about-astronaut-health-care-in-space/): contextualiza o treinamento e acompanhamento médico existentes; não indica que astronautas estejam sem suporte.
+- [NASA: operações médicas](https://www.nasa.gov/reference/6-0-medical-operations/): informa sobre carga de trabalho, sono e privacidade de comunicações médicas e psicológicas. Fundamenta atenção à privacidade, não implementa controle de acesso para o projeto.
+- [NASA: fundamentos da saúde humana](https://www.nasa.gov/reference/fundamentals-of-human-health/) e [laboratório de fadiga](https://www.nasa.gov/human-systems-integration-division/human-performance/fatigue-countermeasures-laboratory/): contextualizam sono, fadiga e medições em pesquisa; não validam as regras do Raga.
+- [NASA: alterações ósseas](https://www.nasa.gov/reference/risk-of-spaceflight-induced-bone-changes/): cita perda média mensal de 1% a 1,5% em ossos que suportam peso durante missões de quatro a seis meses. Não inferir a perda de um indivíduo a partir de um dia de exercício.
+- [Agência Espacial Canadense: Bio-Monitor](https://www.asc-csa.gc.ca/eng/sciences/bio-monitor.asp): descreve sensores vestíveis e variáveis medidas, servindo de inspiração para dados fictícios. Não confirma nossa integração nem compatibilidade de formato.
+- [Estudo de diários de Stuster](https://ntrs.nasa.gov/citations/20100026549): identificou evidência de queda de moral no terceiro quarto em sua amostra. [Relatório posterior da NASA](https://ntrs.nasa.gov/api/citations/20220007465/downloads/Evidence%20Report%20-%20Team%202022%20FINAL4PUB%20rev%201.docx.pdf) descreve evidência inconsistente e uma revisão que não considera o fenômeno típico em todos os voos ou análogos. Não usar a fase da missão como diagnóstico ou gatilho automático universal.
 
-O artigo da NASA [Wearable Tech for Space Station Research](https://www.nasa.gov/missions/station/iss-research/wearable-tech-for-space-station-research/) apresenta pesquisas com dispositivos vestíveis na Estação Espacial. Um dos exemplos é um colete com sensores de frequência cardíaca e respiração usados durante o sono. A equipe pretende usar esse artigo para fundamentar a escolha de acompanhar um indicador com sensores vestíveis e para explicar a proposta na documentação e na apresentação.
+## Afirmações ainda a conferir
 
-Como complemento, [Risk of Cardiovascular Adaptations](https://www.nasa.gov/reference/risk-of-cardiovascular-adaptations/), da NASA, descreve riscos relacionados às adaptações cardiovasculares em voos espaciais. Ele ajuda a contextualizar o problema, mas não demonstra que este protótipo identifica essas condições.
+As demais porcentagens e detalhes do PDF — incluindo SANS, uso de medicamentos para dormir, adaptação, protocolos psicológicos, comparação de ferramentas, API e autonomia do Astroskin — não foram verificados individualmente nesta revisão. Chequem as fontes primárias, população, período e contexto antes de usá-los no pitch. Não afirmar que nenhuma outra ferramenta reúne capacidades semelhantes sem uma comparação abrangente. Não apresentar os exemplos de sinais e ações como regras clínicas.
 
-Esses artigos são referências de pesquisa: não fornecem uma conexão com relógio nem leituras prontas para o sistema. Não foram usados para definir limites clínicos ou validar alertas. Ao finalizar o projeto, registrem na submissão quais fontes foram efetivamente usadas e como contribuíram.
+## Próximos passos
 
-## Proposta para o protótipo
-
-O caminho inicial é gerar leituras simuladas, validá-las no servidor, salvá-las no SQLite e apresentá-las em um painel com unidade, origem e horário. Um histórico e um gráfico devem ajudar a observar mudanças ao longo do tempo. A integração com um relógio real depende da confirmação do modelo e do acesso aos dados; só deve ser apresentada como funcional quando for implementada e verificada.
-
-Para aproximar o painel da proposta de avaliação e ação do desafio, a equipe pode desenvolver depois:
-
-- **Contexto da leitura:** identificar, por exemplo, repouso ou exercício, para ajudar a interpretar o histórico. Ainda é preciso definir como essa informação será coletada e registrada.
-- **Orientação simples:** junto a uma mudança destacada por uma eventual regra de demonstração, sugerir que a pessoa confira o histórico e registre o contexto. A regra precisa ter sua origem e limitações documentadas e ser identificada como não validada clinicamente.
-
-Essas ideias são planejadas, não funcionalidades prontas. Caso o contexto ou a regra sejam implementados, a equipe deve combinar as mudanças no banco, na API e no painel e atualizar `docs/api.md` e os demais documentos relevantes. Uma leitura isolada não permite diagnosticar doenças nem concluir o estado geral de saúde. Não usem limites arbitrários como se fossem recomendações médicas.
-
-## Ordem sugerida de trabalho
-
-1. Combinar as respostas da API para erros e ausência de dados.
-2. Fazer uma leitura simulada percorrer o fluxo completo: geração, validação, gravação e exibição no painel.
-3. Acrescentar histórico, gráfico e atualização periódica; testar também ausência de dados e falha de atualização.
-4. Definir como registrar o contexto e como apresentar uma orientação útil, respeitando as limitações acima.
-5. Investigar o relógio disponível e seu acesso aos dados; documentar o que for possível implementar e testar.
-
-## Pontos para confirmar com a organização
-
-- A descrição do desafio fala em indicadores de saúde. Confirmar se um protótipo com foco inicial apenas em frequência cardíaca atende ao escopo esperado.
-- A [orientação da equipe organizadora sobre recursos](https://github.com/nasa/spaceapps/discussions/2123) informa que é necessário usar pelo menos um recurso da NASA para elegibilidade à avaliação global. Confirmar se o uso do artigo acima como fundamentação atende à exigência da edição e conferir a [aba de recursos do desafio](https://www.spaceappschallenge.org/2026/challenges/health-monitoring-software/?tab=resources).
-- A mesma orientação solicita citar as fontes utilizadas e explicar o uso de ferramentas de IA na submissão. Consultem o guia de envio e registrem como as ferramentas foram usadas, inclusive as exigências aplicáveis de identificação de conteúdo gerado.
-
-Uma [discussão sobre este desafio](https://github.com/nasa/spaceapps/discussions/2133) sugere usar dados sintéticos claramente identificados e consultar pesquisas para fundamentar regras. Trata-se de orientação de um participante que auxilia no evento; dúvidas sobre requisitos devem ser confirmadas com a organização.
+1. Confirmar os requisitos oficiais e documentar quais recursos e ferramentas de IA foram efetivamente usados.
+2. Fechar dados fictícios, linha de base, regras demonstrativas, acesso ao diário e visibilidade médica.
+3. Alinhar API, estrutura de dados e migração com toda a equipe, conforme [equipe](equipe.md) e [API](api.md).
+4. Construir e testar o caso completo de sono; depois atender as demais áreas e telas do [planejamento](raga.md).
+5. Revisar fontes, limitações, funcionamento offline, demonstração e pitch.
