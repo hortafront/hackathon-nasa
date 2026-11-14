@@ -8,6 +8,14 @@ Este documento distingue o que existe do que é necessário ao Raga. As interfac
 
 As rotas antigas `GET /api/leituras` e `POST /api/leituras` foram planejadas, mas não estão implementadas. O banco oferece funções Python de leituras numéricas, não rotas HTTP. Não há rota para o painel, check-in ou visão médica.
 
+## Primeiro componente de avaliação — interface interna, não HTTP
+
+`avaliacao_sono.avaliar_sono(linha_base_horas, registros, data_avaliacao)` recebe uma referência fictícia em horas (ou `None`), registros com `data_sono` no formato `AAAA-MM-DD` e `duracao_horas`, e uma data Python `datetime.date` explícita. A data do sono é a data local do despertar, não um horário de sensor. As durações devem ser números finitos maiores que zero e até 24; datas duplicadas, futuras ou inválidas geram `ValueError`. O chamador deve tratar erros e validar entradas externas antes de chamar a função.
+
+Para a demonstração, a regra exige dados das três datas consecutivas terminando na data avaliada e referência disponível. Se faltar qualquer uma, retorna `dados_insuficientes`; se as três durações forem inferiores à referência, `amarelo`; caso contrário, `verde`, significando somente que esta regra não foi acionada. O resultado explica a decisão e apresenta as noites consideradas. A regra foi escolhida apenas para ilustrar o caso do PDF: não é validada clinicamente, não considera qualidade, contexto ou outras causas e não classifica situações vermelhas. O horário da data avaliada e a janela devem ser combinados com o back-end 1 e o front-end.
+
+Em amarelo a resposta inclui orientação genérica e `reavaliar_em_horas: 24`, proposta dentro da janela de 24–48 horas. Isso é apenas um prazo sugerido: não cria, agenda nem persiste alerta ou reavaliação e não comunica a equipe médica. Não usar para interpretar urgências. A ligação com o armazenamento, regras completas e uma rota HTTP dependem dos contratos da equipe.
+
 ## Necessidades do contrato Raga — a definir
 
 | Consumidor | Dados/operações necessárias |
