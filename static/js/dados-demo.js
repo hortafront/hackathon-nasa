@@ -20,7 +20,7 @@
 //   erro-inicial → falha já na primeira carga
 (function () {
   var simular = new URLSearchParams(window.location.search).get("simular");
-  var chamadas = 0;
+  var chamadas = {}; // por tipo de dado: cada parte carrega uma vez antes de falhar
 
   var astronauta = {
     id: 1,
@@ -101,13 +101,33 @@
     reavaliar_em_horas: null
   };
 
-  // Check-ins feitos nesta aba. Ficam só na memória: somem ao recarregar.
-  var checkinsLocais = [];
+  // O que for registrado nesta aba fica no sessionStorage: some ao fechar
+  // a aba, mas continua ao trocar de página (check-ins → painel).
+  // Se o navegador bloquear, os dados ficam só na memória da página.
+  function lerSessao(chave, padrao) {
+    try {
+      var texto = sessionStorage.getItem(chave);
+      return texto ? JSON.parse(texto) : padrao;
+    } catch (erro) {
+      return padrao;
+    }
+  }
+
+  function salvarSessao(chave, valor) {
+    try {
+      sessionStorage.setItem(chave, JSON.stringify(valor));
+    } catch (erro) {
+      // Sem armazenamento: vale só até sair da página.
+    }
+  }
+
+  // Check-ins de sono feitos nesta aba.
+  var checkinsLocais = lerSessao("raga-demo-sono", []);
 
   // Check-ins da noite (Mente e equipe) fictícios. Escalas de 1 a 5:
   // humor e convivência (5 = melhor), estresse (5 = mais estresse).
-  // O diário nunca entra aqui: ele fica só no navegador (checkin-noite.js).
-  var checkinsNoite = [
+  // O diário nunca entra aqui: ele fica só no navegador (checkins.js).
+  var checkinsNoite = lerSessao("raga-demo-noite", null) || [
     { id: 1, data: "2026-11-08", humor: 4, estresse: 2, convivencia: 4, registrado_em: "2026-11-08T21:30:00-03:00", origem: "simulada" },
     { id: 2, data: "2026-11-09", humor: 3, estresse: 3, convivencia: 4, registrado_em: "2026-11-09T21:40:00-03:00", origem: "simulada" },
     { id: 3, data: "2026-11-10", humor: 3, estresse: 4, convivencia: 3, registrado_em: "2026-11-10T22:05:00-03:00", origem: "simulada" }
@@ -116,7 +136,7 @@
   // Testes de reação fictícios (Cognição), inspirados no PVT.
   // Tempos em milissegundos; linha de base fictícia de 285 ms.
   var linhaBaseReacaoMs = 285;
-  var testesReacao = [
+  var testesReacao = lerSessao("raga-demo-reacao", null) || [
     { id: 1, realizado_em: "2026-11-08T08:10:00-03:00", tentativas: 10, mediana_ms: 281, mais_rapida_ms: 242, mais_lenta_ms: 356, acima_500ms: 0, antecipacoes: 0, origem: "simulada" },
     { id: 2, realizado_em: "2026-11-09T08:05:00-03:00", tentativas: 10, mediana_ms: 290, mais_rapida_ms: 251, mais_lenta_ms: 388, acima_500ms: 0, antecipacoes: 1, origem: "simulada" },
     { id: 3, realizado_em: "2026-11-10T08:12:00-03:00", tentativas: 10, mediana_ms: 286, mais_rapida_ms: 248, mais_lenta_ms: 371, acima_500ms: 0, antecipacoes: 0, origem: "simulada" }
@@ -235,8 +255,10 @@
     throw new Error("Falha simulada de atualização.");
   }
 
-  function deveFalhar() {
-    return simular === "erro-inicial" || (simular === "erro" && chamadas > 1);
+  // Conta a chamada deste tipo e diz se a simulação manda falhar.
+  function deveFalhar(chave) {
+    chamadas[chave] = (chamadas[chave] || 0) + 1;
+    return simular === "erro-inicial" || (simular === "erro" && chamadas[chave] > 1);
   }
 
   window.RagaDadosDemo = {
@@ -244,9 +266,8 @@
 
     // Futuro: GET do caso de sono (rota a combinar com o back-end).
     buscarCasoSono: function () {
-      chamadas += 1;
       if (simular === "carregando") return new Promise(function () {});
-      if (deveFalhar()) return responder(falha, 300);
+      if (deveFalhar("sono")) return responder(falha, 300);
       return responder(montarCasoSono, 400);
     },
 
@@ -271,6 +292,7 @@
           return dataDe(c) !== dataDe(registro);
         });
         checkinsLocais.push(registro);
+        salvarSessao("raga-demo-sono", checkinsLocais);
         return { situacao: "registrado_localmente", registro: copiar(registro) };
       }, 300);
     },
@@ -283,9 +305,8 @@
 
     // Testes de reação (Cognição): lista cronológica e linha de base fictícia.
     buscarTestesReacao: function () {
-      chamadas += 1;
       if (simular === "carregando") return new Promise(function () {});
-      if (deveFalhar()) return responder(falha, 300);
+      if (deveFalhar("reacao")) return responder(falha, 300);
       return responder(function () {
         return {
           modo: "demonstracao-local",
@@ -301,15 +322,15 @@
       return responder(function () {
         var registro = Object.assign({ id: "local-" + Date.now(), origem: "autorrelato (só nesta aba)" }, teste);
         testesReacao.push(registro);
+        salvarSessao("raga-demo-reacao", testesReacao);
         return { situacao: "registrado_localmente", teste: copiar(registro) };
       }, 300);
     },
 
     // Check-ins da noite: lista cronológica (vazia com ?simular=vazio).
     buscarCheckinsNoite: function () {
-      chamadas += 1;
       if (simular === "carregando") return new Promise(function () {});
-      if (deveFalhar()) return responder(falha, 300);
+      if (deveFalhar("noite")) return responder(falha, 300);
       return responder(function () {
         return {
           modo: "demonstracao-local",
@@ -327,6 +348,7 @@
         checkinsNoite = checkinsNoite.filter(function (c) { return c.data !== checkin.data; });
         checkinsNoite.push(registro);
         checkinsNoite.sort(function (a, b) { return a.data < b.data ? -1 : 1; });
+        salvarSessao("raga-demo-noite", checkinsNoite);
         return { situacao: "registrado_localmente", checkin: copiar(registro) };
       }, 300);
     },
@@ -335,9 +357,8 @@
     // poderia ver; check-in detalhado e diário ficam de fora
     // até a política de compartilhamento ser definida.
     buscarVisaoMedica: function () {
-      chamadas += 1;
       if (simular === "carregando") return new Promise(function () {});
-      if (deveFalhar()) return responder(falha, 300);
+      if (deveFalhar("medica")) return responder(falha, 300);
       return responder(function () {
         // Exemplos escritos à mão: um tripulante de cada cor, do mais
         // grave para o menos grave. Só o estado e o motivo resumido;

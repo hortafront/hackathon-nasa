@@ -21,8 +21,16 @@
   // alerta do cenário). Sem ela, avalia o despertar mais recente.
   var dataEscolhida = /^\d{4}-\d{2}-\d{2}$/.test(params.get("data") || "") ? params.get("data") : null;
 
+  // Fonte decidida POR TIPO DE DADO (sono, noite, reação, médica), porque
+  // uma página pode usar rotas que já existem e outras que ainda não.
   // fonte: null (ainda não decidida) | "api" | "demo"
-  var estado = { fonte: escolhida ? "demo" : null, motivo: escolhida ? "escolhida" : null };
+  var estados = {};
+  function estadoDe(chave) {
+    if (!estados[chave]) {
+      estados[chave] = { fonte: escolhida ? "demo" : null, motivo: escolhida ? "escolhida" : null };
+    }
+    return estados[chave];
+  }
 
   // fetch com tratamento dos erros no formato {"erro": "..."} da API.
   function pedir(url, opcoes) {
@@ -52,7 +60,8 @@
   }
 
   // Tenta a API; na 1ª consulta, se a rota não existir, usa os dados locais.
-  function comReserva(api, reserva) {
+  function comReserva(chave, api, reserva) {
+    var estado = estadoDe(chave);
     if (estado.fonte === "demo") return reserva();
     return api().then(function (dados) {
       estado.fonte = "api";
@@ -132,28 +141,30 @@
   }
 
   window.RagaDados = {
-    // Para a tela avisar de onde vêm os dados.
-    fonte: function () {
-      return { fonte: estado.fonte, motivo: estado.motivo };
+    // Para a tela avisar de onde vêm os dados de cada tipo:
+    // "sono", "noite", "reacao" ou "medica".
+    fonte: function (chave) {
+      var e = estadoDe(chave || "sono");
+      return { fonte: e.fonte, motivo: e.motivo };
     },
 
     buscarCasoSono: function () {
-      return comReserva(casoSonoDaApi, demo.buscarCasoSono);
+      return comReserva("sono", casoSonoDaApi, demo.buscarCasoSono);
     },
 
     enviarCheckinSono: function (checkin) {
-      if (estado.fonte === "demo") return demo.enviarCheckinSono(checkin);
+      if (estadoDe("sono").fonte === "demo") return demo.enviarCheckinSono(checkin);
       return checkinNaApi(checkin);
     },
 
     // Check-in da noite (Mente e equipe). Rotas recomendadas em
     // docs/integracao-front-api.md; o diário NUNCA é enviado.
     buscarCheckinsNoite: function () {
-      return comReserva(function () { return pedir(BASE + "/mente/checkins"); }, demo.buscarCheckinsNoite);
+      return comReserva("noite", function () { return pedir(BASE + "/mente/checkins"); }, demo.buscarCheckinsNoite);
     },
 
     enviarCheckinNoite: function (checkin) {
-      if (estado.fonte === "demo") return demo.enviarCheckinNoite(checkin);
+      if (estadoDe("noite").fonte === "demo") return demo.enviarCheckinNoite(checkin);
       return pedir(BASE + "/mente/checkins", {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -173,11 +184,11 @@
     // Teste de reação (Cognição). Rotas recomendadas em
     // docs/integracao-front-api.md, seção 7.
     buscarTestesReacao: function () {
-      return comReserva(function () { return pedir(BASE + "/cognicao/testes"); }, demo.buscarTestesReacao);
+      return comReserva("reacao", function () { return pedir(BASE + "/cognicao/testes"); }, demo.buscarTestesReacao);
     },
 
     enviarTesteReacao: function (teste) {
-      if (estado.fonte === "demo") return demo.enviarTesteReacao(teste);
+      if (estadoDe("reacao").fonte === "demo") return demo.enviarTesteReacao(teste);
       return pedir(BASE + "/cognicao/testes", {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -196,7 +207,7 @@
 
     // Rota ainda não existe: recomendada em docs/integracao-front-api.md.
     buscarVisaoMedica: function () {
-      return comReserva(function () { return pedir("/api/equipe-medica/sono"); }, demo.buscarVisaoMedica);
+      return comReserva("medica", function () { return pedir("/api/equipe-medica/sono"); }, demo.buscarVisaoMedica);
     }
   };
 })();
