@@ -71,8 +71,25 @@
       resumo.className = "area-resumo";
       resumo.textContent = area.resumo;
       li.append(nome, selo, resumo);
+      // No modo API, áreas sem rota vêm de dados-demo.js: avisar.
+      if (area.local) {
+        var origem = document.createElement("p");
+        origem.className = "area-origem";
+        origem.textContent = "Exemplo local, sem API para esta área.";
+        li.appendChild(origem);
+      }
       lista.appendChild(li);
     });
+
+    // Vermelho = situação apresentada como urgente: não esperar reavaliação.
+    var vermelhas = dados.areas.filter(function (a) { return a.estado === "vermelho"; });
+    var alerta = $("alerta-urgente");
+    alerta.hidden = vermelhas.length === 0;
+    alerta.textContent = vermelhas.length
+      ? vermelhas.map(function (a) { return a.nome; }).join(", ") +
+        " em vermelho (exemplo de demonstração): situação apresentada como urgente. " +
+        "Procure a equipe médica imediatamente, sem esperar a reavaliação. Este protótipo não envia avisos."
+      : "";
   }
 
   function desenharGrafico(sono) {

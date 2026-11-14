@@ -36,9 +36,8 @@
       <nav class="links" aria-label="Seções do painel">
         <a href="#areas">Áreas</a>
         <a href="#sono">Sono</a>
-        <a href="#checkin">Check-in da manhã</a>
-        <a href="checkin-noite.html">Check-in da noite</a>
-        <a href="#sobre-os-dados">Sobre</a>
+        <a href="#checkin">Check-in manhã</a>
+        <a href="checkin-noite.html">Check-in noite</a>
         <a href="equipe-medica.html">Equipe médica</a>
       </nav>
 
@@ -88,6 +87,8 @@
     <!-- Painel das seis áreas do Raga (PDF norte v3). -->
     <section id="areas" class="areas depende-dados" aria-labelledby="titulo-areas">
       <h2 id="titulo-areas">Áreas acompanhadas</h2>
+      <!-- Aparece quando alguma área está em vermelho (dashboard.js). -->
+      <p id="alerta-urgente" class="alerta-urgente" hidden></p>
       <div class="estado-geral">
         <p class="estado-geral-titulo">Estado geral</p>
         <p id="estado-geral-selo"></p>

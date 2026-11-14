@@ -42,6 +42,10 @@
         (tri.origem === "ficticia" ? "Personagem fictícia" : "Tripulante") +
         ", " + tri.identificacao + (tri.area ? ". Área: " + tri.area + "." : ".")));
       li.appendChild(texto("p", "", tri.motivo));
+      if (tri.estado === "vermelho") {
+        li.appendChild(texto("p", "nota nota--urgente",
+          "Atenção imediata: não aguardar a reavaliação. Este protótipo não envia avisos de verdade."));
+      }
 
       if (tri.dados_compartilhados.length) {
         var ul = document.createElement("ul");

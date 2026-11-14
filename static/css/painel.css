@@ -72,6 +72,21 @@
   color: inherit;
 }
 
+/* Aviso de área em vermelho: barra laranja-vermelha + texto forte
+   (a cor nunca é a única pista: o texto diz o que fazer). */
+.alerta-urgente {
+  border-left: 4px solid var(--cor-destaque);
+  padding: var(--espaco-2) var(--espaco-3);
+  font-weight: 500;
+  background: var(--cor-superficie);
+}
+
+.area-origem {
+  font-size: 0.8125rem;
+  color: var(--cor-texto-suave);
+  font-style: italic;
+}
+
 /* Selo um pouco menor nos cartões estreitos, para caber em uma linha. */
 .area .selo {
   font-size: 0.8125rem;
