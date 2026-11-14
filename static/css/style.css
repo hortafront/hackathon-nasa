@@ -491,9 +491,9 @@ p {
 .selo--amarelo .selo-icone { color: var(--cor-atencao); }
 .selo--vermelho { border-color: var(--cor-critico); }
 .selo--vermelho .selo-icone { color: var(--cor-critico); }
-.selo--insuficiente,
+.selo--dados_insuficientes,
 .selo--sem_registros { border-style: dashed; border-color: var(--cor-texto-suave); }
-.selo--insuficiente .selo-icone,
+.selo--dados_insuficientes .selo-icone,
 .selo--sem_registros .selo-icone { color: var(--cor-texto-suave); }
 
 .mensagem-vazia {
