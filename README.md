@@ -17,7 +17,7 @@ O ciclo planejado é **medir → comparar com a linha de base individual → cla
 - `database.py` e `schema.sql` implementam uma tabela de leituras numéricas e funções de gravação e consulta. Não modelam as cinco áreas, check-ins, linha de base ou alertas.
 - `app.py` contém somente uma rota fictícia de leitura recente, sem conexão ao banco. Ela usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. Não há rota para servir o painel nem API completa.
 - `avaliacao_sono.py` implementa uma primeira regra ilustrativa e isolada para duração do sono, ainda não conectada ao banco ou à API. Detalhes e limitações estão em [API e integração](docs/api.md).
-- `templates/index.html` e os estilos apresentam uma interface inicial de frequência cardíaca; `dashboard.js` e `chart.js` são esboços. `simulator.py` é apenas um esboço.
+- `templates/index.html` (painel da astronauta) e `templates/equipe-medica.html` (prévia da visão médica) apresentam o caso de sono com **dados fictícios locais** (`static/js/dados-demo.js`), sem API. Ver [front-end — caso de sono](docs/front-caso-sono.md). `simulator.py` é apenas um esboço.
 - Nenhum ciclo completo do Raga, controle de acesso, notificação, execução de reavaliação ou integração com sensores está implementado. Não se deve anunciar o produto como operacional ou validado.
 
 ## Preparação e verificação do código existente
