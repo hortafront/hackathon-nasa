@@ -1,4 +1,6 @@
-/* Estilos do painel: cores, tipografia, layout e adaptação a telas menores. */
+/* Estilos compartilhados por todas as páginas: fontes, cores, tema, base,
+   cabeçalho, rodapé, cartões e selos de estado. Cada página tem também
+   o seu próprio CSS (painel.css, equipe-medica.css). */
 
 /* ==========================================================
    0. Fontes locais (funcionam sem internet)
@@ -148,8 +150,13 @@
   box-sizing: border-box;
 }
 
+/* min-height + flex em coluna: o rodapé fica sempre no fim da tela,
+   mesmo quando o conteúdo é curto (sem faixa branca embaixo). */
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--cor-fundo);
   color: var(--cor-texto);
   font-family: var(--fonte-texto);
@@ -158,7 +165,8 @@ body {
 }
 
 h1,
-h2 {
+h2,
+h3 {
   margin: 0;
   font-family: var(--fonte-titulo);
   font-weight: 600;
@@ -167,6 +175,16 @@ h2 {
 
 h1 { font-size: var(--titulo-1); }
 h2 { font-size: var(--titulo-2); }
+h3 { font-size: 1rem; }
+
+/* O atributo hidden sempre vence o display das classes (grid, flex). */
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--cor-primaria);
+}
 
 p {
   margin: 0;
@@ -206,6 +224,9 @@ p {
 /* Área central: largura máxima para o texto não ficar espalhado
    em telas grandes; centralizada na página. */
 .painel {
+  flex: 1 0 auto; /* ocupa a sobra de altura e empurra o rodapé */
+  align-content: start; /* a sobra fica embaixo, sem esticar as seções */
+  width: 100%;
   max-width: 48rem;
   margin: 0 auto;
   padding: var(--espaco-5) var(--espaco-3);
@@ -246,7 +267,8 @@ p {
   border-bottom: 2px solid transparent;
 }
 
-.links a:hover {
+.links a:hover,
+.links a[aria-current="page"] {
   border-bottom-color: currentColor;
 }
 
@@ -372,21 +394,7 @@ p {
 }
 
 /* ==========================================================
-   6. Histórico (gráfico)
-   ========================================================== */
-.historico {
-  display: grid;
-  gap: var(--espaco-3);
-}
-
-/* O canvas ocupa toda a largura disponível; o Chart.js ajusta a altura. */
-#grafico-historico {
-  width: 100%;
-  max-height: 20rem;
-}
-
-/* ==========================================================
-   6b. Sobre os dados
+   6. Sobre os dados
    Lista de termos (dt) e explicações (dd).
    ========================================================== */
 .sobre {
@@ -411,7 +419,113 @@ p {
 }
 
 /* ==========================================================
-   7. Telas pequenas (celular)
+   7. Estados e selos (painel e visão médica)
+   O dashboard.js troca data-estado e data-tem-dados no <main>.
+   ========================================================== */
+
+/* Nada recebido ainda (carregando ou falha na 1ª carga):
+   esconde as seções que dependem dos dados. */
+[data-tem-dados="nao"] .depende-dados {
+  display: none;
+}
+
+/* Aviso geral. Vazio, ele continua na página (para o leitor de tela
+   anunciar o próximo texto), mas sem ocupar espaço. */
+.aviso {
+  border-left: 4px solid var(--cor-divisor);
+  padding: var(--espaco-2) var(--espaco-3);
+  font-size: var(--texto-pequeno);
+}
+
+.aviso:empty {
+  padding: 0;
+  border: 0;
+}
+
+/* Falha: mesma marcação do erro do cartão (texto + barra vermelha). */
+[data-estado="erro"] .aviso {
+  color: var(--cor-critico);
+  font-weight: 500;
+  border-left-color: var(--cor-destaque);
+}
+
+/* Etiquetas que deixam claro o que é simulado ou demonstrativo. */
+.etiqueta-simulada,
+.etiqueta-demo {
+  justify-self: start;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 var(--espaco-2);
+  font-size: var(--texto-pequeno);
+  font-weight: 500;
+}
+
+.etiqueta-demo {
+  border-style: dashed;
+  color: var(--cor-texto-suave);
+}
+
+/* Selo de estado: ícone colorido + texto na cor do texto.
+   O texto não é colorido para manter o contraste; quem diferencia
+   os estados são as palavras e o formato do ícone. */
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  border: 1px solid var(--cor-divisor);
+  border-radius: var(--raio);
+  padding: var(--espaco-1) var(--espaco-2);
+  font-size: var(--texto-pequeno);
+  font-weight: 500;
+}
+
+.selo-icone {
+  flex: none;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.selo--verde { border-color: var(--cor-normal); }
+.selo--verde .selo-icone { color: var(--cor-normal); }
+.selo--amarelo { border-color: var(--cor-atencao); }
+.selo--amarelo .selo-icone { color: var(--cor-atencao); }
+.selo--vermelho { border-color: var(--cor-critico); }
+.selo--vermelho .selo-icone { color: var(--cor-critico); }
+.selo--insuficiente,
+.selo--sem_registros { border-style: dashed; border-color: var(--cor-texto-suave); }
+.selo--insuficiente .selo-icone,
+.selo--sem_registros .selo-icone { color: var(--cor-texto-suave); }
+
+.mensagem-vazia {
+  color: var(--cor-texto-suave);
+}
+
+.nota {
+  font-size: var(--texto-pequeno);
+  color: var(--cor-texto-suave);
+  max-width: 65ch;
+}
+
+/* Aviso de urgência: barra vermelha pequena, texto na cor normal. */
+.nota--urgente {
+  color: var(--cor-texto);
+  border-left: 4px solid var(--cor-destaque);
+  padding-left: var(--espaco-2);
+}
+
+.nota--pendente {
+  color: var(--cor-texto);
+  border-left: 4px dashed var(--cor-texto-suave);
+  padding-left: var(--espaco-2);
+}
+
+.lista-dados {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+/* ==========================================================
+   8. Telas pequenas (celular)
    ========================================================== */
 @media (max-width: 30rem) {
   :root {
@@ -430,7 +544,8 @@ p {
   .links {
     order: 3;
     width: 100%;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--espaco-1) var(--espaco-3);
   }
 
   .hero h1 {
