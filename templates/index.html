@@ -4,15 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monitoramento de saúde</title>
-  <!-- Flask fornecerá os arquivos estáticos quando o servidor for implementado. -->
+
+  <!-- Fontes do Google Fonts: Inter (títulos) e Public Sans (texto).
+       Sem internet, o navegador usa as fontes reservas definidas no CSS. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Public+Sans:wght@400;500&display=swap">
+
+  <!-- Flask fornece os arquivos estáticos pela função url_for. -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <main>
+  <!-- Cabeçalho: nome do sistema. -->
+  <header class="cabecalho">
     <h1>Monitoramento de saúde</h1>
-    <!-- Criar aqui o cartão da leitura, os estados e o gráfico do histórico. -->
-    <p>Painel em desenvolvimento. Os dados da demonstração serão identificados.</p>
+  </header>
+
+  <main class="painel">
+    <!-- Cartão da última leitura.
+         O dashboard.js troca o atributo data-estado entre:
+         carregando | vazio | ok | erro.
+         O style.css decide o que aparece em cada estado. -->
+    <section id="cartao-leitura" class="cartao" data-estado="carregando" aria-labelledby="titulo-leitura">
+      <h2 id="titulo-leitura">Frequência cardíaca</h2>
+
+      <!-- Valor e unidade preenchidos pelo dashboard.js. -->
+      <p class="leitura">
+        <span id="leitura-valor" class="leitura-valor">--</span>
+        <span id="leitura-unidade" class="leitura-unidade">bpm</span>
+      </p>
+
+      <!-- Origem e horário: obrigatórios mesmo para dados antigos (docs/api.md). -->
+      <p class="leitura-detalhe">Origem: <span id="leitura-origem">—</span></p>
+      <p class="leitura-detalhe">Registrado em <time id="leitura-horario">—</time></p>
+
+      <!-- Mensagem de estado. role="status" faz o leitor de tela
+           anunciar a mudança sem interromper o usuário. -->
+      <p id="leitura-mensagem" class="leitura-mensagem" role="status">Carregando leitura…</p>
+    </section>
+
+    <!-- Área do gráfico do histórico, desenhado pelo chart.js. -->
+    <section class="historico" aria-labelledby="titulo-historico">
+      <h2 id="titulo-historico">Histórico</h2>
+      <canvas id="grafico-historico" aria-label="Gráfico do histórico da frequência cardíaca">
+        <!-- Texto exibido só se o navegador não suportar canvas. -->
+        Seu navegador não consegue exibir o gráfico.
+      </canvas>
+    </section>
   </main>
+
+  <!-- Rodapé com o aviso exigido pelo AGENTS.md. -->
+  <footer class="rodape">
+    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+  </footer>
+
   <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/chart.js') }}" defer></script>
 </body>
