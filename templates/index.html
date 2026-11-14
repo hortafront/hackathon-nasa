@@ -5,20 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monitoramento de saúde</title>
 
-  <!-- Fontes do Google Fonts: Inter (títulos) e Public Sans (texto).
-       Sem internet, o navegador usa as fontes reservas definidas no CSS. -->
+  <!-- Fontes do Google Fonts: Prata (título grande), Inter (títulos)
+       e Public Sans (texto). Sem internet, o navegador usa as fontes
+       reservas definidas no CSS. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Public+Sans:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Prata&family=Public+Sans:wght@400;500&display=swap">
 
   <!-- Flask fornece os arquivos estáticos pela função url_for. -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <!-- O tema é carregado aqui no <head>, sem defer, para aplicar
+       claro/escuro antes de a página aparecer (evita "piscar"). -->
+  <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
 </head>
 <body>
-  <!-- Cabeçalho: nome do sistema. -->
+  <!-- Cabeçalho: marca, links das seções e botão de tema. -->
   <header class="cabecalho">
-    <h1>Monitoramento de saúde</h1>
+    <div class="nav">
+      <a class="marca" href="#">
+        <!-- Ícone de órbita (decorativo, por isso aria-hidden). -->
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="13" r="5" fill="currentColor"/>
+          <ellipse cx="13" cy="13" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 13 13)"/>
+        </svg>
+        Raga
+      </a>
+
+      <nav class="links" aria-label="Seções do painel">
+        <a href="#cartao-leitura">Leitura</a>
+        <a href="#historico">Histórico</a>
+        <a href="#sobre-os-dados">Sobre os dados</a>
+      </nav>
+
+      <!-- aria-pressed diz ao leitor de tela se o tema escuro está ligado.
+           O tema.js atualiza esse valor a cada clique. -->
+      <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
+        </svg>
+        Tema escuro
+      </button>
+    </div>
   </header>
+
+  <!-- Título grande: o elemento de destaque da página. -->
+  <div class="hero">
+    <h1>Monitoramento de saúde</h1>
+    <p>Acompanhe sua frequência cardíaca durante a missão.</p>
+  </div>
 
   <main class="painel">
     <!-- Cartão da última leitura.
@@ -44,12 +79,28 @@
     </section>
 
     <!-- Área do gráfico do histórico, desenhado pelo chart.js. -->
-    <section class="historico" aria-labelledby="titulo-historico">
+    <section id="historico" class="historico" aria-labelledby="titulo-historico">
       <h2 id="titulo-historico">Histórico</h2>
       <canvas id="grafico-historico" aria-label="Gráfico do histórico da frequência cardíaca">
         <!-- Texto exibido só se o navegador não suportar canvas. -->
         Seu navegador não consegue exibir o gráfico.
       </canvas>
+    </section>
+
+    <!-- Sobre os dados: origem, limites e fonte de referência
+         (pedidos no planejamento e no checklist da banca). -->
+    <section id="sobre-os-dados" class="sobre" aria-labelledby="titulo-sobre">
+      <h2 id="titulo-sobre">Sobre os dados</h2>
+      <dl>
+        <dt>De onde vêm</dt>
+        <dd>As leituras desta demonstração são simuladas. A origem de cada uma aparece no cartão.</dd>
+
+        <dt>O que não mostram</dt>
+        <dd>A frequência cardíaca sozinha não descreve a saúde geral. Este painel não faz diagnóstico.</dd>
+
+        <dt>Fonte de referência</dt>
+        <dd>Em definição pela equipe.</dd>
+      </dl>
     </section>
   </main>
 
