@@ -32,14 +32,20 @@
   font-weight: 600;
 }
 
-/* Cinco cartões pequenos; quebram de linha sozinhos em telas menores. */
+/* Seis cartões: 2 colunas no celular, 3 a partir de 40rem (duas linhas iguais). */
 .lista-areas {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--espaco-3);
+}
+
+@media (min-width: 40rem) {
+  .lista-areas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* A borda superior repete o estado (cor + estilo da linha). */

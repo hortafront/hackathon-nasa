@@ -121,7 +121,9 @@
       { id: "coracao", nome: "Coração", estado: "sem_registros", resumo: semDados },
       { id: "mente", nome: "Mente e equipe", estado: "sem_registros", resumo: semDados },
       { id: "exercicio", nome: "Exercício", estado: "sem_registros", resumo: semDados },
-      { id: "cognicao", nome: "Cognição", estado: "sem_registros", resumo: semDados }
+      { id: "cognicao", nome: "Cognição", estado: "sem_registros", resumo: semDados },
+      // 6ª área do PDF norte v3 (tag de glicose); ainda sem dados.
+      { id: "metabolismo", nome: "Metabolismo", estado: "sem_registros", resumo: semDados }
     ];
   }
 
@@ -165,7 +167,7 @@
       astronauta: copiar(astronauta),
       estado_geral: {
         estado: "dados_insuficientes",
-        explicacao: "4 das 5 áreas ainda não têm dados nesta demonstração, então o estado geral não é calculado."
+        explicacao: "5 das 6 áreas ainda não têm dados nesta demonstração, então o estado geral não é calculado."
       },
       areas: areas(estadoSono, resumoSono),
       sono: {
