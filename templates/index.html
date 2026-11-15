@@ -248,12 +248,35 @@
         <summary><span id="titulo-indicador">Demo tools: record a fictional indicator</span></summary>
         <p>Add a simulated heart rate or exercise duration. Do not use real measurements.</p>
         <form id="form-indicador" class="formulario">
-          <label for="indicador-area">Area</label>
-          <select id="indicador-area"><option value="coracao">Resting heart rate (bpm)</option><option value="exercicio">Exercise (minutes)</option></select>
-          <label for="indicador-valor">Value</label>
-          <input id="indicador-valor" type="number" min="0" step="0.1" required>
-          <label for="indicador-horario">Date and time of the fictional reading</label>
-          <input id="indicador-horario" type="datetime-local" required>
+          <!-- Área em teclas (mesmo visual da escala dos check-ins).
+               A unidade ao lado do valor muda com a área (dashboard.js). -->
+          <fieldset class="campo">
+            <legend>Area</legend>
+            <div class="escala">
+              <label><input type="radio" name="indicador-area" value="coracao" checked><span>Resting heart rate</span></label>
+              <label><input type="radio" name="indicador-area" value="exercicio"><span>Exercise</span></label>
+            </div>
+          </fieldset>
+          <!-- Valor: visor com a unidade dentro e teclas − / + dos lados
+               (teclas.js). O passo muda com a área; digitar aceita decimais. -->
+          <div class="campo">
+            <label for="indicador-valor">Value</label>
+            <div class="seletor-numero">
+              <button type="button" class="botao-secundario tecla-passo" data-direcao="-1" aria-controls="indicador-valor" aria-label="Decrease value">−</button>
+              <span class="visor">
+                <input id="indicador-valor" type="number" min="0" step="0.1" required inputmode="decimal" data-passo="1" data-inicio="60" aria-describedby="indicador-unidade">
+                <span id="indicador-unidade" class="unidade">bpm</span>
+              </span>
+              <button type="button" class="botao-secundario tecla-passo" data-direcao="1" aria-controls="indicador-valor" aria-label="Increase value">+</button>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="indicador-horario">Date and time of the fictional reading</label>
+            <div class="campo-linha">
+              <input id="indicador-horario" type="datetime-local" required>
+              <button id="indicador-agora" type="button" class="botao-secundario">Now</button>
+            </div>
+          </div>
           <button id="indicador-salvar" type="submit" class="botao">Save fictional indicator</button>
           <p id="indicador-mensagem" role="status" class="nota"></p>
         </form>
@@ -291,11 +314,12 @@
   </footer>
 
   <!-- Ordem importa (todos com defer, executam nesta sequência):
-       dados fictícios → ligação com a API → formatação → gráfico → painel. -->
+       dados fictícios → ligação com a API → formatação → gráfico → teclas → painel. -->
   <script src="../static/js/dados-demo.js" defer></script>
   <script src="../static/js/dados-api.js" defer></script>
   <script src="../static/js/formato.js" defer></script>
   <script src="../static/js/chart.js" defer></script>
+  <script src="../static/js/teclas.js" defer></script>
   <script src="../static/js/dashboard.js" defer></script>
 </body>
 </html>

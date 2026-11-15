@@ -228,19 +228,6 @@
   gap: var(--espaco-3);
 }
 
-#ciclo-sono select,
-#form-indicador select,
-#form-indicador input[type="datetime-local"] {
-  font: inherit;
-  min-height: 2.75rem;
-  padding: 0 var(--espaco-2);
-  border: 1px solid var(--cor-texto-suave);
-  border-radius: var(--raio);
-  background: var(--cor-superficie);
-  color: var(--cor-texto);
-  justify-self: start;
-}
-
 .tabela-dados summary {
   cursor: pointer;
   color: var(--cor-primaria);

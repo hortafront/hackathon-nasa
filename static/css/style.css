@@ -601,22 +601,159 @@ p {
   padding: 0;
 }
 
+/* Campos como "visores" rebaixados: a sombra interna no alto mostra
+   que o campo é fundo, ao contrário das teclas, que sobressaem. */
 .formulario input[type="date"],
 .formulario input[type="time"],
-.formulario input[type="number"] {
+.formulario input[type="datetime-local"],
+.formulario input[type="number"],
+.formulario select {
   font: inherit;
-  min-height: 2.75rem;
-  padding: 0 var(--espaco-2);
-  border: 1px solid var(--cor-texto-suave);
+  min-height: 3rem;
+  max-width: 100%;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--cor-texto-suave);
   border-radius: var(--raio);
-  background: var(--cor-superficie);
+  background-color: var(--cor-superficie);
   color: var(--cor-texto);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--cor-texto) 8%, transparent);
   justify-self: start;
+  transition: border-color var(--tecla-tempo) ease;
+}
+
+/* :not([type="radio"]): as teclas da escala têm o próprio hover e foco. */
+@media (hover: hover) {
+  .formulario input:not([type="radio"]):hover,
+  .formulario select:hover {
+    border-color: var(--cor-primaria);
+  }
+}
+
+.formulario input:not([type="radio"]):focus-visible,
+.formulario select:focus-visible {
+  border-color: var(--cor-primaria);
+}
+
+/* Seta própria (dois triângulos em currentColor): segue o tema. */
+.formulario select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.75rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25rem) center,
+    calc(100% - 0.9375rem) center;
+  background-size: 0.3125rem 0.3125rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 
 .formulario input[aria-invalid="true"] {
   border-color: var(--cor-critico);
-  border-width: 2px;
+}
+
+/* Valor numérico como leitura: fonte dos números, largura fixa. */
+.formulario input[type="number"] {
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: var(--titulo-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Campo + tecla na mesma linha (ex.: data e hora + "Now"). */
+.campo-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+/* Seletor numérico: [ − ] [ visor 72 bpm ] [ + ] */
+.seletor-numero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+/* O visor faz o papel do campo: borda, sombra interna e foco ficam
+   nele; o input dentro dele fica sem moldura. */
+.visor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 3rem;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  background-color: var(--cor-superficie);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--cor-texto) 8%, transparent);
+  transition: border-color var(--tecla-tempo) ease;
+}
+
+@media (hover: hover) {
+  .visor:hover {
+    border-color: var(--cor-primaria);
+  }
+}
+
+.visor:focus-within {
+  border-color: var(--cor-primaria);
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.formulario .visor input[type="number"] {
+  width: 4.5rem;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  text-align: right;
+  font-size: var(--titulo-2);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Sem as setinhas do navegador: as teclas − / + fazem esse papel. */
+.visor input::-webkit-inner-spin-button,
+.visor input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.formulario .visor input:focus-visible {
+  outline: none; /* o contorno de foco está no visor */
+}
+
+.unidade {
+  color: var(--cor-texto-suave);
+  font-weight: 700;
+}
+
+/* Teclas − / +: quadradas, sinal na fonte dos números.
+   Duas classes: vence .botao-secundario, que vem depois no arquivo. */
+.botao-secundario.tecla-passo {
+  width: 3rem;
+  padding: 0;
+  font-family: var(--fonte-titulo);
+  font-size: var(--titulo-2);
+  line-height: 1;
+  touch-action: manipulation; /* sem zoom de toque duplo ao repetir */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Resposta ao toque: o visor "acende" rapidamente ao mudar. */
+.pulso {
+  animation: pulso 280ms var(--tecla-curva);
+}
+
+@keyframes pulso {
+  0% { transform: scale(1.04); border-color: var(--cor-primaria); }
+  100% { transform: scale(1); }
 }
 
 .duracao {
@@ -632,7 +769,7 @@ p {
 }
 
 .formulario input[type="number"] {
-  width: 5.5rem;
+  width: 6.5rem;
 }
 
 /* Escala de 1 a 5 em botões grandes (área de toque de 44px). */
@@ -952,7 +1089,8 @@ p {
   .botao-secundario,
   .escala label,
   .botao-tema,
-  .botao-tema::before {
+  .botao-tema::before,
+  .pulso {
     transition: none;
     animation: none;
   }

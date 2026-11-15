@@ -536,10 +536,37 @@
       pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":00" + (fuso >= 0 ? "+" : "-") +
       pad(Math.floor(abs / 60)) + ":" + pad(abs % 60);
   }
+  // passo: quanto as teclas − / + (teclas.js) mudam. inicio: de onde
+  // partem com o campo vazio (ponto de partida fictício, não é
+  // referência clínica). A unidade, o passo e o início seguem a área.
+  var AREAS_INDICADOR = {
+    coracao: { unidade: "bpm", passo: 1, inicio: 60 },
+    exercicio: { unidade: "min", passo: 5, inicio: 30 }
+  };
+  function areaIndicador() {
+    return document.querySelector('input[name="indicador-area"]:checked').value;
+  }
+  var indicadorValor = $("indicador-valor");
+  document.querySelectorAll('input[name="indicador-area"]').forEach(function (opcao) {
+    opcao.addEventListener("change", function () {
+      var area = AREAS_INDICADOR[areaIndicador()];
+      $("indicador-unidade").textContent = area.unidade;
+      indicadorValor.setAttribute("data-passo", String(area.passo));
+      indicadorValor.setAttribute("data-inicio", String(area.inicio));
+    });
+  });
+
   var indicadorHora = $("indicador-horario");
-  var agoraLocal = new Date();
-  agoraLocal.setMinutes(agoraLocal.getMinutes() - agoraLocal.getTimezoneOffset());
-  indicadorHora.value = agoraLocal.toISOString().slice(0, 16);
+  function preencherAgora() {
+    var agoraLocal = new Date();
+    agoraLocal.setMinutes(agoraLocal.getMinutes() - agoraLocal.getTimezoneOffset());
+    indicadorHora.value = agoraLocal.toISOString().slice(0, 16);
+  }
+  preencherAgora();
+  $("indicador-agora").addEventListener("click", function () {
+    preencherAgora();
+    window.RagaTeclas.pulsar(indicadorHora);
+  });
   $("form-indicador").addEventListener("submit", function (evento) {
     evento.preventDefault();
     var botao = $("indicador-salvar");
@@ -548,7 +575,7 @@
     botao.disabled = true;
     botao.setAttribute("aria-busy", "true"); // visual de "salvando" (style.css)
     $("indicador-mensagem").textContent = "Saving…";
-    window.RagaDados.enviarIndicador({ area: $("indicador-area").value, valor: valor, registrado_em: horario })
+    window.RagaDados.enviarIndicador({ area: areaIndicador(), valor: valor, registrado_em: horario })
       .then(function () {
         $("indicador-mensagem").textContent = "Fictional indicator saved. The dashboard uses the date selected in the URL, if any.";
         return carregar();
