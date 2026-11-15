@@ -86,6 +86,27 @@ class TesteCheckins(unittest.TestCase):
         dados = {chave: valor for chave, valor in self.dados.items() if chave != 'diario_compartilhado'}
         self.assertIsNone(self.cliente.post(self.url, json=dados).json['checkin']['diario'])
 
+    def test_migracao_preserva_e_oculta_diario_anterior(self):
+        caminho = self.caminho.parent / 'antigo.db'
+        conexao = database.conectar_banco(caminho)
+        esquema = database.CAMINHO_SCHEMA.read_text(encoding='utf-8')
+        esquema = esquema.replace("    diario_compartilhado INTEGER NOT NULL DEFAULT 0 CHECK (diario_compartilhado IN (0, 1)),\n", '')
+        conexao.executescript(esquema)
+        database.carregar_dados_ficticios(conexao)
+        conexao.execute("INSERT INTO checkins_noite (astronauta_id, data, humor, estresse, convivencia, diario, registrado_em, origem) VALUES (1, '2026-11-10', 2, 4, 3, 'texto antigo', '2026-11-10T22:00:00-03:00', 'simulada')")
+        conexao.commit()
+        conexao.close()
+
+        database.inicializar_banco(caminho)
+        database.inicializar_banco(caminho)
+        conexao = database.conectar_banco(caminho)
+        self.addCleanup(conexao.close)
+        self.assertEqual(conexao.execute('SELECT diario, diario_compartilhado FROM checkins_noite').fetchone(), ('texto antigo', 0))
+        self.assertIsNone(database.buscar_checkins_noite(conexao, 1)[0]['diario'])
+        app.config['CAMINHO_BANCO'] = caminho
+        self.assertIsNone(self.cliente.get(self.url).json['checkins'][0]['diario'])
+        self.assertIsNone(self.cliente.get('/api/equipe-medica/sono').json['tripulantes'][0]['checkins_noite'][0]['diario'])
+
 
 if __name__ == '__main__':
     unittest.main()
