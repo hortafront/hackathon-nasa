@@ -10,7 +10,7 @@ Os parâmetros `?fonte=demo` e `?simular=...` selecionam o modo local descrito e
 
 - O PDF norte presente no repositório é a versão 2 e descreve cinco áreas. O modo local ainda inclui Metabolismo como sexta área de exemplo, pendente de confirmação da equipe; a API usa cinco.
 - Os dados e regras são fictícios e ilustrativos. O ciclo persistido de sono registra ações manualmente; não agenda, envia avisos ou comprova atendimento.
-- A visão médica inclui check-ins e diário fictícios conforme decisão da equipe. Não há autenticação nem controle por papel; use apenas dados fictícios em ambiente local.
+- A visão médica inclui as respostas dos check-ins; o diário passou a ser privado por padrão e só é compartilhado com permissão do astronauta (ver [diário privado](diario-privado.md), com o que falta no back-end). Não há autenticação nem controle por papel; use apenas dados fictícios em ambiente local.
 - As observações livres dos registros de sono são omitidas da rota individual, mas aparecem na visão médica. A política de compartilhamento dessas observações ainda precisa ser acordada.
 - Antes de ampliar a API, combinem formatos, acesso por papel, dados ausentes e tratamento de erros. Atualizem [api.md](api.md), consumidores e testes juntos.
 
