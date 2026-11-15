@@ -18,7 +18,7 @@ Use `database.carregar_dados_ficticios(conexao)` somente quando quiser carregar 
 
 O esquema não cria mais a tabela legada `leituras` nem um índice não único redundante sobre sono. Tabelas e índices antigos continuam intactos em bancos já existentes; a inicialização não os remove.
 
-O POST de sono, indicadores fictícios, teste de reação e check-ins da noite usam os campos e limites de `docs/api.md`. O diário fictício fica no banco junto ao check-in e é incluído na visão médica. Não há controle de acesso; use somente dados fictícios. `--carregar-ficticios` carrega separadamente `astronautas-ficticios.json`, `tripulacao-ficticia.json` e `indicadores-ficticios.json`: cada carga é transacional, idempotente e interrompe em conflito sem sobrescrever registros; cargas de arquivos anteriores já concluídas não são revertidas.
+O POST de sono, indicadores fictícios, teste de reação e check-ins da noite usam os campos e limites de `docs/api.md`. Novos diários só são guardados e incluídos na visão médica com compartilhamento explícito; textos antigos são preservados e ocultos enquanto seu consentimento é desconhecido. Não há controle de acesso; use somente dados fictícios. `--carregar-ficticios` carrega separadamente `astronautas-ficticios.json`, `tripulacao-ficticia.json` e `indicadores-ficticios.json`: cada carga é transacional, idempotente e interrompe em conflito sem sobrescrever registros; cargas de arquivos anteriores já concluídas não são revertidas.
 
 ## Funções para o back-end 2
 

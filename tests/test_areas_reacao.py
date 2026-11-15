@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+import json
 from datetime import date
 from pathlib import Path
 
@@ -60,6 +61,17 @@ class TesteAreasReacao(unittest.TestCase):
         finally:
             conexao.close()
 
+    def test_carga_rejeita_texto_nao_compartilhado(self):
+        dados = json.loads(database.CAMINHO_INDICADORES.read_text(encoding='utf-8'))
+        dados['checkins'][1]['diario'] = 'Texto fictício privado'
+        caminho = self.caminho.parent / 'indicadores-invalidos.json'
+        caminho.write_text(json.dumps(dados), encoding='utf-8')
+        conexao = database.conectar_banco(self.caminho)
+        self.addCleanup(conexao.close)
+        with self.assertRaises(ValueError):
+            database.carregar_indicadores_ficticios(conexao, caminho)
+        self.assertEqual(conexao.execute("SELECT diario FROM checkins_noite WHERE data = '2026-11-09'").fetchone()[0], '')
+
     def test_estado_geral_exige_dados_completos_e_preserva_sinais(self):
         dia = date.fromisoformat('2026-11-10')
         conexao = database.conectar_banco(self.caminho)
@@ -105,6 +117,10 @@ class TesteAreasReacao(unittest.TestCase):
         self.assertEqual(len(tripulantes[0]['areas']), 5)
         self.assertIn('historical', resposta.json['ordem'])
         self.assertEqual(tripulantes[0]['checkins_noite'][0]['origem'], 'simulada')
+        checkins = tripulantes[0]['checkins_noite']
+        self.assertEqual([c['diario_compartilhado'] for c in checkins], [True, False, False])
+        self.assertTrue(checkins[0]['diario'])
+        self.assertEqual([c['diario'] for c in checkins[1:]], [None, None])
         self.assertEqual(len(tripulantes[0]['testes_reacao']), 1)
         self.assertEqual(self.cliente.get('/api/equipe-medica/sono?data=invalida').status_code, 400)
 

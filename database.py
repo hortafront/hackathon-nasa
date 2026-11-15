@@ -293,10 +293,12 @@ def carregar_indicadores_ficticios(conexao, caminho=CAMINHO_INDICADORES):
                 antes = conexao.total_changes
                 _inserir_ou_confirmar(conexao, tabela, chaves, colunas, valores)
                 contagem['inseridos' if conexao.total_changes > antes else 'ignorados'] += 1
-        colunas = ('astronauta_id', 'data', 'humor', 'estresse', 'convivencia', 'diario', 'registrado_em', 'origem')
+        colunas = ('astronauta_id', 'data', 'humor', 'estresse', 'convivencia', 'diario', 'diario_compartilhado', 'registrado_em', 'origem')
         for item in checkins:
             _instante_com_fuso(item['registrado_em'], 'registrado_em')
-            if item['origem'] != 'simulada':
+            if (item['origem'] != 'simulada' or type(item.get('diario_compartilhado')) is not bool
+                    or not isinstance(item.get('diario'), str)
+                    or (not item['diario_compartilhado'] and item['diario'])):
                 raise ValueError('Check-in fictício inválido.')
             antes = conexao.total_changes
             _inserir_ou_confirmar(conexao, 'checkins_noite', ('astronauta_id', 'data'), colunas,
