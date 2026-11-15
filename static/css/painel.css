@@ -298,3 +298,56 @@
 .orientacao h3:not(:first-child) {
   margin-top: var(--espaco-2);
 }
+
+/* ==========================================================
+   Faixa de data (qual dia o painel mostra) e blocos recolhidos
+   ========================================================== */
+.faixa-data {
+  display: grid;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border: var(--borda);
+  border-left: 4px solid var(--cor-primaria);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.faixa-data-texto {
+  font-weight: 500;
+}
+
+/* Atalho para o cenário quando hoje não tem registros. */
+.faixa-data-sugestao a {
+  font-weight: 500;
+}
+
+.form-data {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-3);
+  font-size: var(--texto-pequeno);
+}
+
+.form-data input[type="date"] {
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-texto-suave);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+}
+
+/* Títulos dos blocos recolhidos (ferramentas e avaliações retrospectivas). */
+.ferramentas summary,
+.acompanhamento summary {
+  cursor: pointer;
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.ferramentas[open] summary {
+  margin-bottom: var(--espaco-3);
+}
