@@ -1,6 +1,6 @@
 # Diário privado por padrão — contexto para o back-end
 
-Para: Alan (back-end). Do: Andrew (front-end). Data: 14/11/2026.
+Contexto original: Andrew (front-end), 14/11/2026. Atualizado após a integração com o back-end.
 
 ## Decisão
 
@@ -13,33 +13,34 @@ Por quê:
 - Dado de saúde mental é sensível; compartilhar deve depender de consentimento explícito.
 - No pitch, mostra que o Raga mantém o astronauta no controle dos próprios dados.
 
-## O que o front já faz (sem mudar a API)
+## Comportamento atual
 
 - `checkins.html` tem a caixa **"Share this entry with the mission psychologist"**, desmarcada por padrão.
-- **Desmarcada:** o front envia `"diario": ""` no `POST /api/astronautas/<id>/mente/checkins` (o campo continua obrigatório na API atual) e guarda o texto só no `sessionStorage` da aba. O texto **não sai do navegador**.
-- **Marcada:** o front envia o texto, como hoje.
-- `equipe-medica.js` mostra o texto apenas quando `diario` vem preenchido ("Journal shared by the astronaut"); vazio aparece como "Journal: not shared (private to the astronaut)".
+- **Desmarcada:** o front envia `"diario": ""` e `"diario_compartilhado": false` no `POST /api/astronautas/<id>/mente/checkins` e guarda o texto só no `sessionStorage` da aba. O texto não sai do navegador.
+- **Marcada e com texto:** o front envia o texto e `"diario_compartilhado": true`.
+- O servidor também descarta textos recebidos sem consentimento e omite diários não compartilhados das duas consultas da API.
+- Na visão médica, um diário sem texto visível aparece como "Journal: not shared or not provided". A API não informa se houve um texto privado.
 
-Verificado com o `app.py` atual e banco temporário: um check-in privado gravou `diario: ""` no servidor (o texto não apareceu na API nem na visão médica); um compartilhado apareceu normalmente.
+O campo omitido equivale a `false`: clientes antigos não compartilham textos até serem atualizados.
 
-## Limitações enquanto a API não muda
+## Limitações atuais
 
 1. **"Não compartilhado" e "não escrito" ficam iguais no servidor** (os dois são `""`). A visão médica não sabe se havia diário privado.
-2. **Os dados fictícios de `data/indicadores-ficticios.json` têm texto no diário** (08 a 10/11), então aparecem como compartilhados.
+2. **Textos anteriores à migração** permanecem no banco, mas ficam ocultos por falta de prova de consentimento; a equipe deve decidir seu destino.
 3. **Não existe papel de psicólogo:** o que for compartilhado aparece na visão médica para qualquer pessoa com acesso ao servidor. A tela avisa isso.
-4. Quem chamar a API diretamente ainda pode gravar e ler diários; a proteção hoje depende do front.
+4. O servidor local não tem autenticação. Diários compartilhados ficam disponíveis a qualquer pessoa com acesso à API; use somente dados fictícios.
 
-## O que recomendo no back-end
+## Trabalho de integração
 
 | # | Mudança | Arquivos |
 | --- | --- | --- |
-| 1 | Coluna `diario_compartilhado INTEGER NOT NULL DEFAULT 0` em `checkins_noite`, criada sem apagar dados (ex.: `ALTER TABLE ... ADD COLUMN` se ainda não existir, rodado por `python database.py`). | `schema.sql`, `database.py` |
-| 2 | `POST .../mente/checkins` aceitar `diario_compartilhado` (booleano). Se `false`, gravar `diario` como `""` mesmo que venha texto — o servidor não deve guardar diário não compartilhado. | `app.py` |
-| 3 | `GET /api/equipe-medica/sono`: em `checkins_noite`, devolver `diario` só quando `diario_compartilhado` for verdadeiro; nos outros, `diario: null` e `diario_compartilhado: false`. Assim a tela distingue "não compartilhado" de "não escrito". | `app.py` |
-| 4 | Dados fictícios: marcar quais diários são compartilhados (sugiro um compartilhado e dois privados, para a demonstração mostrar os dois casos). | `data/indicadores-ficticios.json`, carga |
-| 5 | Testes: diário não compartilhado não é gravado nem aparece na visão médica; compartilhado aparece. | `tests/test_api_checkins.py` |
-| 6 | Atualizar a seção "Check-in da noite e visão médica fictícia" em `docs/api.md`. | `docs/api.md` |
+| 1 | Coluna de consentimento e migração que preserva textos antigos ocultos. | `schema.sql`, `database.py` |
+| 2 | API valida consentimento, descarta textos privados novos e filtra as respostas. | `app.py`, `database.py` |
+| 3 | A visão médica não presume que um diário privado foi escrito. | `equipe-medica.js` |
+| 4 | Dados fictícios para demonstrar as duas situações. | `data/indicadores-ficticios.json`, carga |
+| 5 | Testes de privacidade e migração. | `tests/test_api_checkins.py` |
+| 6 | Contrato atualizado. | `docs/api.md` |
 
-Quando o item 2 existir, o front passa a enviar `"diario_compartilhado": true/false` junto (mudança de uma linha em `checkins.js`); me avise para trocar ao mesmo tempo, porque a API atual recusa campos extras.
+Escolhemos não transmitir um indicador de que foi escrito um diário privado. Assim, a visão médica não recebe nem mesmo essa informação; não é possível distinguir ausência de escrita e texto privado no servidor.
 
 Fora do escopo do hackathon, mas vale citar no pitch como próximo passo: papel de psicólogo com acesso próprio (autenticação e controle por papel), para que o compartilhado vá só para ele e não para toda a equipe médica.

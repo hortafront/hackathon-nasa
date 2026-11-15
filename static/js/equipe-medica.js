@@ -98,7 +98,7 @@
         // Diário privado por padrão: só aparece se o astronauta compartilhou.
         detalhes.appendChild(texto("p", "", c.diario
           ? "Journal shared by the astronaut: " + F.textoExibicao(c.diario)
-          : "Journal: not shared (private to the astronaut)."));
+          : "Journal: not shared or not provided."));
       });
       detalhes.appendChild(texto("h4", "", "Reaction tests"));
       var testes = tri.testes_reacao || [];
