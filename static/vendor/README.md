@@ -8,8 +8,7 @@ Cópias locais para a demonstração funcionar sem internet. Declaradas com `@fo
 
 | Arquivo | Fonte | Versão (Google Fonts) | Licença |
 | --- | --- | --- | --- |
-| `fonts/inter-600-latin.woff2` | Inter, peso 600 | v20 | SIL Open Font License 1.1 |
-| `fonts/prata-400-latin.woff2` | Prata, peso 400 | v22 | SIL Open Font License 1.1 |
-| `fonts/public-sans-latin.woff2` | Public Sans, pesos 400–500 (variável) | v21 | SIL Open Font License 1.1 |
+| `fonts/atkinson-hyperlegible-next-latin.woff2` | Atkinson Hyperlegible Next, pesos 200–800 (variável) | v7 | SIL Open Font License 1.1 |
+| `fonts/big-shoulders-display-latin.woff2` | Big Shoulders Display, pesos 100–900 (variável) | v24 | SIL Open Font License 1.1 |
 
-Origem: arquivos baixados de `fonts.gstatic.com` em 14/11/2026, a partir de <https://fonts.google.com/>. A licença OFL permite usar, copiar e redistribuir as fontes junto com o projeto.
+Origem: arquivos baixados de `fonts.gstatic.com` em 14/11/2026, a partir de <https://fonts.google.com/>. A licença OFL permite usar, copiar e redistribuir as fontes junto com o projeto. As fontes anteriores (Prata, Inter e Public Sans) foram removidas na mesma data.

@@ -29,7 +29,8 @@
 
 .estado-geral-titulo {
   font-family: var(--fonte-titulo);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: var(--titulo-3); /* condensada: corpo maior que o texto */
 }
 
 /* Seis cartões: 2 colunas no celular, 3 a partir de 40rem (duas linhas iguais). */
@@ -68,7 +69,8 @@
 
 .area-nome {
   font-family: var(--fonte-titulo);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: var(--titulo-3); /* condensada: corpo maior que o texto */
   color: inherit;
 }
 
@@ -344,7 +346,8 @@
 .acompanhamento summary {
   cursor: pointer;
   font-family: var(--fonte-titulo);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: var(--titulo-3); /* condensada: corpo maior que o texto */
   color: var(--cor-primaria);
 }
 

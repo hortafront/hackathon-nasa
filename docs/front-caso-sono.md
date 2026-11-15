@@ -11,6 +11,10 @@ O painel apresenta as cinco áreas recebidas da API e o histórico fictício de 
 
 O estilo e as funções de tema e formatação são compartilhados. `dados-api.js` faz as consultas e escolhe a fonte; `dados-demo.js` oferece dados fictícios locais. O gráfico é SVG, funciona offline e tem tabela equivalente. Detalhes do contrato estão em [api.md](api.md).
 
+## Tipografia e movimento
+
+As fontes são locais (`static/vendor/fonts/`): Atkinson Hyperlegible Next para textos, formulários e tabelas, e Big Shoulders Display, condensada, para títulos, título grande e números. Os tokens `--fonte-*` e a escala de tamanhos ficam no início de `static/css/style.css`.
+
 ## Execução e demonstração
 
 Prepare o ambiente e carregue as fixtures conforme o [README](../README.md), inicie o Flask e abra `http://127.0.0.1:5000/`. Use `?data=2026-11-10` para o caso histórico ou `?fonte=demo` para forçar dados locais. Sem data escolhida, a API avalia a data atual; dados anteriores são identificados como históricos.

@@ -9,29 +9,25 @@
    font-display: swap mostra o texto na hora com a fonte reserva
    e troca quando a fonte carrega.
    ========================================================== */
+/* Atkinson Hyperlegible Next: criada pelo Braille Institute para leitura
+   difícil (letras como I, l e 1 bem diferentes). Variável: um só arquivo
+   cobre os pesos 200 a 800. Usada em textos, formulários e tabelas. */
 @font-face {
-  font-family: "Inter";
-  font-weight: 600;
+  font-family: "Atkinson Hyperlegible Next";
+  font-weight: 200 800;
   font-style: normal;
   font-display: swap;
-  src: url("../vendor/fonts/inter-600-latin.woff2") format("woff2");
+  src: url("../vendor/fonts/atkinson-hyperlegible-next-latin.woff2") format("woff2");
 }
 
+/* Big Shoulders Display: condensada, para títulos, título grande e
+   números de leitura. Variável: pesos 100 a 900. */
 @font-face {
-  font-family: "Prata";
-  font-weight: 400;
+  font-family: "Big Shoulders Display";
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
-  src: url("../vendor/fonts/prata-400-latin.woff2") format("woff2");
-}
-
-/* Public Sans é variável: um só arquivo cobre os pesos 400 e 500. */
-@font-face {
-  font-family: "Public Sans";
-  font-weight: 400 500;
-  font-style: normal;
-  font-display: swap;
-  src: url("../vendor/fonts/public-sans-latin.woff2") format("woff2");
+  src: url("../vendor/fonts/big-shoulders-display-latin.woff2") format("woff2");
 }
 
 /* ==========================================================
@@ -62,18 +58,21 @@
   /* Linha entre o topo/rodapé e o conteúdo: no claro some no preto. */
   --cor-moldura-borda: #000000;
 
-  /* Fontes: se o Google Fonts não carregar (sem internet),
-     o navegador usa as fontes reservas que vêm depois da vírgula. */
-  --fonte-display: "Prata", Georgia, serif; /* só o título grande */
-  --fonte-titulo: "Inter", "Segoe UI", Arial, sans-serif;
-  --fonte-texto: "Public Sans", "Segoe UI", Arial, sans-serif;
+  /* Fontes: se o arquivo local não carregar, o navegador usa as
+     reservas que vêm depois da vírgula. Direção "leitura sob fadiga":
+     texto muito legível + títulos condensados e firmes. */
+  --fonte-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif; /* título grande */
+  --fonte-titulo: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --fonte-texto: "Atkinson Hyperlegible Next", "Segoe UI", Arial, sans-serif;
 
-  /* Tamanhos de texto */
+  /* Tamanhos de texto. A fonte dos títulos é condensada: precisa de
+     corpo maior que uma fonte comum para ter o mesmo peso visual. */
   --texto-pequeno: 0.875rem;  /* 14px */
   --texto-base: 1.0625rem;    /* 17px */
-  --titulo-2: 1.25rem;        /* 20px */
-  --titulo-1: 1.5625rem;      /* 25px */
-  --leitura-numero: 3rem;     /* 48px: o valor da leitura */
+  --titulo-3: 1.25rem;        /* 20px */
+  --titulo-2: 1.625rem;       /* 26px */
+  --titulo-1: 2rem;           /* 32px */
+  --leitura-numero: 3.75rem;  /* 60px: o valor da leitura */
 
   /* Espaçamentos (múltiplos de 4px) */
   --espaco-1: 0.25rem;  /* 4px */
@@ -169,13 +168,14 @@ h2,
 h3 {
   margin: 0;
   font-family: var(--fonte-titulo);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
 }
 
 h1 { font-size: var(--titulo-1); }
 h2 { font-size: var(--titulo-2); }
-h3 { font-size: 1rem; }
+h3 { font-size: var(--titulo-3); }
 
 /* O atributo hidden sempre vence o display das classes (grid, flex). */
 [hidden] {
@@ -250,8 +250,10 @@ p {
   color: inherit;
   text-decoration: none;
   font-family: var(--fonte-titulo);
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-weight: 800;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .links {
@@ -294,7 +296,7 @@ p {
   border-color: var(--cor-texto);
 }
 
-/* Título grande centralizado, na fonte Prata. */
+/* Título grande centralizado, em Big Shoulders Display maiúscula. */
 .hero {
   text-align: center;
   padding: var(--espaco-5) var(--espaco-3) 0;
@@ -302,13 +304,16 @@ p {
 
 .hero h1 {
   font-family: var(--fonte-display);
-  font-weight: 400;
-  font-size: 2.75rem; /* 44px */
-  line-height: 1.15;
+  font-weight: 800;
+  font-size: 4.25rem; /* 68px */
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .hero p {
-  margin-top: var(--espaco-2);
+  max-width: 60ch;
+  margin: var(--espaco-3) auto 0;
   color: var(--cor-texto-suave);
 }
 
@@ -335,7 +340,7 @@ p {
 .leitura-valor {
   font-family: var(--fonte-titulo);
   font-size: var(--leitura-numero);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   /* Números com a mesma largura: o valor não "pula" ao atualizar. */
   font-variant-numeric: tabular-nums;
@@ -639,8 +644,9 @@ p {
   border-radius: var(--raio);
   background: var(--cor-primaria);
   color: var(--cor-fundo);
-  font-family: var(--fonte-titulo);
-  font-weight: 600;
+  /* Rótulo curto em corpo de texto: fica na fonte de leitura. */
+  font-family: var(--fonte-texto);
+  font-weight: 700;
   font-size: var(--texto-base);
   cursor: pointer;
 }
@@ -699,6 +705,6 @@ p {
   }
 
   .hero h1 {
-    font-size: 2rem; /* 32px */
+    font-size: 3rem; /* 48px */
   }
 }
