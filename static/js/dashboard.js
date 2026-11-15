@@ -434,11 +434,6 @@
     return "ok";
   }
 
-  // Avisa de onde vêm os dados.
-  function mostrarFonte() {
-    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte("sono"));
-  }
-
   // Faixa de data: diz qual dia o painel mostra (uma vez só) e, quando
   // hoje ainda não tem registros, oferece o atalho para o cenário.
   function mostrarFaixaData(dados) {
@@ -475,7 +470,6 @@
   }
 
   function mostrar(dados) {
-    mostrarFonte();
     mostrarFaixaData(dados);
     mostrarAstronauta(dados);
     mostrarAreas(dados);

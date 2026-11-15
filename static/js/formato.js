@@ -121,19 +121,8 @@
   }
 
   // Aviso de onde vêm os dados (ver dados-api.js).
-  function textoFonte(f) {
-    if (f.fonte === "api") {
-      return "Data from the Raga server. All records are fictional and show their source.";
-    }
-    if (f.motivo === "escolhida") {
-      return "Demo mode: fictional local data selected in the page URL. No data came from the server.";
-    }
-    return "The API did not respond. Showing fictional local data; no data came from the server.";
-  }
-
   window.RagaFormato = {
     textoExibicao: textoExibicao,
-    textoFonte: textoFonte,
     estado: estado,
     origemRegra: origemRegra,
     duracao: duracao,

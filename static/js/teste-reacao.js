@@ -192,12 +192,7 @@
 
   // ---------- Histórico ----------
 
-  function mostrarFonte() {
-    $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte("reacao"));
-  }
-
   function mostrar(dados) {
-    mostrarFonte();
     $("reacao-linha-base").textContent = dados.linha_base_ms
       ? "Fictional baseline: " + dados.linha_base_ms + " ms (median)."
       : "No baseline yet.";

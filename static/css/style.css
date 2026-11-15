@@ -456,15 +456,6 @@ p {
   border: 0;
 }
 
-/* De onde vêm os dados (API ou locais): linha discreta, sempre visível. */
-.aviso-fonte {
-  font-size: var(--texto-pequeno);
-  color: var(--cor-texto-suave);
-  border: 1px dashed var(--cor-divisor);
-  border-radius: var(--raio);
-  padding: var(--espaco-2) var(--espaco-3);
-}
-
 /* Falha: mesma marcação do erro do cartão (texto + barra vermelha). */
 [data-estado="erro"] .aviso {
   color: var(--cor-critico);

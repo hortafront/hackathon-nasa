@@ -48,16 +48,11 @@
     });
   }
 
-  // Aviso do topo: diz se cada parte veio da API ou dos dados locais.
+  // Nota de cada formulário: diz se o check-in vai para o servidor
+  // ou fica só nesta aba (dados locais).
   function mostrarFonte() {
     var manha = window.RagaDados.fonte("sono");
     var noite = window.RagaDados.fonte("noite");
-    if (manha.fonte === noite.fonte) {
-      $("aviso-fonte").textContent = F.textoFonte(manha);
-    } else {
-      var desc = function (f) { return f.fonte === "api" ? "server data" : "local fictional data"; };
-      $("aviso-fonte").textContent = "Morning: " + desc(manha) + ". Evening: " + desc(noite) + ".";
-    }
     $("manha-nota-fonte").textContent = manha.fonte === "api"
       ? "The check-in is saved on the local server using fictional data, and the API recalculates the assessment."
       : "In this demonstration, the check-in stays in this tab and is not sent to a server.";
