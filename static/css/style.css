@@ -74,6 +74,13 @@
   --titulo-1: 2rem;           /* 32px */
   --leitura-numero: 3.75rem;  /* 60px: o valor da leitura */
 
+  /* Movimento (revelar.js): "entrar em foco" ao rolar a página. */
+  --revelar-duracao: 900ms;
+  --revelar-curva: cubic-bezier(0.16, 1, 0.3, 1); /* sai rápido, assenta devagar */
+  --revelar-desfoque: 14px;
+  --revelar-deslocamento: 4rem; /* 64px */
+  --revelar-escala: 0.94;      /* começa um pouco menor e "chega" à tela */
+
   /* Espaçamentos (múltiplos de 4px) */
   --espaco-1: 0.25rem;  /* 4px */
   --espaco-2: 0.5rem;   /* 8px */
@@ -706,5 +713,82 @@ p {
 
   .hero h1 {
     font-size: 3rem; /* 48px */
+  }
+}
+
+/* ==========================================================
+   9. Revelação ao rolar (static/js/revelar.js)
+   Tudo aqui só vale com data-revelar="pronto" no <html>, que o
+   script coloca apenas se o navegador tem IntersectionObserver e a
+   pessoa não pediu menos movimento. Sem JS, nada fica oculto.
+   Só opacidade, deslocamento e desfoque: o leitor de tela continua
+   lendo o conteúdo oculto (nada usa display ou visibility).
+   ========================================================== */
+
+/* Entrada única do título grande no carregamento. */
+@keyframes entrar-foco {
+  from {
+    opacity: 0;
+    transform: translateY(var(--revelar-deslocamento)) scale(var(--revelar-escala));
+    filter: blur(var(--revelar-desfoque));
+  }
+}
+
+/* O título grande também se "fecha": as letras chegam espaçadas. */
+@keyframes titulo-abrir {
+  from {
+    opacity: 0;
+    letter-spacing: 0.4em;
+    filter: blur(var(--revelar-desfoque));
+  }
+}
+
+[data-revelar="pronto"] .hero h1 {
+  animation: titulo-abrir 1200ms var(--revelar-curva) both;
+}
+
+[data-revelar="pronto"] .hero p {
+  animation: entrar-foco 1000ms var(--revelar-curva) 350ms both;
+}
+
+[data-revelar="pronto"] .revelar,
+[data-revelar="pronto"] .revelar-item {
+  transition:
+    opacity var(--revelar-duracao) var(--revelar-curva),
+    transform var(--revelar-duracao) var(--revelar-curva),
+    filter var(--revelar-duracao) var(--revelar-curva);
+}
+
+/* Estado oculto: só existe abaixo da tela (o script cuida disso). */
+[data-revelar="pronto"] .revelar:not(.revelar--visivel) {
+  opacity: 0;
+  transform: translateY(var(--revelar-deslocamento)) scale(var(--revelar-escala));
+  filter: blur(var(--revelar-desfoque));
+}
+
+/* Itens das listas (áreas, tripulantes) chegam um pouco depois,
+   em cascata. O atraso só vale ao aparecer; ao esconder é imediato. */
+[data-revelar="pronto"] .revelar:not(.revelar--visivel) .revelar-item {
+  opacity: 0;
+  transform: translateY(var(--revelar-deslocamento)) scale(var(--revelar-escala));
+  filter: blur(var(--revelar-desfoque));
+}
+
+[data-revelar="pronto"] .revelar--visivel .revelar-item {
+  transition-delay: calc(200ms + var(--i, 0) * 120ms);
+}
+
+/* Já na tela ao abrir a página: aparece sem animar. */
+[data-revelar="pronto"] .revelar--instantaneo,
+[data-revelar="pronto"] .revelar--instantaneo .revelar-item {
+  transition: none;
+}
+
+@media print {
+  [data-revelar="pronto"] .revelar,
+  [data-revelar="pronto"] .revelar .revelar-item {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

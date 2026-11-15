@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../static/css/style.css">
   <link rel="stylesheet" href="../static/css/teste-reacao.css">
   <script src="../static/js/tema.js"></script>
+  <script src="../static/js/revelar.js"></script>
 </head>
 <body>
   <header class="cabecalho">
@@ -48,8 +49,10 @@
     <p id="aviso-reacao" class="aviso" role="status">Loading data…</p>
     <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
-    <!-- O teste em si não depende dos dados: funciona mesmo sem histórico. -->
-    <section id="teste" class="cartao" aria-labelledby="titulo-teste">
+    <!-- O teste em si não depende dos dados: funciona mesmo sem histórico.
+         data-sem-revelar: a caixa do teste nunca anima nem desfoca,
+         para não atrapalhar a medida do tempo de reação. -->
+    <section id="teste" class="cartao" data-sem-revelar aria-labelledby="titulo-teste">
       <h2 id="titulo-teste">How it works</h2>
       <ol class="instrucoes">
         <li>Press <strong>Start</strong>.</li>

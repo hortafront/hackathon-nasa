@@ -13,7 +13,14 @@ O estilo e as funções de tema e formatação são compartilhados. `dados-api.j
 
 ## Tipografia e movimento
 
-As fontes são locais (`static/vendor/fonts/`): Atkinson Hyperlegible Next para textos, formulários e tabelas, e Big Shoulders Display, condensada, para títulos, título grande e números. Os tokens `--fonte-*` e a escala de tamanhos ficam no início de `static/css/style.css`.
+As fontes são locais (`static/vendor/fonts/`): Atkinson Hyperlegible Next para textos, formulários e tabelas, e Big Shoulders Display, condensada, para títulos, título grande e números. Os tokens `--fonte-*`, a escala de tamanhos e as variáveis de movimento `--revelar-*` ficam no início de `static/css/style.css`.
+
+`static/js/revelar.js`, carregado no `<head>` das quatro páginas, revela os filhos diretos de `<main>` ao rolar ("entrar em foco": sobe de 64 px, sai do desfoque e cresce de 94% para 100%, em 900 ms) e os itens das listas de áreas e de tripulantes em cascata. A seção que sai por baixo, quando a pessoa sobe, volta a ficar oculta; o que sai por cima continua visível. Só o título grande anima no carregamento; o que já está na tela ao abrir aparece direto.
+
+- Nunca ficam ocultos: cabeçalho, rodapé, `.aviso`, `.alerta-urgente`, `.nota--urgente`, mensagens `role="status"` e elementos com `data-sem-revelar` (usado na caixa do teste de reação). Uma seção que contém um desses avisos com texto também não volta a se esconder.
+- Itens recriados pela atualização de 10 s dentro de uma seção visível aparecem sem animar.
+- Sem JavaScript, sem `IntersectionObserver` ou com "reduzir movimento" ligado no sistema, nada fica oculto nem se move: o estado oculto só vale com `data-revelar="pronto"` no `<html>`.
+- Só opacidade, deslocamento e desfoque mudam: leitores de tela continuam lendo o conteúdo ainda não revelado. O foco do teclado numa seção oculta a revela na hora.
 
 ## Execução e demonstração
 
