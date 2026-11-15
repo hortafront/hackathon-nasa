@@ -81,6 +81,12 @@
   resize: vertical;
 }
 
+.tabela-checkin details p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 24rem;
+}
+
 /* Opção de compartilhar o diário: caixa grande (área de toque de 44px). */
 .compartilhar {
   display: inline-flex;

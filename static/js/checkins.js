@@ -113,11 +113,11 @@
     }
   }
 
-  function temDiarioPrivado(data) {
+  function lerDiarioPrivado(data) {
     try {
-      return !!sessionStorage.getItem(chaveDiario(data));
+      return sessionStorage.getItem(chaveDiario(data)) || "";
     } catch (erro) {
-      return false;
+      return "";
     }
   }
 
@@ -125,7 +125,7 @@
   // (texto só nesta aba) ou nenhum.
   function situacaoDiario(c) {
     if (c.diario) return "Shared: " + F.textoExibicao(c.diario);
-    if (temDiarioPrivado(c.data)) return "Private (only in this tab)";
+    if (lerDiarioPrivado(c.data)) return "Private (only in this tab)";
     return "—";
   }
 
@@ -134,6 +134,7 @@
     $("noite-vazio").hidden = lista.length > 0;
     $("noite-tabela-bloco").hidden = lista.length === 0;
     var corpo = $("tabela-noite");
+    var diariosAbertos = Array.from(corpo.querySelectorAll("details[open]")).map(function (el) { return el.dataset.data; });
     corpo.replaceChildren();
     lista.forEach(function (c) {
       linhaTabela(corpo, [
@@ -144,6 +145,19 @@
         situacaoDiario(c),
         F.textoExibicao(c.origem)
       ]);
+      var diarioPrivado = !c.diario && lerDiarioPrivado(c.data);
+      if (diarioPrivado) {
+        var celula = corpo.lastElementChild.cells[4];
+        var detalhes = document.createElement("details");
+        var resumo = document.createElement("summary");
+        var texto = document.createElement("p");
+        detalhes.dataset.data = c.data;
+        detalhes.open = diariosAbertos.indexOf(c.data) !== -1;
+        resumo.textContent = "Private (only in this tab)";
+        texto.textContent = diarioPrivado;
+        detalhes.append(resumo, texto);
+        celula.replaceChildren(detalhes);
+      }
     });
   }
 
