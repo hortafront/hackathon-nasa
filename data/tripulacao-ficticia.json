@@ -1,0 +1,28 @@
+{
+  "astronautas": [
+    {
+      "id": 2,
+      "identificacao": "RAGA-AST-002",
+      "nome_exibicao": "Especialista Vega",
+      "origem": "ficticia",
+      "linha_base_sono": {"duracao_media_horas": 7.5, "qualidade_media": 4, "periodo_inicio": "2026-11-01T07:00:00-03:00", "periodo_fim": "2026-11-04T07:00:00-03:00", "origem": "simulada"},
+      "registros_sono": [
+        {"noite_em": "2026-11-08T00:00:00-03:00", "inicio_sono": "2026-11-08T00:00:00-03:00", "fim_sono": "2026-11-08T06:00:00-03:00", "duracao_horas": 6, "qualidade": 3, "interrupcoes": 2, "origem": "simulada", "observacao": "Registro fictício."},
+        {"noite_em": "2026-11-09T00:00:00-03:00", "inicio_sono": "2026-11-09T00:00:00-03:00", "fim_sono": "2026-11-09T06:00:00-03:00", "duracao_horas": 6, "qualidade": 3, "interrupcoes": 2, "origem": "simulada", "observacao": "Registro fictício."},
+        {"noite_em": "2026-11-10T00:00:00-03:00", "inicio_sono": "2026-11-10T00:00:00-03:00", "fim_sono": "2026-11-10T06:00:00-03:00", "duracao_horas": 6, "qualidade": 3, "interrupcoes": 2, "origem": "simulada", "observacao": "Registro fictício."}
+      ]
+    },
+    {
+      "id": 3,
+      "identificacao": "RAGA-AST-003",
+      "nome_exibicao": "Engenheira Lyra",
+      "origem": "ficticia",
+      "linha_base_sono": {"duracao_media_horas": 7.5, "qualidade_media": 4, "periodo_inicio": "2026-11-01T07:00:00-03:00", "periodo_fim": "2026-11-04T07:00:00-03:00", "origem": "simulada"},
+      "registros_sono": [
+        {"noite_em": "2026-11-08T00:00:00-03:00", "inicio_sono": "2026-11-07T23:00:00-03:00", "fim_sono": "2026-11-08T06:30:00-03:00", "duracao_horas": 7.5, "qualidade": 4, "interrupcoes": 1, "origem": "simulada", "observacao": "Registro fictício."},
+        {"noite_em": "2026-11-09T00:00:00-03:00", "inicio_sono": "2026-11-08T23:00:00-03:00", "fim_sono": "2026-11-09T06:30:00-03:00", "duracao_horas": 7.5, "qualidade": 4, "interrupcoes": 1, "origem": "simulada", "observacao": "Registro fictício."},
+        {"noite_em": "2026-11-10T00:00:00-03:00", "inicio_sono": "2026-11-09T23:00:00-03:00", "fim_sono": "2026-11-10T06:30:00-03:00", "duracao_horas": 7.5, "qualidade": 4, "interrupcoes": 1, "origem": "simulada", "observacao": "Registro fictício."}
+      ]
+    }
+  ]
+}

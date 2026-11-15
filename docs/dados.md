@@ -1,6 +1,6 @@
 # Dados fictícios e camada de armazenamento
 
-Este documento descreve a interface Python entre o armazenamento e a futura API. Não define contrato HTTP.
+Este documento descreve o armazenamento e suas funções Python. O contrato HTTP está em [api.md](api.md).
 
 ## Estrutura do primeiro caso
 
@@ -16,7 +16,9 @@ Use `database.carregar_dados_ficticios(conexao)` somente quando quiser carregar 
 
 `registros_sono` possui indice unico por `(astronauta_id, noite_em)`, comparando o texto completo do horario. Ele nao garante uma unica data local de despertar se os textos de `noite_em` forem diferentes: a avaliacao ainda rejeita registros com o mesmo dia de `fim_sono`. Uma duplicata identica e ignorada pela carga; conflito com dados diferentes interrompe a transacao. Bases antigas com duplicatas precisam ser corrigidas conscientemente antes da criacao do indice.
 
-O POST de sono e os check-ins da noite usam os campos e limites de `docs/api.md`. O diário fictício fica no banco junto ao check-in e é incluído na visão médica. Não há controle de acesso; use somente dados fictícios.
+O esquema não cria mais a tabela legada `leituras` nem um índice não único redundante sobre sono. Tabelas e índices antigos continuam intactos em bancos já existentes; a inicialização não os remove.
+
+O POST de sono, indicadores fictícios, teste de reação e check-ins da noite usam os campos e limites de `docs/api.md`. O diário fictício fica no banco junto ao check-in e é incluído na visão médica. Não há controle de acesso; use somente dados fictícios. `--carregar-ficticios` carrega separadamente `astronautas-ficticios.json`, `tripulacao-ficticia.json` e `indicadores-ficticios.json`: cada carga é transacional, idempotente e interrompe em conflito sem sobrescrever registros; cargas de arquivos anteriores já concluídas não são revertidas.
 
 ## Funções para o back-end 2
 

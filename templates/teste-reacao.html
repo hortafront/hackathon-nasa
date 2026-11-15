@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raga: teste de reação</title>
+  <title>Raga: reaction test</title>
 
   <!-- Mesmos caminhos relativos do index.html. No Flask, esta página
        precisa de rota de um só nível: /teste-reacao.html. -->
@@ -22,87 +22,87 @@
         Raga
       </a>
 
-      <nav class="links" aria-label="Páginas">
-        <a href="index.html">Painel</a>
+      <nav class="links" aria-label="Pages">
+        <a href="index.html">Dashboard</a>
         <a href="checkins.html">Check-ins</a>
-        <a href="teste-reacao.html" aria-current="page">Teste de reação</a>
-        <a href="equipe-medica.html">Equipe médica</a>
+        <a href="teste-reacao.html" aria-current="page">Reaction test</a>
+        <a href="equipe-medica.html">Medical team</a>
       </nav>
 
       <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
         </svg>
-        Tema escuro
+        Dark theme
       </button>
     </div>
   </header>
 
   <div class="hero">
-    <h1>Teste de reação</h1>
-    <p>Dez tentativas, menos de um minuto. Responda assim que o sinal acender.</p>
+    <h1>Reaction test</h1>
+    <p>Ten attempts, less than a minute. Respond as soon as the signal appears.</p>
   </div>
 
   <!-- data-estado: carregando | vazio | ok | erro (teste-reacao.js). -->
   <main id="painel-reacao" class="painel" data-estado="carregando" data-tem-dados="nao">
-    <p id="aviso-reacao" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-reacao" class="aviso" role="status">Loading data…</p>
     <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
     <!-- O teste em si não depende dos dados: funciona mesmo sem histórico. -->
     <section id="teste" class="cartao" aria-labelledby="titulo-teste">
-      <h2 id="titulo-teste">Como funciona</h2>
+      <h2 id="titulo-teste">How it works</h2>
       <ol class="instrucoes">
-        <li>Aperte <strong>Começar</strong>.</li>
-        <li>Espere o quadro mudar para <strong>Agora!</strong> (as cores do quadro se invertem e a borda fica grossa).</li>
-        <li>Clique, toque no quadro ou aperte a <strong>barra de espaço</strong> o mais rápido que puder.</li>
+        <li>Press <strong>Start</strong>.</li>
+        <li>Wait for the box to change to <strong>Now!</strong> (its colors invert and its border thickens).</li>
+        <li>Click, tap the box or press the <strong>space bar</strong> as quickly as possible.</li>
       </ol>
-      <p class="nota">Responder antes do sinal, ou em menos de 100 ms, conta como antecipação e a tentativa é repetida. O tempo medido inclui o atraso da tela e do aparelho.</p>
+      <p class="nota">Responding before the signal or in less than 100 ms counts as anticipation and the attempt is repeated. The measured time includes display and device delays.</p>
 
       <!-- Área de resposta. data-fase: parado | esperando | sinal | fim.
            O texto muda junto com a cor, então a cor não é a única pista. -->
       <button id="alvo" class="alvo" type="button" data-fase="parado" aria-describedby="alvo-progresso">
-        <span id="alvo-texto" class="alvo-texto">Começar</span>
-        <span id="alvo-detalhe" class="alvo-detalhe">10 tentativas</span>
+        <span id="alvo-texto" class="alvo-texto">Start</span>
+        <span id="alvo-detalhe" class="alvo-detalhe">10 attempts</span>
       </button>
-      <p id="alvo-progresso" class="nota" role="status">Pronto para começar.</p>
+      <p id="alvo-progresso" class="nota" role="status">Ready to start.</p>
 
-      <button id="parar" class="botao-secundario" type="button" hidden>Parar teste</button>
+      <button id="parar" class="botao-secundario" type="button" hidden>Stop test</button>
     </section>
 
     <!-- Resultado do último teste feito nesta página. -->
     <section id="resultado" class="cartao" aria-labelledby="titulo-resultado" hidden>
-      <h2 id="titulo-resultado">Resultado</h2>
+      <h2 id="titulo-resultado">Result</h2>
       <dl class="numeros">
-        <div><dt>Mediana</dt><dd id="res-mediana">—</dd></div>
-        <div><dt>Mais rápida</dt><dd id="res-rapida">—</dd></div>
-        <div><dt>Mais lenta</dt><dd id="res-lenta">—</dd></div>
-        <div><dt>Acima de 500 ms</dt><dd id="res-lapsos">—</dd></div>
-        <div><dt>Antecipações</dt><dd id="res-antecipacoes">—</dd></div>
+        <div><dt>Median</dt><dd id="res-mediana">—</dd></div>
+        <div><dt>Fastest</dt><dd id="res-rapida">—</dd></div>
+        <div><dt>Slowest</dt><dd id="res-lenta">—</dd></div>
+        <div><dt>Above 500 ms</dt><dd id="res-lapsos">—</dd></div>
+        <div><dt>Anticipations</dt><dd id="res-antecipacoes">—</dd></div>
       </dl>
       <p id="res-comparacao"></p>
       <p class="nota">
-        O resultado não gera cor: ainda não há regra no back-end para a área Cognição.
-        Cansaço, sono, distração e o próprio aparelho mudam o tempo de reação.
+        The dashboard comparison uses an illustrative rule without clinical validation.
+        Tiredness, sleep, distraction and the device itself affect reaction time.
       </p>
       <p id="res-mensagem" class="checkin-mensagem" role="status"></p>
     </section>
 
     <section id="historico-reacao" class="cartao depende-dados" aria-labelledby="titulo-historico-reacao">
-      <h2 id="titulo-historico-reacao">Seus últimos testes</h2>
+      <h2 id="titulo-historico-reacao">Your recent tests</h2>
       <p id="reacao-linha-base" class="leitura-detalhe"></p>
-      <p id="reacao-vazio" class="mensagem-vazia" hidden>Ainda não há testes registrados. Faça o primeiro acima.</p>
+      <p id="reacao-vazio" class="mensagem-vazia" hidden>No tests recorded yet. Take the first test above.</p>
       <div id="reacao-tabela-bloco" class="tabela-rolagem">
         <table class="tabela-reacao">
-          <caption>Do mais antigo para o mais recente</caption>
+          <caption>Oldest to newest</caption>
           <thead>
             <tr>
-              <th scope="col">Data</th>
-              <th scope="col">Mediana</th>
-              <th scope="col">Mais rápida</th>
-              <th scope="col">Mais lenta</th>
-              <th scope="col">Acima de 500 ms</th>
-              <th scope="col">Antecipações</th>
-              <th scope="col">Origem</th>
+              <th scope="col">Date</th>
+              <th scope="col">Median</th>
+              <th scope="col">Fastest</th>
+              <th scope="col">Slowest</th>
+              <th scope="col">Above 500 ms</th>
+              <th scope="col">Anticipations</th>
+              <th scope="col">Source</th>
             </tr>
           </thead>
           <tbody id="tabela-reacao"></tbody>
@@ -111,22 +111,22 @@
     </section>
 
     <section class="sobre" aria-labelledby="titulo-sobre-reacao">
-      <h2 id="titulo-sobre-reacao">Sobre este teste</h2>
+      <h2 id="titulo-sobre-reacao">About this test</h2>
       <dl>
-        <dt>De onde vem a ideia</dt>
-        <dd>É inspirado no teste de vigilância psicomotora (PVT), parte da bateria Cognition usada em pesquisas com astronautas. O PVT de pesquisa é mais longo e controlado.</dd>
+        <dt>Inspiration</dt>
+        <dd>Inspired by the psychomotor vigilance test (PVT), part of the Cognition battery used in astronaut research. Research PVTs are longer and controlled.</dd>
 
-        <dt>O que não é</dt>
-        <dd>Não é o PVT validado nem um exame. Um resultado isolado não indica fadiga, doença ou capacidade para trabalhar.</dd>
+        <dt>Limitations</dt>
+        <dd>This is not the validated PVT or a medical examination. A single result does not indicate fatigue, disease or fitness for work.</dd>
 
-        <dt>Acessibilidade</dt>
-        <dd>O teste depende de ver o sinal na tela. Quem não puder fazê-lo pode pular esta etapa; o painel continua funcionando sem ela.</dd>
+        <dt>Accessibility</dt>
+        <dd>This test requires seeing the signal on the screen. Anyone unable to take it can skip it; the dashboard still works without it.</dd>
       </dl>
     </section>
   </main>
 
   <footer class="rodape">
-    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+    <p>Simulated data for demonstration. This system does not provide a diagnosis.</p>
   </footer>
 
   <script src="../static/js/dados-demo.js" defer></script>

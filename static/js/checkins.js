@@ -1,8 +1,7 @@
 // Página de check-ins do dia: manhã (Sono) e noite (Mente e equipe).
 // Cada parte tem formulário, histórico e fonte de dados próprios
 // (a API pode ter a rota do sono e ainda não ter a da noite).
-// - O front não avalia nada: a avaliação do sono vem do back-end e
-//   aparece no painel; Mente e equipe ainda não tem regra.
+// - O front não avalia nada: as regras ilustrativas ficam no back-end.
 // - O diário fictício acompanha o check-in e aparece na visão médica.
 (function () {
   var INTERVALO_MS = 10000;
@@ -43,7 +42,7 @@
   function nomeAstronauta(dados) {
     if (!dados || !dados.astronauta) return;
     document.querySelectorAll(".nome-astronauta").forEach(function (el) {
-      el.textContent = dados.astronauta.nome_exibicao;
+      el.textContent = F.textoExibicao(dados.astronauta.nome_exibicao);
     });
   }
 
@@ -54,16 +53,15 @@
     if (manha.fonte === noite.fonte) {
       $("aviso-fonte").textContent = F.textoFonte(manha);
     } else {
-      var desc = function (f) { return f.fonte === "api" ? "dados do servidor" : "dados fictícios locais (dados-demo.js)"; };
-      $("aviso-fonte").textContent = "Manhã: " + desc(manha) + ". Noite: " + desc(noite) +
-        ". A parte local ainda não tem rota na API.";
+      var desc = function (f) { return f.fonte === "api" ? "server data" : "local fictional data"; };
+      $("aviso-fonte").textContent = "Morning: " + desc(manha) + ". Evening: " + desc(noite) + ".";
     }
     $("manha-nota-fonte").textContent = manha.fonte === "api"
-      ? "O check-in é gravado no servidor (dados fictícios, ambiente local) e a avaliação é refeita pela API."
-      : "Nesta demonstração, o check-in fica só nesta aba: não é enviado a um servidor e some ao fechar a aba.";
+      ? "The check-in is saved on the local server using fictional data, and the API recalculates the assessment."
+      : "In this demonstration, the check-in stays in this tab and is not sent to a server.";
     $("noite-nota-fonte").textContent = noite.fonte === "api"
-      ? "Respostas e diário fictícios são gravados no servidor e mostrados na visão médica. Não há controle de acesso."
-      : "Respostas e diário ficam nesta aba e podem aparecer na visão médica local; somem ao fechar a aba.";
+      ? "Fictional responses and journal entries are saved on the server and shown in the medical view. There is no access control."
+      : "Responses and journal entries stay in this tab and may appear in the local medical view.";
   }
 
   // ---------- Manhã: histórico ----------
@@ -78,10 +76,10 @@
       linhaTabela(corpo, [
         F.dia(r.noite_em),
         F.duracao(r.duracao_horas),
-        F.hora(r.inicio_sono) + " às " + F.hora(r.fim_sono),
-        r.qualidade + " de 5",
+        F.hora(r.inicio_sono) + " to " + F.hora(r.fim_sono),
+        r.qualidade + " out of 5",
         String(r.interrupcoes),
-        r.origem + (r.nao_avaliado ? ", ainda não avaliado" : "")
+        F.textoExibicao(r.origem) + (r.nao_avaliado ? ", not yet assessed" : "")
       ]);
     });
   }
@@ -89,9 +87,9 @@
   // ---------- Noite: histórico ----------
 
   var ROTULOS = {
-    humor: ["", "Muito ruim", "Ruim", "Neutro", "Bom", "Muito bom"],
-    estresse: ["", "Nenhum", "Pouco", "Moderado", "Muito", "Demais"],
-    convivencia: ["", "Muito difícil", "Difícil", "Normal", "Boa", "Muito boa"]
+    humor: ["", "Very bad", "Bad", "Neutral", "Good", "Very good"],
+    estresse: ["", "None", "A little", "Moderate", "A lot", "Extreme"],
+    convivencia: ["", "Very difficult", "Difficult", "Normal", "Good", "Very good"]
   };
 
   // "4 (Bom)": número e palavra, para não depender de lembrar a escala.
@@ -111,8 +109,8 @@
         valor("humor", c.humor),
         valor("estresse", c.estresse),
         valor("convivencia", c.convivencia),
-        c.diario || "—",
-        c.origem
+        F.textoExibicao(c.diario) || "—",
+        F.textoExibicao(c.origem)
       ]);
     });
   }
@@ -121,17 +119,17 @@
 
   function carregar() {
     var falhas = [];
-    var manha = window.RagaDados.buscarCasoSono().then(function (dados) {
+    var manha = window.RagaDados.buscarHistoricoSono().then(function (dados) {
       ultimoManha = dados;
       nomeAstronauta(dados);
       mostrarManha(dados);
-    }, function (erro) { falhas.push({ parte: "manhã", erro: erro, temDados: !!ultimoManha }); });
+    }, function (erro) { falhas.push({ parte: "morning", erro: erro, temDados: !!ultimoManha }); });
 
     var noite = window.RagaDados.buscarCheckinsNoite().then(function (dados) {
       ultimoNoite = dados;
       nomeAstronauta(dados);
       mostrarNoite(dados);
-    }, function (erro) { falhas.push({ parte: "noite", erro: erro, temDados: !!ultimoNoite }); });
+    }, function (erro) { falhas.push({ parte: "evening", erro: erro, temDados: !!ultimoNoite }); });
 
     return Promise.all([manha, noite]).then(function () {
       var temDados = !!(ultimoManha || ultimoNoite);
@@ -147,9 +145,9 @@
       painel.setAttribute("data-estado", "erro");
       aviso.textContent = falhas.map(function (f) {
         var motivo = f.erro && (f.erro.status || f.erro.rede) ? " (" + f.erro.message + ")" : "";
-        return "A atualização da " + f.parte + " falhou às " + agora + motivo +
-          (f.temDados ? "; os dados mostrados podem estar desatualizados." : ".");
-      }).join(" ") + " Nova tentativa em 10 segundos.";
+        return "The " + f.parte + " update failed at " + agora + motivo +
+          (f.temDados ? "; displayed data may be out of date." : ".");
+      }).join(" ") + " Retrying in 10 seconds.";
     });
   }
 
@@ -193,7 +191,7 @@
 
   function atualizarDuracao() {
     var h = calcularHorario();
-    $("manha-duracao").textContent = "Duração calculada: " + (h ? F.duracao(h.horas) : "—");
+    $("manha-duracao").textContent = "Calculated duration: " + (h ? F.duracao(h.horas) : "—");
   }
 
   [campoData, campoInicio, campoFim].forEach(function (c) {
@@ -212,26 +210,26 @@
     var escolhida = formManha.querySelector('input[name="qualidade"]:checked');
 
     var erroData = "";
-    if (!campoData.value) erroData = "Informe a data em que você acordou.";
-    else if (campoData.value > hojeTexto()) erroData = "A data não pode ser no futuro.";
+    if (!campoData.value) erroData = "Enter the date you woke up.";
+    else if (campoData.value > hojeTexto()) erroData = "The date cannot be in the future.";
     marcarErro("erro-manha-data", [campoData], erroData);
     if (erroData) erros.push(campoData);
 
     var horario = calcularHorario();
     var erroHorario = "";
-    if (!campoInicio.value || !campoFim.value) erroHorario = "Informe a hora em que dormiu e a hora em que acordou.";
-    else if (horario && horario.horas > 16) erroHorario = "A duração passou de 16 horas. Confira os horários.";
+    if (!campoInicio.value || !campoFim.value) erroHorario = "Enter your sleep and wake times.";
+    else if (horario && horario.horas > 16) erroHorario = "The duration exceeds 16 hours. Check the times.";
     marcarErro("erro-manha-horario", [campoInicio, campoFim], erroHorario);
     if (erroHorario) erros.push(campoInicio.value ? campoFim : campoInicio);
 
     var interrupcoes = campoInterrupcoes.value;
     var erroInterrupcoes = "";
-    if (!/^\d+$/.test(interrupcoes)) erroInterrupcoes = "Informe um número inteiro (0 se não acordou).";
-    else if (Number(interrupcoes) > 30) erroInterrupcoes = "Informe no máximo 30.";
+    if (!/^\d+$/.test(interrupcoes)) erroInterrupcoes = "Enter a whole number (0 if you did not wake).";
+    else if (Number(interrupcoes) > 30) erroInterrupcoes = "Enter a maximum of 30.";
     marcarErro("erro-manha-interrupcoes", [campoInterrupcoes], erroInterrupcoes);
     if (erroInterrupcoes) erros.push(campoInterrupcoes);
 
-    var erroQualidade = escolhida ? "" : "Escolha uma opção de 1 a 5.";
+    var erroQualidade = escolhida ? "" : "Choose an option from 1 to 5.";
     marcarErro("erro-manha-qualidade", [], erroQualidade);
     if (erroQualidade) erros.push(formManha.querySelector('input[name="qualidade"]'));
 
@@ -254,26 +252,26 @@
     mensagemManha.textContent = "";
     var checkin = validarManha();
     if (!checkin) {
-      mensagemManha.textContent = "Confira os campos destacados.";
+      mensagemManha.textContent = "Check the highlighted fields.";
       return;
     }
     var botao = formManha.querySelector('button[type="submit"]');
     botao.disabled = true;
     window.RagaDados.enviarCheckinSono(checkin).then(function (resposta) {
       mensagemManha.textContent = resposta.situacao === "salvo_no_servidor"
-        ? "Check-in salvo no servidor para o despertar de " + F.dia(checkin.noite_em) + ". A avaliação nova aparece no painel."
-        : "Check-in registrado nesta aba para o despertar de " + F.dia(checkin.noite_em) + ". Ele aparece no painel como ainda não avaliado.";
+        ? "Check-in saved on the server for " + F.dia(checkin.noite_em) + ". The updated assessment appears on the dashboard."
+        : "Check-in recorded in this tab for " + F.dia(checkin.noite_em) + ". It appears on the dashboard as not yet assessed.";
       formManha.reset();
       prepararManha();
       return carregar();
     }).catch(function (erro) {
       if (erro && erro.semRota) {
-        mensagemManha.textContent = erro.message + " Seus dados continuam no formulário.";
+        mensagemManha.textContent = erro.message + " Your data remains in the form.";
         return;
       }
-      var motivo = erro && erro.status ? " O servidor respondeu: " + erro.message : "";
-      mensagemManha.textContent = "Não foi possível registrar o check-in." + motivo +
-        " Seus dados continuam no formulário; tente de novo.";
+      var motivo = erro && erro.status ? " Server response: " + erro.message : "";
+      mensagemManha.textContent = "Could not save the check-in." + motivo +
+        " Your data remains in the form; try again.";
     }).then(function () {
       botao.disabled = false;
     });
@@ -287,7 +285,7 @@
   var campoDiario = $("noite-diario");
 
   function atualizarContador() {
-    $("diario-contador").textContent = campoDiario.value.length + " de 1000 caracteres";
+    $("diario-contador").textContent = campoDiario.value.length + " of 1000 characters";
   }
   campoDiario.addEventListener("input", atualizarContador);
 
@@ -305,15 +303,15 @@
   function validarNoite() {
     var erros = [];
     var erroData = "";
-    if (!campoDataNoite.value) erroData = "Informe a data.";
-    else if (campoDataNoite.value > hojeTexto()) erroData = "A data não pode ser no futuro.";
+    if (!campoDataNoite.value) erroData = "Enter the date.";
+    else if (campoDataNoite.value > hojeTexto()) erroData = "The date cannot be in the future.";
     marcarErro("erro-noite-data", [campoDataNoite], erroData);
     if (erroData) erros.push(campoDataNoite);
 
     var respostas = {};
     ["humor", "estresse", "convivencia"].forEach(function (nome) {
       var n = escolhido(nome);
-      $("erro-" + nome).textContent = n ? "" : "Escolha uma opção de 1 a 5.";
+      $("erro-" + nome).textContent = n ? "" : "Choose an option from 1 to 5.";
       if (!n) erros.push(formNoite.querySelector('input[name="' + nome + '"]'));
       respostas[nome] = n;
     });
@@ -337,26 +335,26 @@
     mensagemNoite.textContent = "";
     var checkin = validarNoite();
     if (!checkin) {
-      mensagemNoite.textContent = "Confira os campos destacados.";
+      mensagemNoite.textContent = "Check the highlighted fields.";
       return;
     }
     var botao = formNoite.querySelector('button[type="submit"]');
     botao.disabled = true;
     window.RagaDados.enviarCheckinNoite(checkin).then(function (resposta) {
       mensagemNoite.textContent = (resposta.situacao === "salvo_no_servidor"
-        ? "Check-in e diário fictícios de " + F.dia(checkin.data) + " salvos no servidor e disponíveis na visão médica."
-        : "Check-in e diário fictícios de " + F.dia(checkin.data) + " registrados nesta aba.");
+        ? "Fictional check-in and journal for " + F.dia(checkin.data) + " saved on the server and available in the medical view."
+        : "Fictional check-in and journal for " + F.dia(checkin.data) + " saved in this tab.");
       formNoite.reset();
       prepararNoite();
       return carregar();
     }).catch(function (erro) {
       if (erro && erro.semRota) {
-        mensagemNoite.textContent = erro.message + " Suas respostas continuam no formulário.";
+        mensagemNoite.textContent = erro.message + " Your responses remain in the form.";
         return;
       }
-      var motivo = erro && erro.status ? " O servidor respondeu: " + erro.message : "";
-      mensagemNoite.textContent = "Não foi possível registrar o check-in." + motivo +
-        " Suas respostas continuam no formulário; tente de novo.";
+      var motivo = erro && erro.status ? " Server response: " + erro.message : "";
+      mensagemNoite.textContent = "Could not save the check-in." + motivo +
+        " Your responses remain in the form; try again.";
     }).then(function () {
       botao.disabled = false;
     });

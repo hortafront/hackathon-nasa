@@ -24,6 +24,9 @@
     t.textContent = F.dataHora(dados.atualizado_em);
 
     var lista = $("lista-tripulantes");
+    var abertos = new Set(Array.from(lista.querySelectorAll("details[open]"), function (detalhes) {
+      return detalhes.dataset.astronauta;
+    }));
     lista.replaceChildren();
     dados.tripulantes.forEach(function (tri) {
       var li = document.createElement("li");
@@ -31,19 +34,19 @@
 
       var topo = document.createElement("div");
       topo.className = "tripulante-topo";
-      var nome = texto("h3", "", tri.nome_exibicao);
+      var nome = texto("h3", "", F.textoExibicao(tri.nome_exibicao));
       var selo = document.createElement("p");
       selo.innerHTML = F.selo(tri.estado); // rótulos fixos de formato.js
       topo.append(nome, selo);
       li.appendChild(topo);
 
       li.appendChild(texto("p", "leitura-detalhe",
-        (tri.origem === "ficticia" ? "Personagem fictícia" : "Tripulante") +
-        ", " + tri.identificacao + (tri.area ? ". Área: " + tri.area + "." : ".")));
+        (tri.origem === "ficticia" ? "Fictional character" : "Crew member") +
+        ", " + tri.identificacao + (tri.area ? ". Area: " + tri.area + "." : ".")));
       li.appendChild(texto("p", "", tri.motivo));
       if (tri.estado === "vermelho") {
         li.appendChild(texto("p", "nota nota--urgente",
-          "Atenção imediata: não aguardar a reavaliação. Este protótipo não envia avisos de verdade."));
+          "Immediate attention: do not wait for reassessment. This prototype does not send actual alerts."));
       }
 
       if (tri.dados_compartilhados.length) {
@@ -53,44 +56,67 @@
         li.appendChild(ul);
       }
       var detalhes = document.createElement("details");
-      detalhes.appendChild(texto("summary", "", "Ver registros e diário compartilhados"));
-      if (tri.linha_base_sono) {
-        detalhes.appendChild(texto("p", "", "Linha de base fictícia de sono: " +
-          F.duracao(tri.linha_base_sono.duracao_media_horas) + "; qualidade média " + tri.linha_base_sono.qualidade_media +
-          "; período de " + F.dataHora(tri.linha_base_sono.periodo_inicio) + " a " + F.dataHora(tri.linha_base_sono.periodo_fim) +
-          "; origem: " + tri.linha_base_sono.origem + "."));
-      }
-      detalhes.appendChild(texto("h4", "", "Registros de sono"));
-      var noites = tri.registros_sono || [];
-      if (!noites.length) detalhes.appendChild(texto("p", "", "Nenhum registro de sono disponível."));
-      noites.forEach(function (r) {
-        detalhes.appendChild(texto("p", "", "Despertar em " + F.dataHora(r.fim_sono) +
-          "; início " + F.dataHora(r.inicio_sono) + "; duração " + F.duracao(r.duracao_horas) +
-          "; qualidade " + r.qualidade + "; interrupções " + r.interrupcoes +
-          "; origem: " + r.origem + (r.observacao ? "; observação: " + r.observacao : "") + "."));
+      detalhes.dataset.astronauta = String(tri.id);
+      detalhes.open = abertos.has(String(tri.id));
+      detalhes.appendChild(texto("summary", "", "View shared records and journal"));
+      detalhes.appendChild(texto("p", "nota", "The full list may include records after the assessment date above."));
+      (tri.areas || []).forEach(function (area) {
+        detalhes.appendChild(texto("h4", "", area.nome));
+        detalhes.appendChild(texto("p", "", area.resumo));
+        if (area.linha_base) {
+          detalhes.appendChild(texto("p", "", "Fictional baseline: " + area.linha_base.valor + " " + area.linha_base.unidade + " (" + F.textoExibicao(area.linha_base.origem) + ")."));
+        }
+        if (area.ultimo_registro) {
+          var u = area.ultimo_registro;
+          detalhes.appendChild(texto("p", "", "Latest record: " + u.valor + " " + F.textoExibicao(u.unidade) +
+            " at " + F.dataHora(u.registrado_em) + " (" + F.textoExibicao(u.origem) + ")."));
+        }
       });
-      detalhes.appendChild(texto("h4", "", "Check-ins da noite e diário"));
+      if (tri.linha_base_sono) {
+        detalhes.appendChild(texto("p", "", "Fictional sleep baseline: " +
+          F.duracao(tri.linha_base_sono.duracao_media_horas) + "; average quality " + tri.linha_base_sono.qualidade_media +
+          "; period from " + F.dataHora(tri.linha_base_sono.periodo_inicio) + " to " + F.dataHora(tri.linha_base_sono.periodo_fim) +
+          "; source: " + F.textoExibicao(tri.linha_base_sono.origem) + "."));
+      }
+      detalhes.appendChild(texto("h4", "", "Sleep records"));
+      var noites = tri.registros_sono || [];
+      if (!noites.length) detalhes.appendChild(texto("p", "", "No sleep records available."));
+      noites.forEach(function (r) {
+        detalhes.appendChild(texto("p", "", "Awake at " + F.dataHora(r.fim_sono) +
+          "; asleep at " + F.dataHora(r.inicio_sono) + "; duration " + F.duracao(r.duracao_horas) +
+          "; quality " + r.qualidade + "; interruptions " + r.interrupcoes +
+          "; source: " + F.textoExibicao(r.origem) + (r.observacao ? "; note: " + F.textoExibicao(r.observacao) : "") + "."));
+      });
+      detalhes.appendChild(texto("h4", "", "Evening check-ins and journal"));
       var checkins = tri.checkins_noite || [];
-      if (!checkins.length) detalhes.appendChild(texto("p", "", "Nenhum check-in da noite disponível."));
+      if (!checkins.length) detalhes.appendChild(texto("p", "", "No evening check-ins available."));
       checkins.forEach(function (c) {
-        detalhes.appendChild(texto("p", "", "Data " + F.dia(c.data) + "; humor " + c.humor +
-          "; estresse " + c.estresse + "; convivência " + c.convivencia +
-          "; registrado em " + F.dataHora(c.registrado_em) + "; origem: " + c.origem + "."));
-        detalhes.appendChild(texto("p", "", "Diário: " + (c.diario || "não informado")));
+        detalhes.appendChild(texto("p", "", "Date " + F.dia(c.data) + "; mood " + c.humor +
+          "; stress " + c.estresse + "; crew interactions " + c.convivencia +
+          "; recorded at " + F.dataHora(c.registrado_em) + "; source: " + F.textoExibicao(c.origem) + "."));
+        detalhes.appendChild(texto("p", "", "Journal: " + (F.textoExibicao(c.diario) || "not provided")));
+      });
+      detalhes.appendChild(texto("h4", "", "Reaction tests"));
+      var testes = tri.testes_reacao || [];
+      if (!testes.length) detalhes.appendChild(texto("p", "", "No reaction tests available."));
+      testes.forEach(function (t) {
+        detalhes.appendChild(texto("p", "", "Test at " + F.dataHora(t.realizado_em) +
+          "; median " + t.mediana_ms + " ms; attempts " + t.tempos_ms.join(", ") +
+          " ms; anticipations " + t.antecipacoes + "; source: " + F.textoExibicao(t.origem) + "."));
       });
       li.appendChild(detalhes);
       // Datas no formato de avaliacao_sono.py: data + prazo em horas.
       if (tri.data_avaliacao) {
-        li.appendChild(texto("p", "leitura-detalhe", "Avaliado com dados até " + F.dia(tri.data_avaliacao) + "."));
+        li.appendChild(texto("p", "leitura-detalhe", "Assessed using data through " + F.dia(tri.data_avaliacao) + "."));
         var hoje = new Date();
         var hojeTexto = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
         if (tri.data_avaliacao < hojeTexto) {
-          li.appendChild(texto("p", "nota", "Avaliação histórica; pode não refletir a situação atual."));
+          li.appendChild(texto("p", "nota", "Historical assessment; it may not reflect the current situation."));
         }
       }
       if (tri.data_avaliacao && tri.reavaliar_em_horas) {
-        li.appendChild(texto("p", "leitura-detalhe", "Reavaliação sugerida em " + tri.reavaliar_em_horas +
-          " h (a partir de " + F.diaMaisHoras(tri.data_avaliacao, tri.reavaliar_em_horas) + "). Nada é agendado nem enviado."));
+        li.appendChild(texto("p", "leitura-detalhe", "Suggested reassessment in " + tri.reavaliar_em_horas +
+          " h (from " + F.diaMaisHoras(tri.data_avaliacao, tri.reavaliar_em_horas) + "). Nothing is scheduled or sent."));
       }
 
       lista.appendChild(li);
@@ -105,13 +131,13 @@
       aviso.textContent = "";
       painel.setAttribute("data-estado", dados.tripulantes.length ? "ok" : "vazio");
       painel.setAttribute("data-tem-dados", "sim");
-      if (!dados.tripulantes.length) aviso.textContent = "Nenhum tripulante na demonstração.";
+      if (!dados.tripulantes.length) aviso.textContent = "No crew members in the demonstration.";
     }).catch(function () {
       var agora = F.hora(new Date().toISOString());
       aviso.textContent = ultimo
-        ? "A atualização falhou às " + agora + ". Os dados mostrados são de " +
-          F.dataHora(ultimo.atualizado_em) + " e podem estar desatualizados."
-        : "Não foi possível carregar os dados às " + agora + ". Nova tentativa em 10 segundos.";
+        ? "Update failed at " + agora + ". Displayed data is from " +
+          F.dataHora(ultimo.atualizado_em) + " and may be out of date."
+        : "Could not load data at " + agora + ". Retrying in 10 seconds.";
       painel.setAttribute("data-estado", "erro");
     });
   }

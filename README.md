@@ -11,15 +11,17 @@ O ciclo planejado é **medir → comparar com a linha de base individual → cla
 - [API e integração](docs/api.md): situação atual e necessidades a combinar.
 - [Dados e armazenamento](docs/dados.md): formato dos dados fictícios e funções disponíveis.
 - [Fundamentação e fontes](docs/fundamentacao-e-proximos-passos.md): evidências, limitações e afirmações a verificar.
+- [Roteiro do vídeo de 30 segundos](docs/roteiro-video.md): preparação e sequência da demonstração.
 - [Instruções para agentes](AGENTS.md): regras compartilhadas para pessoas e IAs.
 
 ## Estado real do repositório
 
-- `database.py` e `schema.sql` implementam leituras numéricas e armazenamento de astronautas fictícios, linha de base e registros de sono. As demais áreas, alertas e ciclo completo ainda não estão modelados.
-- `app.py` serve o painel, check-ins, teste de reação e visão médica. Oferece histórico, avaliações retrospectivas, check-ins fictícios de sono e mente e consulta para a visão médica, além da rota antiga de leitura recente. Esta última usa por engano `astrounata_id`, enquanto o contrato anterior usa `astronauta_id`. A API ainda está incompleta.
-- `avaliacao_sono.py` implementa uma regra ilustrativa para duração do sono; `servico_sono.py` conecta a avaliação aos dados salvos. Detalhes em [API e integração](docs/api.md).
-- O painel, os check-ins de sono e mente e a visão médica usam a API quando disponível; o teste de reação ainda usa dados fictícios locais. As respostas e o diário fictício são gravados e disponibilizados na visão médica. Sem autenticação ou controle por papel, qualquer pessoa com acesso ao servidor pode consultá-los. Ver [front-end — caso de sono](docs/front-caso-sono.md). `simulator.py` é apenas um esboço.
-- Nenhum ciclo completo do Raga, controle de acesso, notificação, execução de reavaliação ou integração com sensores está implementado. Não se deve anunciar o produto como operacional ou validado.
+- `database.py` e `schema.sql` armazenam astronautas fictícios, referências, registros das cinco áreas, acompanhamento de sono, check-ins e testes de reação.
+- `app.py` serve as páginas e rotas de registro e avaliação. A API segue em evolução.
+- `avaliacao_sono.py` e `avaliacao_areas.py` aplicam regras escolhidas apenas para demonstração; `servico_sono.py` conecta o sono ao banco. Não são limiares clínicos. Detalhes e regras em [API e integração](docs/api.md).
+- O painel, os check-ins, o teste de reação e a visão médica usam a API quando disponível. As respostas e o diário fictício são gravados e disponibilizados na visão médica. Sem autenticação ou controle por papel, qualquer pessoa com acesso ao servidor pode consultá-los. Ver [front-end — caso de sono](docs/front-caso-sono.md). `simulator.py` é apenas um esboço.
+- A interface da demonstração está em inglês; identificadores, campos, estados e rotas da API continuam com seus nomes internos existentes. As explicações geradas pelas regras das áreas e de sono agora são retornadas em inglês.
+- O caso fictício de sono permite registrar indicação, revisão dos registros e reavaliação. Os demais ciclos, controle de acesso, notificações e integração com sensores não estão implementados. Não se deve anunciar o produto como operacional ou validado.
 
 ## Preparação e verificação do código existente
 
@@ -34,8 +36,8 @@ python database.py --carregar-ficticios
 python -m unittest discover -s tests
 ```
 
-`database.py` cria `instance/saude.db` sem apagar leituras existentes; `--carregar-ficticios` carrega explicitamente o JSON de exemplo, de forma idempotente e transacional. Conflitos interrompem a carga; não apague dados existentes para resolvê-los sem revisão. Bancos antigos com noites duplicadas podem impedir a criação do índice. O banco local não deve ser versionado. `python app.py` inicia o Flask; acesse `http://127.0.0.1:5000/`, ou use `/?data=2026-11-10` para o caso amarelo. As avaliações são cálculos retrospectivos, não eventos agendados. Sem dados fictícios carregados, a API pode retornar 404. As rotas não têm autenticação: use somente dados fictícios em ambiente local. O ciclo completo não está implementado.
+`database.py` cria as tabelas ausentes em `instance/saude.db` sem apagar leituras existentes; execute-o também após atualizar o projeto. `--carregar-ficticios` carrega explicitamente os arquivos fictícios de sono, tripulação e indicadores. Cada arquivo é transacional e idempotente; um conflito interrompe a carga do arquivo, sem desfazer cargas anteriores nem sobrescrever dados. Bancos antigos com noites duplicadas podem impedir a criação do índice. O banco local não deve ser versionado. `python app.py` inicia o Flask; acesse `http://127.0.0.1:5000/`, ou use `/?data=2026-11-10` para o caso histórico e `/equipe-medica.html?data=2026-11-10` para a tripulação. Na data atual sem registros, as áreas mostram dados insuficientes e o último registro disponível. Em **Acompanhamento do sono**, registre a indicação, confirme a revisão fictícia e reavalie usando o despertar de 11/11. Não há agendamento nem envio de avisos. Sem dados fictícios carregados, a API pode retornar 404. As rotas não têm autenticação: use somente dados fictícios em ambiente local.
 
-O PDF norte presente no repositório é a versão 2 e descreve cinco áreas. Parte do front menciona uma versão 3 e inclui Metabolismo como sexta área demonstrativa; a equipe precisa confirmar essa divergência de escopo.
+O PDF norte presente no repositório é a versão 2 e descreve cinco áreas. O painel ligado à API segue essas cinco; o modo de demonstração local ainda contém Metabolismo como sexta área de exemplo, pendente de confirmação da equipe.
 
 Não coloquem dados reais de saúde, credenciais, ambientes virtuais ou bancos locais no repositório. O software é um protótipo de apoio, não um diagnóstico ou ferramenta clínica validada.

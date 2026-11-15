@@ -2,7 +2,7 @@
 // dados-api.js usa este arquivo quando a API não está disponível, quando a
 // página é aberta com ?fonte=demo ou com ?simular=... (testes de estado).
 // As respostas têm o mesmo formato das rotas descritas em
-// docs/integracao-front-api.md, e a tela avisa que os dados são locais.
+// docs/api.md, e a tela avisa que os dados são locais.
 //
 // Os nomes dos campos seguem o back-end:
 // - astronauta, linha de base e registros: schema.sql / docs/dados.md;
@@ -64,8 +64,8 @@
       { data_sono: "2026-11-09", duracao_horas: 5.5, origem: "simulada", registrado_em: "2026-11-09T05:50:00-03:00" },
       { data_sono: "2026-11-10", duracao_horas: 4.5, origem: "simulada", registrado_em: "2026-11-10T05:30:00-03:00" }
     ],
-    explicacao: "As três durações estão abaixo da referência individual fictícia.",
-    orientacao: "Revise os registros e acompanhe a evolução com a equipe responsável.",
+    explicacao: "All three sleep durations are below the fictional individual baseline.",
+    orientacao: "Review the records and follow their progress with the responsible team.",
     reavaliar_em_horas: 24
   };
 
@@ -82,7 +82,7 @@
       { data_sono: "2026-11-10", duracao_horas: 4.5, origem: "simulada", registrado_em: "2026-11-10T05:30:00-03:00" },
       { data_sono: "2026-11-11", duracao_horas: 7.5, origem: "simulada", registrado_em: "2026-11-11T06:30:00-03:00" }
     ],
-    explicacao: "A regra demonstrativa de três noites abaixo da referência não foi acionada.",
+    explicacao: "The demonstration rule for three nights below baseline was not triggered.",
     orientacao: null,
     reavaliar_em_horas: null
   };
@@ -96,7 +96,7 @@
     origem_regra: "demonstracao_nao_clinica",
     estado: "dados_insuficientes",
     noites_consideradas: [],
-    explicacao: "São necessárias a referência individual e as três noites mais recentes consecutivas.",
+    explicacao: "The individual baseline and the three most recent consecutive nights are required.",
     orientacao: null,
     reavaliar_em_horas: null
   };
@@ -151,41 +151,40 @@
     return registro.fim_sono.slice(0, 10);
   }
 
-  // As outras 5 áreas: cores ESCRITAS À MÃO, como exemplos da tabela
-  // "Do sinal à ação" do PDF norte v3. Não há regra no back-end para elas;
-  // os valores são fictícios e não são limites clínicos.
+  // Cores escritas à mão apenas no modo local; não são limites clínicos.
+  // A versão 2 do PDF norte contém cinco áreas; Metabolismo aguarda confirmação.
   var outrasAreas = [
-    { id: "coracao", nome: "Coração", estado: "vermelho",
-      resumo: "Oxigênio simulado de 90% em repouso, abaixo da linha de base fictícia (97%)." },
-    { id: "mente", nome: "Mente e equipe", estado: "amarelo",
-      resumo: "Humor em queda e estresse em alta nos 3 últimos check-ins da noite." },
-    { id: "exercicio", nome: "Exercício", estado: "verde",
-      resumo: "Treino de 2 h 10 min ontem, dentro do plano fictício de 2 h por dia." },
-    { id: "cognicao", nome: "Cognição", estado: "verde",
-      resumo: "Tempo de reação simulado de 285 ms, igual à linha de base fictícia." },
+    { id: "coracao", nome: "Heart", estado: "vermelho",
+      resumo: "Simulated resting oxygen of 90%, below the fictional baseline (97%)." },
+    { id: "mente", nome: "Mind and crew", estado: "amarelo",
+      resumo: "Falling mood and rising stress in the last 3 evening check-ins." },
+    { id: "exercicio", nome: "Exercise", estado: "verde",
+      resumo: "2 h 10 min of exercise yesterday, within the fictional plan of 2 h per day." },
+    { id: "cognicao", nome: "Cognition", estado: "verde",
+      resumo: "Simulated reaction time of 285 ms, equal to the fictional baseline." },
     // 6ª área do PDF norte v3 (tag de glicose).
-    { id: "metabolismo", nome: "Metabolismo", estado: "verde",
-      resumo: "Glicose simulada estável nos últimos 3 dias, como na linha de base fictícia." }
+    { id: "metabolismo", nome: "Metabolism", estado: "verde",
+      resumo: "Simulated glucose has been stable for 3 days, as in the fictional baseline." }
   ];
 
-  // Áreas e estado geral ainda não existem no back-end: proposta do front.
+  // Áreas e estado geral fictícios independentes dos resultados da API.
   function areas(estadoSono, resumoSono) {
-    var sono = { id: "sono", nome: "Sono", estado: estadoSono, resumo: resumoSono };
+    var sono = { id: "sono", nome: "Sleep", estado: estadoSono, resumo: resumoSono };
     if (simular === "vazio") {
       return [sono].concat(outrasAreas.map(function (a) {
-        return { id: a.id, nome: a.nome, estado: "sem_registros", resumo: "Sem registros nesta demonstração." };
+        return { id: a.id, nome: a.nome, estado: "sem_registros", resumo: "No records in this demonstration." };
       }));
     }
-    return [sono].concat(copiar(outrasAreas));
+    return [sono].concat(copiar(outrasAreas).map(function (a) { a.local = true; return a; }));
   }
 
   function estadoGeral() {
     if (simular === "vazio") {
-      return { estado: "dados_insuficientes", explicacao: "Ainda não há registros nesta demonstração, então o estado geral não é calculado." };
+      return { estado: "dados_insuficientes", explicacao: "There are no records in this demonstration, so overall status is not calculated." };
     }
     return {
       estado: "vermelho",
-      explicacao: "Exemplo de demonstração: o estado geral repete a área mais grave (Coração). A regra do estado geral ainda será definida pela equipe."
+      explicacao: "Demonstration example: overall status repeats the most severe area (Heart). The overall rule is still to be defined by the team."
     };
   }
 
@@ -204,23 +203,23 @@
     var base = registros.slice(0, 6);
     var avaliacoes = [alerta];
     var estadoSono = "amarelo";
-    var resumoSono = "3 noites abaixo da linha de base fictícia.";
+    var resumoSono = "3 nights below the fictional baseline.";
 
     if (simular === "reavaliado") {
       base = registros;
       avaliacoes = [alerta, reavaliacao];
       estadoSono = "verde";
-      resumoSono = "Reavaliado em 11/11: regra não acionada.";
+      resumoSono = "Reassessed on 11/11: rule not triggered.";
     } else if (simular === "vazio") {
       base = [];
       avaliacoes = [];
       estadoSono = "sem_registros";
-      resumoSono = "Nenhum registro de sono ainda.";
+      resumoSono = "No sleep records yet.";
     } else if (simular === "insuficiente") {
       base = registros.slice(0, 2);
       avaliacoes = [insuficiente];
       estadoSono = "dados_insuficientes";
-      resumoSono = "Poucos registros para avaliar.";
+      resumoSono = "Not enough records for assessment.";
     }
 
     return {
@@ -252,7 +251,7 @@
   }
 
   function falha() {
-    throw new Error("Falha simulada de atualização.");
+    throw new Error("Simulated update failure.");
   }
 
   // Conta a chamada deste tipo e diz se a simulação manda falhar.
@@ -295,12 +294,6 @@
         salvarSessao("raga-demo-sono", checkinsLocais);
         return { situacao: "registrado_localmente", registro: copiar(registro) };
       }, 300);
-    },
-
-    // Áreas além do sono, para o modo API (que ainda só tem sono).
-    // Cada uma vem marcada como local, para a tela avisar.
-    areasLocais: function () {
-      return copiar(outrasAreas).map(function (a) { a.local = true; return a; });
     },
 
     // Testes de reação (Cognição): lista cronológica e linha de base fictícia.
@@ -362,26 +355,26 @@
         return {
           modo: "demonstracao-local",
           atualizado_em: new Date().toISOString(),
-          ordem: "Ordem dos dados de demonstração: vermelho, amarelo, verde. O critério de prioridade ainda será definido pelo back-end.",
+          ordem: "Demonstration order: red, yellow, green. The priority rule is still to be defined by the back end.",
           tripulantes: [
-            { id: 1, identificacao: "RAGA-AST-001", nome_exibicao: "Comandante Aurora", origem: "ficticia", area: "Coração",
+            { id: 1, identificacao: "RAGA-AST-001", nome_exibicao: "Comandante Aurora", origem: "ficticia", area: "Heart",
               estado: "vermelho",
-              motivo: "Oxigênio simulado abaixo da linha de base fictícia (exemplo de alerta imediato do PDF norte). Também em amarelo: Sono e Mente e equipe.",
+              motivo: "Simulated oxygen below the fictional baseline (an example of an immediate indication). Sleep and Mind and crew are also yellow.",
               dados_compartilhados: [
-                "Oxigênio simulado em repouso: 90% (linha de base fictícia: 97%)",
-                "Sono: 3 noites abaixo da linha de base fictícia de 7 h 30 min"
+                "Simulated resting oxygen: 90% (fictional baseline: 97%)",
+                "Sleep: 3 nights below the fictional baseline of 7 h 30 min"
               ],
               data_avaliacao: alerta.data_avaliacao, reavaliar_em_horas: null,
               linha_base_sono: copiar(linhaBase), registros_sono: juntarRegistros(registros),
               checkins_noite: copiar(checkinsNoite) },
-            { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: "Exercício",
+            { id: 2, identificacao: "RAGA-AST-002", nome_exibicao: "Especialista Vega", origem: "ficticia", area: "Exercise",
               estado: "amarelo",
-              motivo: "Treino abaixo do plano fictício de 2 h por dia nos 3 últimos dias.",
-              dados_compartilhados: ["Média de treino: 1 h 20 min por dia (plano fictício: 2 h)"],
+              motivo: "Exercise below the fictional plan of 2 h per day for the last 3 days.",
+              dados_compartilhados: ["Average exercise: 1 h 20 min per day (fictional plan: 2 h)"],
               data_avaliacao: "2026-11-10", reavaliar_em_horas: 24 },
             { id: 3, identificacao: "RAGA-AST-003", nome_exibicao: "Engenheira Lyra", origem: "ficticia", area: null,
               estado: "verde",
-              motivo: "Nenhuma regra ilustrativa acionada nos dados disponíveis. Isso não comprova saúde.",
+              motivo: "No illustrative rule was triggered by the available data. This does not prove health.",
               dados_compartilhados: [],
               data_avaliacao: "2026-11-10", reavaliar_em_horas: null }
           ],

@@ -11,6 +11,8 @@ PASTA_PROJETO = Path(__file__).resolve().parent
 CAMINHO_BANCO = PASTA_PROJETO / "instance" / "saude.db"
 CAMINHO_SCHEMA = PASTA_PROJETO / "schema.sql"
 CAMINHO_DADOS = PASTA_PROJETO / "data" / "astronautas-ficticios.json"
+CAMINHO_INDICADORES = PASTA_PROJETO / "data" / "indicadores-ficticios.json"
+CAMINHO_TRIPULACAO = PASTA_PROJETO / "data" / "tripulacao-ficticia.json"
 
 
 def _instante_com_fuso(valor, campo):
@@ -254,53 +256,51 @@ def carregar_dados_ficticios(conexao, caminho=CAMINHO_DADOS):
     return {"inseridos": inseridos, "ignorados": ignorados}
 
 
-def salvar_leitura(conexao, leitura):
-    """Salva uma leitura já validada e retorna seus campos, incluindo o id."""
-    campos = ("astronauta_id", "indicador", "valor", "unidade", "registrado_em", "origem")
-    valores = tuple(leitura[campo] for campo in campos)
+def carregar_indicadores_ficticios(conexao, caminho=CAMINHO_INDICADORES):
+    """Carga explícita, idempotente e transacional; conflitos não são sobrescritos."""
+    try:
+        dados = json.loads(Path(caminho).read_text(encoding='utf-8'))
+        referencias, registros = dados['referencias'], dados['registros']
+        checkins, testes = dados['checkins'], dados['testes']
+        if not all(isinstance(lista, list) for lista in (referencias, registros, checkins, testes)):
+            raise ValueError
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as erro:
+        raise ValueError('Fixture de indicadores inválida.') from erro
+    contagem = {'inseridos': 0, 'ignorados': 0}
     with conexao:
-        cursor = conexao.execute(
-            """INSERT INTO leituras
-               (astronauta_id, indicador, valor, unidade, registrado_em, origem)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            valores,
-        )
-    return {"id": cursor.lastrowid, **dict(zip(campos, valores))}
-
-
-def _ordenar_leituras(cursor):
-    """Ordena instantes em UTC, preservando microssegundos e desempate por id."""
-    campos = [coluna[0] for coluna in cursor.description]
-    leituras = [dict(zip(campos, linha)) for linha in cursor.fetchall()]
-
-    def chave(leitura):
-        instante = datetime.fromisoformat(leitura["registrado_em"].replace("Z", "+00:00"))
-        if instante.utcoffset() is None:
-            raise ValueError("O horário da leitura deve incluir fuso.")
-        return instante.astimezone(timezone.utc), leitura["id"]
-
-    return sorted(leituras, key=chave)
-
-
-def buscar_ultima_leitura(conexao, astronauta_id):
-    """Retorna a leitura mais recente do astronauta, ou None se não houver."""
-    cursor = conexao.execute(
-        """SELECT id, astronauta_id, indicador, valor, unidade, registrado_em, origem
-           FROM leituras WHERE astronauta_id = ?""",
-        (astronauta_id,),
-    )
-    leituras = _ordenar_leituras(cursor)
-    return leituras[-1] if leituras else None
-
-
-def buscar_historico(conexao, astronauta_id, indicador):
-    """Retorna leituras do indicador, da mais antiga para a mais recente."""
-    cursor = conexao.execute(
-        """SELECT id, astronauta_id, indicador, valor, unidade, registrado_em, origem
-           FROM leituras WHERE astronauta_id = ? AND indicador = ?""",
-        (astronauta_id, indicador),
-    )
-    return _ordenar_leituras(cursor)
+        for tabela, lista, colunas, chaves in (
+            ('referencias_areas', referencias, ('astronauta_id', 'area', 'valor', 'unidade', 'origem'), ('astronauta_id', 'area')),
+            ('indicadores_areas', registros, ('astronauta_id', 'area', 'valor', 'unidade', 'registrado_em', 'origem'), ('astronauta_id', 'area', 'registrado_em')),
+        ):
+            for item in lista:
+                valores = tuple(item[campo] for campo in colunas)
+                if item['area'] not in ('coracao', 'exercicio', 'cognicao') or item['origem'] != 'simulada':
+                    raise ValueError('Indicador fictício inválido.')
+                if tabela == 'indicadores_areas':
+                    _instante_com_fuso(item['registrado_em'], 'registrado_em')
+                antes = conexao.total_changes
+                _inserir_ou_confirmar(conexao, tabela, chaves, colunas, valores)
+                contagem['inseridos' if conexao.total_changes > antes else 'ignorados'] += 1
+        colunas = ('astronauta_id', 'data', 'humor', 'estresse', 'convivencia', 'diario', 'registrado_em', 'origem')
+        for item in checkins:
+            _instante_com_fuso(item['registrado_em'], 'registrado_em')
+            if item['origem'] != 'simulada':
+                raise ValueError('Check-in fictício inválido.')
+            antes = conexao.total_changes
+            _inserir_ou_confirmar(conexao, 'checkins_noite', ('astronauta_id', 'data'), colunas,
+                                  tuple(item[c] for c in colunas))
+            contagem['inseridos' if conexao.total_changes > antes else 'ignorados'] += 1
+        import servico_reacao
+        colunas = ('astronauta_id', 'realizado_em', 'tentativas', 'mediana_ms', 'mais_rapida_ms',
+                   'mais_lenta_ms', 'acima_500ms', 'antecipacoes', 'tempos_ms', 'origem')
+        for item in testes:
+            teste = servico_reacao.validar({k: v for k, v in item.items() if k != 'astronauta_id'}, item['astronauta_id'])
+            teste['origem'] = 'simulada'
+            valores = tuple(json.dumps(teste[c]) if c == 'tempos_ms' else teste[c] for c in colunas)
+            antes = conexao.total_changes
+            _inserir_ou_confirmar(conexao, 'testes_reacao', ('astronauta_id', 'realizado_em'), colunas, valores)
+            contagem['inseridos' if conexao.total_changes > antes else 'ignorados'] += 1
+    return contagem
 
 
 if __name__ == "__main__":
@@ -317,5 +317,7 @@ if __name__ == "__main__":
         try:
             resultado = carregar_dados_ficticios(conexao)
             print("Carga fictícia:", resultado)
+            print("Tripulação fictícia:", carregar_dados_ficticios(conexao, CAMINHO_TRIPULACAO))
+            print("Indicadores fictícios:", carregar_indicadores_ficticios(conexao))
         finally:
             conexao.close()

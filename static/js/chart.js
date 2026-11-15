@@ -95,7 +95,7 @@
       var by = y(linhaBaseHoras);
       svg.appendChild(el("line", { class: "linha-base", x1: MARGEM.esquerda, x2: largura - MARGEM.direita, y1: by, y2: by }));
       svg.appendChild(el("text", { class: "linha-base-rotulo", x: largura - MARGEM.direita - 4, y: by - 8, "text-anchor": "end" },
-        "Linha de base fictícia: " + F.duracaoCurta(linhaBaseHoras)));
+        "Fictional baseline: " + F.duracaoCurta(linhaBaseHoras)));
     }
 
     alvo.replaceChildren(svg);
@@ -104,19 +104,19 @@
   // Frase que resume o gráfico para leitores de tela.
   function resumo(registros, linhaBaseHoras, destacadas) {
     var F = window.RagaFormato;
-    if (!registros.length) return "Gráfico de sono sem registros.";
-    var texto = "Duração do sono em " + registros.length + " noites, de " +
-      F.dia(registros[0].noite_em) + " a " + F.dia(registros[registros.length - 1].noite_em) + ".";
+    if (!registros.length) return "Sleep chart with no records.";
+    var texto = "Sleep duration for " + registros.length + " nights, from " +
+      F.dia(registros[0].noite_em) + " to " + F.dia(registros[registros.length - 1].noite_em) + ".";
     if (linhaBaseHoras !== null && linhaBaseHoras !== undefined) {
-      texto += " Linha de base fictícia: " + F.duracao(linhaBaseHoras) + ".";
+      texto += " Fictional baseline: " + F.duracao(linhaBaseHoras) + ".";
     }
     var marcadas = registros.filter(function (r) { return destacadas.indexOf(dataDe(r)) !== -1; });
     if (marcadas.length) {
-      texto += " Noites que motivaram a indicação: " + marcadas.map(function (r) {
-        return F.dia(r.noite_em) + " com " + F.duracao(r.duracao_horas);
+      texto += " Nights contributing to the indication: " + marcadas.map(function (r) {
+        return F.dia(r.noite_em) + " with " + F.duracao(r.duracao_horas);
       }).join("; ") + ".";
     }
-    return texto + " Os mesmos dados estão na tabela abaixo do gráfico.";
+    return texto + " The same data is in the table below the chart.";
   }
 
   window.RagaGrafico = { desenharSono: desenharSono };

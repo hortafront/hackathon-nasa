@@ -51,14 +51,14 @@
       return;
     }
     var numero = tempos.length + 1;
-    mudarFase("esperando", "Espere…", "Tentativa " + numero + " de " + TENTATIVAS);
-    progresso("Tentativa " + numero + " de " + TENTATIVAS + ": espere o sinal.");
+    mudarFase("esperando", "Wait…", "Attempt " + numero + " of " + TENTATIVAS);
+    progresso("Attempt " + numero + " of " + TENTATIVAS + ": wait for the signal.");
     var espera = 2000 + Math.random() * 3000;
     relogio = setTimeout(acender, espera);
   }
 
   function acender() {
-    mudarFase("sinal", "Agora!", "Clique, toque ou aperte espaço");
+    mudarFase("sinal", "Now!", "Click, tap or press space");
     // Começa a contar agora e ajusta para o momento em que o navegador
     // desenha o sinal (próximo quadro da tela).
     inicioSinal = performance.now();
@@ -68,26 +68,26 @@
   function antecipou(motivo) {
     clearTimeout(relogio);
     antecipacoes += 1;
-    mudarFase("antecipou", "Cedo demais", "Espere o sinal acender");
-    progresso(motivo + " A tentativa será repetida.");
+    mudarFase("antecipou", "Too soon", "Wait for the signal");
+    progresso(motivo + " The attempt will be repeated.");
     relogio = setTimeout(proxima, 1300);
   }
 
   function responder() {
     if (fase === "esperando") {
-      antecipou("Antecipação: a resposta veio antes do sinal.");
+      antecipou("Anticipation: response before the signal.");
       return;
     }
     if (fase === "sinal") {
       var ms = Math.round(performance.now() - inicioSinal);
       // Como no PVT, menos de 100 ms é rápido demais para ser reação ao sinal.
       if (ms < 100) {
-        antecipou("Antecipação: resposta em menos de 100 ms.");
+        antecipou("Anticipation: response in less than 100 ms.");
         return;
       }
       tempos.push(ms);
-      mudarFase("resposta", ms + " ms", "Tentativa " + tempos.length + " de " + TENTATIVAS);
-      progresso("Resposta em " + ms + " milissegundos.");
+      mudarFase("resposta", ms + " ms", "Attempt " + tempos.length + " of " + TENTATIVAS);
+      progresso("Response in " + ms + " milliseconds.");
       relogio = setTimeout(proxima, 900);
     }
   }
@@ -95,11 +95,23 @@
   function parar() {
     clearTimeout(relogio);
     botaoParar.hidden = true;
-    mudarFase("parado", "Começar", TENTATIVAS + " tentativas");
-    progresso("Teste interrompido. Nada foi registrado.");
+    mudarFase("parado", "Start", TENTATIVAS + " attempts");
+    progresso("Test stopped. Nothing was recorded.");
   }
 
   // ---------- Resultado ----------
+
+  // Preserva a data local do teste e o fuso do navegador.
+  function agoraComFuso() {
+    var d = new Date();
+    var p = function (n) { return String(n).padStart(2, "0"); };
+    var offset = -d.getTimezoneOffset();
+    var sinal = offset >= 0 ? "+" : "-";
+    var abs = Math.abs(offset);
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" +
+      p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + sinal +
+      p(Math.floor(abs / 60)) + ":" + p(abs % 60);
+  }
 
   function mediana(lista) {
     var ordenada = lista.slice().sort(function (a, b) { return a - b; });
@@ -109,11 +121,11 @@
 
   function terminar() {
     botaoParar.hidden = true;
-    mudarFase("fim", "Fazer de novo", "Teste concluído");
-    progresso("Teste concluído. Veja o resultado abaixo.");
+    mudarFase("fim", "Try again", "Test complete");
+    progresso("Test complete. See your result below.");
 
     var teste = {
-      realizado_em: new Date().toISOString(),
+      realizado_em: agoraComFuso(),
       tentativas: tempos.length,
       mediana_ms: mediana(tempos),
       mais_rapida_ms: Math.min.apply(null, tempos),
@@ -131,21 +143,21 @@
 
     var base = ultimo && ultimo.linha_base_ms;
     $("res-comparacao").textContent = base
-      ? "Sua mediana foi " + teste.mediana_ms + " ms. A linha de base fictícia é " + base +
-        " ms (diferença de " + (teste.mediana_ms - base > 0 ? "+" : "") + (teste.mediana_ms - base) + " ms)."
-      : "Sua mediana foi " + teste.mediana_ms + " ms. Ainda não há linha de base para comparar.";
-    $("res-mensagem").textContent = "Registrando…";
+      ? "Your median was " + teste.mediana_ms + " ms. The fictional baseline is " + base +
+        " ms (difference: " + (teste.mediana_ms - base > 0 ? "+" : "") + (teste.mediana_ms - base) + " ms)."
+      : "Your median was " + teste.mediana_ms + " ms. No baseline is available for comparison.";
+    $("res-mensagem").textContent = "Saving…";
     $("resultado").hidden = false;
 
     window.RagaDados.enviarTesteReacao(teste).then(function (resposta) {
       $("res-mensagem").textContent = resposta.situacao === "salvo_no_servidor"
-        ? "Teste salvo no servidor."
-        : "Teste registrado nesta aba (some ao recarregar a página).";
+        ? "Test saved on the server."
+        : "Test recorded in this tab's session.";
       return carregar();
     }).catch(function (erro) {
       $("res-mensagem").textContent = erro && (erro.semRota || erro.status)
         ? erro.message
-        : "Não foi possível registrar o teste. O resultado continua na tela.";
+        : "Could not save the test. Your result remains on screen.";
     });
   }
 
@@ -187,8 +199,8 @@
   function mostrar(dados) {
     mostrarFonte();
     $("reacao-linha-base").textContent = dados.linha_base_ms
-      ? "Linha de base fictícia: " + dados.linha_base_ms + " ms (mediana)."
-      : "Ainda sem linha de base.";
+      ? "Fictional baseline: " + dados.linha_base_ms + " ms (median)."
+      : "No baseline yet.";
     var vazio = dados.testes.length === 0;
     $("reacao-vazio").hidden = !vazio;
     $("reacao-tabela-bloco").hidden = vazio;
@@ -204,7 +216,7 @@
         t.mais_lenta_ms + " ms",
         String(t.acima_500ms),
         String(t.antecipacoes),
-        t.origem
+        F.textoExibicao(t.origem)
       ].forEach(function (texto, i) {
         var celula = document.createElement(i === 0 ? "th" : "td");
         if (i === 0) celula.scope = "row";
@@ -226,9 +238,9 @@
       var agora = F.hora(new Date().toISOString());
       var motivo = erro && (erro.status || erro.rede) ? " (" + erro.message + ")" : "";
       aviso.textContent = ultimo
-        ? "A atualização falhou às " + agora + motivo + ". Os dados mostrados são de " +
-          F.dataHora(ultimo.atualizado_em) + " e podem estar desatualizados."
-        : "Não foi possível carregar o histórico às " + agora + motivo + ". O teste continua disponível.";
+        ? "Update failed at " + agora + motivo + ". The displayed data is from " +
+          F.dataHora(ultimo.atualizado_em) + " and may be out of date."
+        : "Could not load history at " + agora + motivo + ". The test remains available.";
       painel.setAttribute("data-estado", "erro");
       painel.setAttribute("data-tem-dados", ultimo ? "sim" : "nao");
     });

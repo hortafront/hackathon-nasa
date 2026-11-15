@@ -6,16 +6,16 @@
   // propostas do front. A cor nunca aparece sozinha: cada estado tem
   // texto e um ícone de formato diferente (ver style.css, seção 7).
   var ESTADOS = {
-    verde: { rotulo: "Verde: nenhuma regra acionada" },
-    amarelo: { rotulo: "Amarelo: atenção" },
-    vermelho: { rotulo: "Vermelho: atenção imediata" },
-    dados_insuficientes: { rotulo: "Dados insuficientes" },
-    sem_registros: { rotulo: "Sem registros" }
+    verde: { rotulo: "Green: no rule triggered" },
+    amarelo: { rotulo: "Yellow: attention" },
+    vermelho: { rotulo: "Red: immediate attention" },
+    dados_insuficientes: { rotulo: "Insufficient data" },
+    sem_registros: { rotulo: "No records" }
   };
 
   // Texto para o campo origem_regra das avaliações.
   var ORIGENS_REGRA = {
-    demonstracao_nao_clinica: "Regra de demonstração do back-end: três noites consecutivas abaixo da linha de base fictícia geram amarelo. Escolhida só para ilustrar o caso do PDF norte; não é validada clinicamente e não considera qualidade, contexto ou outras causas."
+    demonstracao_nao_clinica: "Demonstration rule: three consecutive nights below the fictional baseline trigger a yellow indication. This rule is not clinically validated and does not consider quality, context, or other causes."
   };
 
   function estado(chave) {
@@ -23,7 +23,38 @@
   }
 
   function origemRegra(chave) {
-    return ORIGENS_REGRA[chave] || "Origem da regra não informada.";
+    return ORIGENS_REGRA[chave] || "Rule source not provided.";
+  }
+
+  // Traduz apenas valores fictícios conhecidos; textos livres não são alterados.
+  function textoExibicao(texto) {
+    var traducoes = {
+      "simulada": "simulated",
+      "ficticia": "fictional",
+      "de 5": "out of 5",
+      "autorrelato_simulado": "simulated self-report",
+      "teste_interativo_demonstrativo": "demonstration reaction test",
+      "autorrelato (só nesta aba)": "self-report (this tab only)",
+      "Comandante Aurora": "Commander Aurora",
+      "Especialista Vega": "Specialist Vega",
+      "Engenheira Lyra": "Engineer Lyra",
+      "Noite de referência fictícia.": "Fictional baseline night.",
+      "Primeira noite alterada do cenário.": "First changed night in the scenario.",
+      "Segunda noite alterada do cenário.": "Second changed night in the scenario.",
+      "Terceira noite alterada do cenário.": "Third changed night in the scenario.",
+      "Noite posterior fictícia; sem interpretação clínica.": "Fictional later night; no clinical interpretation.",
+      "Registro fictício.": "Fictional record.",
+      "Registro fictício: dia intenso.": "Fictional entry: a demanding day.",
+      "Registro fictício: rotina movimentada.": "Fictional entry: a busy routine.",
+      "Registro fictício: revisar a rotina com a equipe.": "Fictional entry: review the routine with the crew.",
+      "Revisão fictícia dos registros de sono.": "Fictional review of sleep records.",
+      "As três durações estão abaixo da referência individual fictícia.": "All three sleep durations are below the fictional individual baseline.",
+      "São necessárias a referência individual e as três noites mais recentes consecutivas.": "The individual baseline and the three most recent consecutive nights are required.",
+      "A regra demonstrativa de três noites abaixo da referência não foi acionada.": "The demonstration rule for three nights below baseline was not triggered.",
+      "Revise os registros e acompanhe a evolução com a equipe responsável.": "Review the records and follow their progress with the responsible team.",
+      "Revise as três noites, confira possíveis interrupções do ambiente e registre a próxima noite. Converse com a equipe responsável se houver preocupação.": "Review the three nights, check for possible environmental interruptions and record the next night. Speak with the responsible team if you are concerned."
+    };
+    return Object.prototype.hasOwnProperty.call(traducoes, texto) ? traducoes[texto] : texto;
   }
 
   // 5.5 → "5 h 30 min"
@@ -60,12 +91,12 @@
   function dataHora(iso) {
     if (!iso) return "—";
     var d = new Date(iso);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) +
-      ", " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }) +
+      ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   }
 
   function hora(iso) {
-    return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   }
 
   // Ícone pequeno de cada estado (decorativo: o texto já informa).
@@ -92,15 +123,16 @@
   // Aviso de onde vêm os dados (ver dados-api.js).
   function textoFonte(f) {
     if (f.fonte === "api") {
-      return "Dados do servidor do Raga. Continuam fictícios: a origem aparece em cada registro.";
+      return "Data from the Raga server. All records are fictional and show their source.";
     }
     if (f.motivo === "escolhida") {
-      return "Modo demonstração: dados fictícios locais (dados-demo.js), escolhidos pelo endereço da página. Nada aqui veio do servidor.";
+      return "Demo mode: fictional local data selected in the page URL. No data came from the server.";
     }
-    return "A API não respondeu nesta página. Mostrando dados fictícios locais (dados-demo.js); nada aqui veio do servidor.";
+    return "The API did not respond. Showing fictional local data; no data came from the server.";
   }
 
   window.RagaFormato = {
+    textoExibicao: textoExibicao,
     textoFonte: textoFonte,
     estado: estado,
     origemRegra: origemRegra,

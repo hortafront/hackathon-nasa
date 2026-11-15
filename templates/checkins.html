@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raga: check-ins do dia</title>
+  <title>Raga: daily check-ins</title>
 
   <!-- Mesmos caminhos relativos do index.html. No Flask, esta página
        precisa de rota de um só nível: /checkins.html. -->
@@ -22,137 +22,137 @@
         Raga
       </a>
 
-      <nav class="links" aria-label="Páginas">
-        <a href="index.html">Painel</a>
+      <nav class="links" aria-label="Pages">
+        <a href="index.html">Dashboard</a>
         <a href="checkins.html" aria-current="page">Check-ins</a>
-        <a href="teste-reacao.html">Teste de reação</a>
-        <a href="equipe-medica.html">Equipe médica</a>
+        <a href="teste-reacao.html">Reaction test</a>
+        <a href="equipe-medica.html">Medical team</a>
       </nav>
 
       <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
         </svg>
-        Tema escuro
+        Dark theme
       </button>
     </div>
   </header>
 
   <div class="hero">
-    <h1>Check-ins do dia</h1>
-    <p>De manhã, como foi o sono. À noite, como foi o dia. Cada um leva menos de um minuto.</p>
+    <h1>Daily check-ins</h1>
+    <p>Report your sleep in the morning and your day in the evening. Each takes less than a minute.</p>
   </div>
 
   <!-- data-estado: carregando | ok | erro (checkins.js).
        Cada seção (manhã e noite) também tem o próprio estado. -->
   <main id="painel-checkins" class="painel" data-estado="carregando" data-tem-dados="nao">
-    <p id="aviso-checkins" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-checkins" class="aviso" role="status">Loading data…</p>
     <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
     <!-- Atalhos para as duas partes da página. -->
-    <nav class="atalhos depende-dados" aria-label="Partes desta página">
+    <nav class="atalhos depende-dados" aria-label="Page sections">
       <a href="#manha" class="atalho">
-        <span class="atalho-titulo">Manhã</span>
-        <span class="atalho-texto">Sono: horários, interrupções e qualidade</span>
+        <span class="atalho-titulo">Morning</span>
+        <span class="atalho-texto">Sleep: times, interruptions and quality</span>
       </a>
       <a href="#noite" class="atalho">
-        <span class="atalho-titulo">Noite</span>
-        <span class="atalho-texto">Mente e equipe: humor, estresse e convivência</span>
+        <span class="atalho-titulo">Evening</span>
+        <span class="atalho-texto">Mind and crew: mood, stress and interactions</span>
       </a>
     </nav>
 
     <!-- ===================== MANHÃ ===================== -->
     <section id="manha" class="grupo-checkin depende-dados" aria-labelledby="titulo-manha">
-      <h2 id="titulo-manha" class="grupo-titulo">Check-in da manhã <span class="grupo-area">Área: Sono</span></h2>
+      <h2 id="titulo-manha" class="grupo-titulo">Morning check-in <span class="grupo-area">Area: Sleep</span></h2>
 
       <div class="cartao">
-        <h3>Como foi a sua última noite de sono, <span class="nome-astronauta">—</span>?</h3>
+        <h3>How was your last night of sleep, <span class="nome-astronauta">—</span>?</h3>
 
         <!-- novalidate: as mensagens ficam no checkins.js, em português.
              Campos alinhados com registros_sono (schema.sql); a duração
              é calculada a partir dos horários. -->
         <form id="form-manha" class="formulario" novalidate>
           <div class="campo">
-            <label for="manha-data">Data em que você acordou</label>
+            <label for="manha-data">Date you woke up</label>
             <input id="manha-data" name="data" type="date" required aria-describedby="erro-manha-data">
             <p id="erro-manha-data" class="erro-campo"></p>
           </div>
 
           <fieldset class="campo" aria-describedby="erro-manha-horario manha-duracao">
-            <legend>Que horas você dormiu e acordou?</legend>
+            <legend>When did you fall asleep and wake up?</legend>
             <div class="duracao">
               <label class="duracao-parte">
-                <span>Dormi às</span>
+                <span>Fell asleep at</span>
                 <input id="manha-inicio" name="inicio" type="time" required>
               </label>
               <label class="duracao-parte">
-                <span>Acordei às</span>
+                <span>Woke up at</span>
                 <input id="manha-fim" name="fim" type="time" required>
               </label>
             </div>
-            <p id="manha-duracao" class="nota">Duração calculada: —</p>
+            <p id="manha-duracao" class="nota">Calculated duration: —</p>
             <p id="erro-manha-horario" class="erro-campo"></p>
           </fieldset>
 
           <div class="campo">
-            <label for="manha-interrupcoes">Quantas vezes você acordou durante a noite?</label>
+            <label for="manha-interrupcoes">How many times did you wake during the night?</label>
             <input id="manha-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-manha-interrupcoes">
             <p id="erro-manha-interrupcoes" class="erro-campo"></p>
           </div>
 
           <fieldset class="campo" aria-describedby="erro-manha-qualidade">
-            <legend>Como foi a qualidade do sono?</legend>
+            <legend>How was your sleep quality?</legend>
             <div class="escala">
-              <label><input type="radio" name="qualidade" value="1"><span>1. Muito ruim</span></label>
-              <label><input type="radio" name="qualidade" value="2"><span>2. Ruim</span></label>
-              <label><input type="radio" name="qualidade" value="3"><span>3. Regular</span></label>
-              <label><input type="radio" name="qualidade" value="4"><span>4. Boa</span></label>
-              <label><input type="radio" name="qualidade" value="5"><span>5. Muito boa</span></label>
+              <label><input type="radio" name="qualidade" value="1"><span>1. Very poor</span></label>
+              <label><input type="radio" name="qualidade" value="2"><span>2. Poor</span></label>
+              <label><input type="radio" name="qualidade" value="3"><span>3. Fair</span></label>
+              <label><input type="radio" name="qualidade" value="4"><span>4. Good</span></label>
+              <label><input type="radio" name="qualidade" value="5"><span>5. Very good</span></label>
             </div>
             <p id="erro-manha-qualidade" class="erro-campo"></p>
           </fieldset>
 
           <p id="manha-nota-fonte" class="nota"></p>
 
-          <button type="submit" class="botao">Registrar check-in da manhã</button>
+          <button type="submit" class="botao">Save morning check-in</button>
           <p id="manha-mensagem" class="checkin-mensagem" role="status"></p>
         </form>
       </div>
 
       <div class="cartao">
-        <h3>Últimos check-ins da manhã</h3>
-        <p id="manha-vazio" class="mensagem-vazia" hidden>Ainda não há registros de sono. Registre o primeiro acima.</p>
+        <h3>Recent morning check-ins</h3>
+        <p id="manha-vazio" class="mensagem-vazia" hidden>No sleep records yet. Add the first one above.</p>
         <div id="manha-tabela-bloco" class="tabela-rolagem">
           <table class="tabela-checkin">
-            <caption>Do mais antigo para o mais recente</caption>
+            <caption>Oldest to newest</caption>
             <thead>
               <tr>
-                <th scope="col">Despertar em</th>
-                <th scope="col">Duração</th>
-                <th scope="col">Dormiu e acordou</th>
-                <th scope="col">Qualidade</th>
-                <th scope="col">Interrupções</th>
-                <th scope="col">Origem</th>
+                <th scope="col">Wake date</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Sleep and wake time</th>
+                <th scope="col">Quality</th>
+                <th scope="col">Interruptions</th>
+                <th scope="col">Source</th>
               </tr>
             </thead>
             <tbody id="tabela-manha"></tbody>
           </table>
         </div>
-        <p class="nota">A avaliação do sono, com cor e orientação, aparece no <a href="index.html#avaliacao">painel</a>.</p>
+        <p class="nota">The sleep assessment, status and guidance appear on the <a href="index.html#avaliacao">dashboard</a>.</p>
       </div>
     </section>
 
     <!-- ===================== NOITE ===================== -->
     <section id="noite" class="grupo-checkin depende-dados" aria-labelledby="titulo-noite">
-      <h2 id="titulo-noite" class="grupo-titulo">Check-in da noite <span class="grupo-area">Área: Mente e equipe</span></h2>
+      <h2 id="titulo-noite" class="grupo-titulo">Evening check-in <span class="grupo-area">Area: Mind and crew</span></h2>
 
       <div class="cartao">
-        <h3>Como você está hoje, <span class="nome-astronauta">—</span>?</h3>
-        <p class="nota">Não existe resposta certa. Escolha o que mais se parece com o seu dia.</p>
+        <h3>How are you today, <span class="nome-astronauta">—</span>?</h3>
+        <p class="nota">There is no right answer. Choose what best describes your day.</p>
 
         <form id="form-noite" class="formulario" novalidate>
           <div class="campo">
-            <label for="noite-data">Data</label>
+            <label for="noite-data">Date</label>
             <input id="noite-data" name="data" type="date" required aria-describedby="erro-noite-data">
             <p id="erro-noite-data" class="erro-campo"></p>
           </div>
@@ -160,103 +160,102 @@
           <!-- Escalas de 1 a 5. O texto de cada opção diz o sentido,
                porque no estresse o 5 é o pior e nos outros o 5 é o melhor. -->
           <fieldset class="campo" aria-describedby="erro-humor">
-            <legend>Como está o seu humor?</legend>
+            <legend>How is your mood?</legend>
             <div class="escala">
-              <label><input type="radio" name="humor" value="1"><span>1. Muito ruim</span></label>
-              <label><input type="radio" name="humor" value="2"><span>2. Ruim</span></label>
-              <label><input type="radio" name="humor" value="3"><span>3. Neutro</span></label>
-              <label><input type="radio" name="humor" value="4"><span>4. Bom</span></label>
-              <label><input type="radio" name="humor" value="5"><span>5. Muito bom</span></label>
+              <label><input type="radio" name="humor" value="1"><span>1. Very bad</span></label>
+              <label><input type="radio" name="humor" value="2"><span>2. Bad</span></label>
+              <label><input type="radio" name="humor" value="3"><span>3. Neutral</span></label>
+              <label><input type="radio" name="humor" value="4"><span>4. Good</span></label>
+              <label><input type="radio" name="humor" value="5"><span>5. Very good</span></label>
             </div>
             <p id="erro-humor" class="erro-campo"></p>
           </fieldset>
 
           <fieldset class="campo" aria-describedby="erro-estresse">
-            <legend>Quanto estresse você sentiu?</legend>
+            <legend>How much stress did you feel?</legend>
             <div class="escala">
-              <label><input type="radio" name="estresse" value="1"><span>1. Nenhum</span></label>
-              <label><input type="radio" name="estresse" value="2"><span>2. Pouco</span></label>
-              <label><input type="radio" name="estresse" value="3"><span>3. Moderado</span></label>
-              <label><input type="radio" name="estresse" value="4"><span>4. Muito</span></label>
-              <label><input type="radio" name="estresse" value="5"><span>5. Demais</span></label>
+              <label><input type="radio" name="estresse" value="1"><span>1. None</span></label>
+              <label><input type="radio" name="estresse" value="2"><span>2. A little</span></label>
+              <label><input type="radio" name="estresse" value="3"><span>3. Moderate</span></label>
+              <label><input type="radio" name="estresse" value="4"><span>4. A lot</span></label>
+              <label><input type="radio" name="estresse" value="5"><span>5. Extreme</span></label>
             </div>
             <p id="erro-estresse" class="erro-campo"></p>
           </fieldset>
 
           <fieldset class="campo" aria-describedby="erro-convivencia">
-            <legend>Como foi a convivência com a equipe?</legend>
+            <legend>How were your interactions with the crew?</legend>
             <div class="escala">
-              <label><input type="radio" name="convivencia" value="1"><span>1. Muito difícil</span></label>
-              <label><input type="radio" name="convivencia" value="2"><span>2. Difícil</span></label>
+              <label><input type="radio" name="convivencia" value="1"><span>1. Very difficult</span></label>
+              <label><input type="radio" name="convivencia" value="2"><span>2. Difficult</span></label>
               <label><input type="radio" name="convivencia" value="3"><span>3. Normal</span></label>
-              <label><input type="radio" name="convivencia" value="4"><span>4. Boa</span></label>
-              <label><input type="radio" name="convivencia" value="5"><span>5. Muito boa</span></label>
+              <label><input type="radio" name="convivencia" value="4"><span>4. Good</span></label>
+              <label><input type="radio" name="convivencia" value="5"><span>5. Very good</span></label>
             </div>
             <p id="erro-convivencia" class="erro-campo"></p>
           </fieldset>
 
           <!-- Diário fictício compartilhado na demonstração. -->
           <div class="campo diario">
-            <label for="noite-diario">Diário (opcional)</label>
+            <label for="noite-diario">Journal (optional)</label>
             <p id="diario-ajuda" class="nota">
-              Use somente texto fictício. O diário é salvo com o check-in e aparece
-              na visão médica. O protótipo não tem autenticação nem controle de acesso.
+              Use fictional text only. The journal is saved with the check-in and appears
+              in the medical view. The prototype has no authentication or access control.
             </p>
             <textarea id="noite-diario" name="diario" rows="4" maxlength="1000" aria-describedby="diario-ajuda diario-contador"></textarea>
-            <p id="diario-contador" class="nota">0 de 1000 caracteres</p>
+            <p id="diario-contador" class="nota">0 of 1000 characters</p>
           </div>
 
           <p id="noite-nota-fonte" class="nota"></p>
 
-          <button type="submit" class="botao">Registrar check-in da noite</button>
+          <button type="submit" class="botao">Save evening check-in</button>
           <p id="noite-mensagem" class="checkin-mensagem" role="status"></p>
         </form>
       </div>
 
       <div class="cartao">
-        <h3>Últimos check-ins da noite</h3>
-        <p id="noite-vazio" class="mensagem-vazia" hidden>Ainda não há check-ins da noite. Registre o primeiro acima.</p>
+        <h3>Recent evening check-ins</h3>
+        <p id="noite-vazio" class="mensagem-vazia" hidden>No evening check-ins yet. Add the first one above.</p>
         <div id="noite-tabela-bloco" class="tabela-rolagem">
           <table class="tabela-checkin">
-            <caption>Do mais antigo para o mais recente</caption>
+            <caption>Oldest to newest</caption>
             <thead>
               <tr>
-                <th scope="col">Data</th>
-                <th scope="col">Humor</th>
-                <th scope="col">Estresse</th>
-                <th scope="col">Convivência</th>
-                <th scope="col">Diário</th>
-                <th scope="col">Origem</th>
+                <th scope="col">Date</th>
+                <th scope="col">Mood</th>
+                <th scope="col">Stress</th>
+                <th scope="col">Crew interactions</th>
+                <th scope="col">Journal</th>
+                <th scope="col">Source</th>
               </tr>
             </thead>
             <tbody id="tabela-noite"></tbody>
           </table>
         </div>
         <p class="nota">
-          Ainda não há regra no back-end para a área Mente e equipe. A cor dessa área no
-          painel é um exemplo escrito à mão nos dados de demonstração, não um cálculo
-          feito a partir destas respostas.
+          On the server, a demonstration rule compares three days of stress responses.
+          It is not a psychological assessment or diagnosis and does not analyze the journal.
         </p>
       </div>
     </section>
 
     <section class="sobre depende-dados" aria-labelledby="titulo-sobre-checkins">
-      <h2 id="titulo-sobre-checkins">Sobre os check-ins</h2>
+      <h2 id="titulo-sobre-checkins">About check-ins</h2>
       <dl>
-        <dt>Para que servem</dt>
-        <dd>Registrar como você está, para perceber mudanças ao longo dos dias. Inspirados no questionário de sono ao acordar e de humor e equipe antes de dormir usados em pesquisas da NASA.</dd>
+        <dt>Purpose</dt>
+        <dd>Record how you are doing to notice changes over time. Inspired by sleep and mood questionnaires used in NASA research.</dd>
 
-        <dt>O que não são</dt>
-        <dd>Não são testes psicológicos nem diagnóstico, e não substituem a conversa com o psicólogo ou a equipe médica da missão.</dd>
+        <dt>Limitations</dt>
+        <dd>These are not psychological tests or diagnoses and do not replace a conversation with the mission psychologist or medical team.</dd>
 
-        <dt>Se o dia foi muito difícil</dt>
-        <dd>Não espere o próximo check-in: procure a equipe médica ou o psicólogo da missão. Este protótipo não envia avisos a ninguém.</dd>
+        <dt>If you had a very difficult day</dt>
+        <dd>Do not wait for the next check-in: contact the mission medical team or psychologist. This prototype does not send alerts.</dd>
       </dl>
     </section>
   </main>
 
   <footer class="rodape">
-    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+    <p>Simulated data for demonstration. This system does not provide a diagnosis.</p>
   </footer>
 
   <script src="../static/js/dados-demo.js" defer></script>

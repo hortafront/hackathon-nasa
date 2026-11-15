@@ -1,0 +1,25 @@
+{
+  "referencias": [
+    {"astronauta_id": 1, "area": "coracao", "valor": 65, "unidade": "bpm", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "exercicio", "valor": 120, "unidade": "min", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "cognicao", "valor": 285, "unidade": "ms", "origem": "simulada"}
+  ],
+  "registros": [
+    {"astronauta_id": 1, "area": "coracao", "valor": 76, "unidade": "bpm", "registrado_em": "2026-11-08T07:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "coracao", "valor": 78, "unidade": "bpm", "registrado_em": "2026-11-09T07:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "coracao", "valor": 79, "unidade": "bpm", "registrado_em": "2026-11-10T07:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "coracao", "valor": 68, "unidade": "bpm", "registrado_em": "2026-11-11T07:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "exercicio", "valor": 90, "unidade": "min", "registrado_em": "2026-11-08T18:00:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "exercicio", "valor": 95, "unidade": "min", "registrado_em": "2026-11-09T18:00:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "exercicio", "valor": 100, "unidade": "min", "registrado_em": "2026-11-10T18:00:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "area": "exercicio", "valor": 125, "unidade": "min", "registrado_em": "2026-11-11T18:00:00-03:00", "origem": "simulada"}
+  ],
+  "checkins": [
+    {"astronauta_id": 1, "data": "2026-11-08", "humor": 3, "estresse": 4, "convivencia": 3, "diario": "Registro fictício: dia intenso.", "registrado_em": "2026-11-08T21:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "data": "2026-11-09", "humor": 3, "estresse": 4, "convivencia": 3, "diario": "Registro fictício: rotina movimentada.", "registrado_em": "2026-11-09T21:30:00-03:00", "origem": "simulada"},
+    {"astronauta_id": 1, "data": "2026-11-10", "humor": 3, "estresse": 4, "convivencia": 3, "diario": "Registro fictício: revisar a rotina com a equipe.", "registrado_em": "2026-11-10T21:30:00-03:00", "origem": "simulada"}
+  ],
+  "testes": [
+    {"astronauta_id": 1, "realizado_em": "2026-11-10T08:12:00-03:00", "tentativas": 10, "mediana_ms": 0, "mais_rapida_ms": 0, "mais_lenta_ms": 0, "acima_500ms": 0, "antecipacoes": 1, "tempos_ms": [340, 345, 350, 355, 360, 365, 370, 375, 380, 385]}
+  ]
+}

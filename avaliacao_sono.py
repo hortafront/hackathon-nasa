@@ -46,16 +46,16 @@ def avaliar_sono(linha_base_horas, registros, data_avaliacao):
     dias = [data_avaliacao - timedelta(days=i) for i in (2, 1, 0)]
     if linha_base_horas is None or any(dia not in noites for dia in dias):
         return {**base, "estado": "dados_insuficientes", "noites_consideradas": [],
-                "explicacao": "São necessárias a referência individual e as três noites mais recentes consecutivas.",
+                "explicacao": "The individual baseline and the three most recent consecutive nights are required.",
                 "orientacao": None, "reavaliar_em_horas": None}
 
     consideradas = [{"data_sono": dia.isoformat(), "duracao_horas": noites[dia]} for dia in dias]
     alteradas = all(noites[dia] < linha_base_horas for dia in dias)
     if alteradas:
         return {**base, "estado": "amarelo", "noites_consideradas": consideradas,
-                "explicacao": "As três durações estão abaixo da referência individual fictícia.",
-                "orientacao": "Revise os registros e acompanhe a evolução com a equipe responsável.",
+                "explicacao": "All three sleep durations are below the fictional individual baseline.",
+                "orientacao": "Review the three nights, check for possible environmental interruptions and record the next night. Speak with the responsible team if you are concerned.",
                 "reavaliar_em_horas": 24}
     return {**base, "estado": "verde", "noites_consideradas": consideradas,
-            "explicacao": "A regra demonstrativa de três noites abaixo da referência não foi acionada.",
+            "explicacao": "The demonstration rule for three nights below baseline was not triggered.",
             "orientacao": None, "reavaliar_em_horas": None}

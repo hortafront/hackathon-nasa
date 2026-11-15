@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import database
 from app import app
@@ -36,12 +37,16 @@ class TesteApiSono(unittest.TestCase):
         self.assertEqual(resposta.json['estado'], 'amarelo')
         self.assertEqual(len(resposta.json['noites_consideradas']), 3)
         self.assertEqual(resposta.json['noites_consideradas'][0]['origem'], 'simulada')
+        self.assertIn('fictional individual baseline', resposta.json['explicacao'])
+        self.assertIn('Review', resposta.json['orientacao'])
 
     def test_paginas_e_arquivos_estaticos(self):
         for rota in ('/', '/index.html', '/equipe-medica.html', '/checkins.html', '/teste-reacao.html', '/static/js/dados-api.js'):
             with self.subTest(rota=rota):
                 resposta = self.cliente.get(rota)
                 self.assertEqual(resposta.status_code, 200)
+                if rota.endswith('.html') or rota == '/':
+                    self.assertIn(b'<html lang="en">', resposta.data)
                 resposta.close()
 
     def test_gravacao_e_avaliacoes_retrospectivas(self):
@@ -65,6 +70,22 @@ class TesteApiSono(unittest.TestCase):
         avaliacoes = historico.json['avaliacoes']
         self.assertEqual([(a['data_avaliacao'], a['estado']) for a in avaliacoes[-2:]],
                          [('2026-11-10', 'amarelo'), ('2026-11-11', 'verde')])
+
+    def test_historico_de_avaliacoes_reutiliza_registros_e_referencia(self):
+        comandos = []
+        conectar = database.conectar_banco
+
+        def conexao_rastreada(caminho):
+            conexao = conectar(caminho)
+            conexao.set_trace_callback(comandos.append)
+            return conexao
+
+        with patch('database.conectar_banco', side_effect=conexao_rastreada):
+            resposta = self.cliente.get('/api/astronautas/1/sono/avaliacoes?data=2026-11-11')
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(len(resposta.json['avaliacoes']), 7)
+        self.assertEqual(sum('FROM registros_sono WHERE' in sql for sql in comandos), 1)
+        self.assertEqual(sum('FROM linhas_base_sono WHERE' in sql for sql in comandos), 1)
 
     def test_gravacao_rejeita_dados_invalidos_e_banco_ausente(self):
         url = '/api/astronautas/1/sono/registros'

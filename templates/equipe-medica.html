@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raga: visão da equipe médica</title>
+  <title>Raga: medical team</title>
 
   <!-- Mesmos caminhos relativos do index.html (ver comentário lá).
        No Flask, esta página precisa de uma rota de um só nível
@@ -23,49 +23,49 @@
         Raga
       </a>
 
-      <nav class="links" aria-label="Páginas">
-        <a href="index.html">Painel da astronauta</a>
+      <nav class="links" aria-label="Pages">
+        <a href="index.html">Astronaut dashboard</a>
         <a href="checkins.html">Check-ins</a>
-        <a href="teste-reacao.html">Teste de reação</a>
-        <a href="equipe-medica.html" aria-current="page">Equipe médica</a>
+        <a href="teste-reacao.html">Reaction test</a>
+        <a href="equipe-medica.html" aria-current="page">Medical team</a>
       </nav>
 
       <button id="botao-tema" class="botao-tema" type="button" aria-pressed="false">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/>
         </svg>
-        Tema escuro
+        Dark theme
       </button>
     </div>
   </header>
 
   <div class="hero">
-    <h1>Visão da equipe médica</h1>
-    <p>Somente dados fictícios. Check-ins e diário são compartilhados nesta visão. Não há autenticação, acesso por perfil nem envio real de avisos.</p>
+    <h1>Medical team view</h1>
+    <p>Fictional data only. Check-ins and journal entries are shared in this view. There is no authentication, role-based access or actual alert delivery.</p>
   </div>
 
   <!-- data-estado: carregando | ok | erro (equipe-medica.js). -->
   <main id="painel-medico" class="painel" data-estado="carregando" data-tem-dados="nao">
-    <p id="aviso-medico" class="aviso" role="status">Carregando dados…</p>
+    <p id="aviso-medico" class="aviso" role="status">Loading data…</p>
     <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
     <section class="depende-dados" aria-labelledby="titulo-tripulacao">
-      <h2 id="titulo-tripulacao">Tripulação</h2>
+      <h2 id="titulo-tripulacao">Crew</h2>
       <p id="ordem-texto" class="leitura-detalhe"></p>
-      <p class="leitura-detalhe">Atualizado em <time id="medico-atualizado-em">—</time></p>
+      <p class="leitura-detalhe">Updated at <time id="medico-atualizado-em">—</time></p>
       <!-- Um item por tripulante, criado pelo equipe-medica.js. -->
       <ol id="lista-tripulantes" class="lista-tripulantes"></ol>
     </section>
 
     <section class="cartao privacidade depende-dados" aria-labelledby="titulo-privacidade">
-      <h2 id="titulo-privacidade">Compartilhamento nesta demonstração</h2>
-      <p>Os registros de sono, as respostas dos check-ins e o diário fictício ficam disponíveis para esta visão.</p>
-      <p class="nota">Qualquer pessoa com acesso ao servidor local pode consultar os dados. Não use informações reais de saúde.</p>
+      <h2 id="titulo-privacidade">Sharing in this demonstration</h2>
+      <p>Sleep records, check-in responses and fictional journal entries are available in this view.</p>
+      <p class="nota">Anyone with access to the local server can view the data. Do not use real health information.</p>
     </section>
   </main>
 
   <footer class="rodape">
-    <p>Dados simulados para demonstração. Este sistema não oferece diagnóstico.</p>
+    <p>Simulated data for demonstration. This system does not provide a diagnosis.</p>
   </footer>
 
   <script src="../static/js/dados-demo.js" defer></script>
