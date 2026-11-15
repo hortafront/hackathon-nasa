@@ -133,25 +133,33 @@ def buscar_historico_sono(conexao, astronauta_id):
 def buscar_checkins_noite(conexao, astronauta_id):
     cursor = conexao.execute(
         """SELECT id, astronauta_id, data, humor, estresse, convivencia,
-                  diario, registrado_em, origem
+                  diario, diario_compartilhado, registrado_em, origem
            FROM checkins_noite WHERE astronauta_id = ? ORDER BY data, id""",
         (astronauta_id,),
     )
     campos = [coluna[0] for coluna in cursor.description]
-    return [dict(zip(campos, linha)) for linha in cursor.fetchall()]
+    registros = [dict(zip(campos, linha)) for linha in cursor.fetchall()]
+    for registro in registros:
+        registro['diario_compartilhado'] = bool(registro['diario_compartilhado'])
+        if not registro['diario_compartilhado']:
+            registro['diario'] = None
+    return registros
 
 
 def salvar_checkin_noite(conexao, checkin):
     campos = ("astronauta_id", "data", "humor", "estresse", "convivencia",
-              "diario", "registrado_em", "origem")
+              "diario", "diario_compartilhado", "registrado_em", "origem")
     with conexao:
         cursor = conexao.execute(
             """INSERT INTO checkins_noite
-               (astronauta_id, data, humor, estresse, convivencia, diario, registrado_em, origem)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+               (astronauta_id, data, humor, estresse, convivencia, diario, diario_compartilhado, registrado_em, origem)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             tuple(checkin[campo] for campo in campos),
         )
-    return {"id": cursor.lastrowid, **{campo: checkin[campo] for campo in campos}}
+    registro = {"id": cursor.lastrowid, **{campo: checkin[campo] for campo in campos}}
+    if not registro['diario_compartilhado']:
+        registro['diario'] = None
+    return registro
 
 
 def conectar_banco(caminho=CAMINHO_BANCO):
@@ -169,6 +177,10 @@ def inicializar_banco(caminho=CAMINHO_BANCO):
     conexao = conectar_banco(caminho)
     try:
         conexao.executescript(esquema)
+        colunas = {linha[1] for linha in conexao.execute('PRAGMA table_info(checkins_noite)')}
+        if 'diario_compartilhado' not in colunas:
+            # Registros anteriores não comprovam consentimento; preserva o texto oculto.
+            conexao.execute('ALTER TABLE checkins_noite ADD COLUMN diario_compartilhado INTEGER NOT NULL DEFAULT 0 CHECK (diario_compartilhado IN (0, 1))')
         conexao.commit()
     finally:
         conexao.close()

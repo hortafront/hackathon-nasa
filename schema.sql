@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS checkins_noite (
     estresse INTEGER NOT NULL,
     convivencia INTEGER NOT NULL,
     diario TEXT NOT NULL DEFAULT '',
+    diario_compartilhado INTEGER NOT NULL DEFAULT 0 CHECK (diario_compartilhado IN (0, 1)),
     registrado_em TEXT NOT NULL,
     origem TEXT NOT NULL,
     UNIQUE (astronauta_id, data),

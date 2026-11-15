@@ -24,6 +24,7 @@ class TesteCheckins(unittest.TestCase):
         self.url = '/api/astronautas/1/mente/checkins'
         self.dados = {'data': '2026-11-10', 'humor': 2, 'estresse': 4,
                       'convivencia': 3, 'diario': 'Registro fictício do dia.',
+                      'diario_compartilhado': True,
                       'registrado_em': '2026-11-10T22:00:00-03:00'}
 
     def test_diario_e_respostas_persistem_e_aparecem_na_visao_medica(self):
@@ -45,7 +46,8 @@ class TesteCheckins(unittest.TestCase):
         self.assertEqual(self.cliente.get(self.url).json['checkins'], [])
         for mudanca in ({'humor': True}, {'estresse': 6}, {'data': 'inválida'},
                         {'registrado_em': '2026-11-10T22:00:00'},
-                        {'diario': 'x' * 1001}, {'diario': None}, {'extra': 'x'}):
+                        {'diario': 'x' * 1001}, {'diario': None}, {'extra': 'x'},
+                        {'diario_compartilhado': 1}):
             with self.subTest(mudanca=mudanca):
                 self.assertEqual(self.cliente.post(self.url, json={**self.dados, **mudanca}).status_code, 400)
         self.assertEqual(self.cliente.get('/api/astronautas/999/mente/checkins').status_code, 404)
@@ -68,6 +70,21 @@ class TesteCheckins(unittest.TestCase):
         checkins = self.cliente.get(self.url).json['checkins']
         self.assertEqual([c['data'] for c in checkins], ['2026-11-09', '2026-11-10'])
         self.assertEqual(checkins[0]['diario'], '')
+
+    def test_privado_nao_e_gravado_nem_devolvido(self):
+        dados = {**self.dados, 'diario_compartilhado': False}
+        resposta = self.cliente.post(self.url, json=dados)
+        self.assertEqual(resposta.status_code, 201)
+        self.assertIsNone(resposta.json['checkin']['diario'])
+        conexao = database.conectar_banco(self.caminho)
+        self.addCleanup(conexao.close)
+        self.assertEqual(conexao.execute('SELECT diario FROM checkins_noite').fetchone()[0], '')
+        self.assertIsNone(self.cliente.get(self.url).json['checkins'][0]['diario'])
+        self.assertIsNone(self.cliente.get('/api/equipe-medica/sono').json['tripulantes'][0]['checkins_noite'][0]['diario'])
+
+    def test_campo_ausente_nao_implica_compartilhamento(self):
+        dados = {chave: valor for chave, valor in self.dados.items() if chave != 'diario_compartilhado'}
+        self.assertIsNone(self.cliente.post(self.url, json=dados).json['checkin']['diario'])
 
 
 if __name__ == '__main__':

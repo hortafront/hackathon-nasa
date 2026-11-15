@@ -361,6 +361,7 @@
       estresse: respostas.estresse,
       convivencia: respostas.convivencia,
       diario: campoCompartilhar.checked ? campoDiario.value.trim() : "",
+      diario_compartilhado: campoCompartilhar.checked && !!campoDiario.value.trim(),
       registrado_em: new Date().toISOString()
     };
   }

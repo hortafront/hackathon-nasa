@@ -214,7 +214,9 @@ def checkins_noite(astronauta_id):
         dados = request.get_json(silent=True)
         campos = {'data', 'humor', 'estresse', 'convivencia', 'diario', 'registrado_em'}
         try:
-            if not isinstance(dados, dict) or set(dados) != campos:
+            if not isinstance(dados, dict) or not campos <= set(dados) or set(dados) - campos - {'diario_compartilhado'}:
+                raise ValueError
+            if type(dados.get('diario_compartilhado', False)) is not bool:
                 raise ValueError
             dia = date.fromisoformat(dados['data'])
             if dia.isoformat() != dados['data'] or dia > date.today():
@@ -227,6 +229,9 @@ def checkins_noite(astronauta_id):
                 raise ValueError
             if not isinstance(dados['diario'], str) or len(dados['diario']) > 1000:
                 raise ValueError
+            dados['diario_compartilhado'] = dados.get('diario_compartilhado', False)
+            if not dados['diario_compartilhado']:
+                dados['diario'] = ''
         except (TypeError, ValueError, AttributeError, OverflowError):
             return jsonify(erro='Check-in inválido. Confira data, escalas, diário e horário.'), 400
     caminho = Path(app.config['CAMINHO_BANCO'])
