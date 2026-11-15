@@ -298,6 +298,7 @@
     }
     var botao = formManha.querySelector('button[type="submit"]');
     botao.disabled = true;
+    botao.setAttribute("aria-busy", "true"); // visual de "salvando" (style.css)
     window.RagaDados.enviarCheckinSono(checkin).then(function (resposta) {
       mensagemManha.textContent = resposta.situacao === "salvo_no_servidor"
         ? "Check-in saved on the server for " + F.dia(checkin.noite_em) + ". The updated assessment appears on the dashboard."
@@ -315,6 +316,7 @@
         " Your data remains in the form; try again.";
     }).then(function () {
       botao.disabled = false;
+      botao.removeAttribute("aria-busy");
     });
   });
 
@@ -387,6 +389,7 @@
     var compartilhado = campoCompartilhar.checked && !!textoDiario;
     var botao = formNoite.querySelector('button[type="submit"]');
     botao.disabled = true;
+    botao.setAttribute("aria-busy", "true"); // visual de "salvando" (style.css)
     window.RagaDados.enviarCheckinNoite(checkin).then(function (resposta) {
       // Diário não compartilhado: guarda só nesta aba, depois do envio dar certo.
       var guardado = compartilhado ? guardarDiarioPrivado(checkin.data, "") :
@@ -410,6 +413,7 @@
         " Your responses remain in the form; try again.";
     }).then(function () {
       botao.disabled = false;
+      botao.removeAttribute("aria-busy");
     });
   });
 

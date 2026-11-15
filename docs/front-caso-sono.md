@@ -22,6 +22,8 @@ As fontes são locais (`static/vendor/fonts/`): Atkinson Hyperlegible Next para 
 - Sem JavaScript, sem `IntersectionObserver` ou com "reduzir movimento" ligado no sistema, nada fica oculto nem se move: o estado oculto só vale com `data-revelar="pronto"` no `<html>`.
 - Só opacidade, deslocamento e desfoque mudam: leitores de tela continuam lendo o conteúdo ainda não revelado. O foco do teclado numa seção oculta a revela na hora.
 
+Os botões são "teclas de painel" (`static/css/style.css`, seção 7b): a aresta embaixo some quando a tecla é apertada. Enquanto salva, o JS marca `aria-busy="true"` e a tecla fica afundada com listras em movimento; `disabled` sem `aria-busy` significa indisponível (contorno tracejado, como o salvar no modo de demonstração). As opções de 1 a 5 acendem ao serem marcadas, e o botão de tema é um interruptor. A área do teste de reação só afunda em "Start" e no fim, sem transições, para não atrasar o sinal. Com "reduzir movimento", as cores mudam, mas nada se desloca.
+
 ## Execução e demonstração
 
 Prepare o ambiente e carregue as fixtures conforme o [README](../README.md), inicie o Flask e abra `http://127.0.0.1:5000/`. Use `?data=2026-11-10` para o caso histórico ou `?fonte=demo` para forçar dados locais. Sem data escolhida, a API avalia a data atual; dados anteriores são identificados como históricos.

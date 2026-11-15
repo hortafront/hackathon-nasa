@@ -43,6 +43,11 @@
   --cor-primaria: #0B3D91;      /* botões, links e foco */
   --cor-destaque: #FC3D21;      /* só detalhes pequenos, nunca fundo */
 
+  /* Botões como teclas de painel: a "aresta" é a lateral da tecla,
+     que aparece embaixo e some quando ela é apertada. */
+  --cor-botao-hover: #1352BD;
+  --cor-botao-aresta: #062659;
+
   /* Cores de status (para quando houver classificação) */
   --cor-normal: #1E8E3E;
   --cor-atencao: #B26A00;
@@ -81,6 +86,11 @@
   --revelar-deslocamento: 4rem; /* 64px */
   --revelar-escala: 0.94;      /* começa um pouco menor e "chega" à tela */
 
+  /* Teclas: altura da aresta e tempo da resposta ao toque. */
+  --tecla-aresta: 4px;
+  --tecla-tempo: 140ms;
+  --tecla-curva: cubic-bezier(0.3, 0.7, 0.4, 1.5); /* leve "mola" ao soltar */
+
   /* Espaçamentos (múltiplos de 4px) */
   --espaco-1: 0.25rem;  /* 4px */
   --espaco-2: 0.5rem;   /* 8px */
@@ -117,6 +127,8 @@
   /* O azul e os status originais ficam escuros demais no preto;
      estes tons mais claros mantêm a leitura (contraste AA). */
   --cor-primaria: #8FB3F0;
+  --cor-botao-hover: #B3CBF5;
+  --cor-botao-aresta: #4A6FB0;
   --cor-normal: #5BC27A;
   --cor-atencao: #E0A33A;
   --cor-critico: #FF7A6B;
@@ -281,26 +293,53 @@ p {
   border-bottom-color: currentColor;
 }
 
-/* Botão de tema: contorno quando desligado, preenchido quando ligado. */
+/* Botão de tema como interruptor: o pino desliza para a direita e o
+   trilho se preenche quando o tema escuro está ligado (aria-pressed).
+   O texto "Dark theme" continua: a posição não é a única pista. */
 .botao-tema {
   display: inline-flex;
   align-items: center;
   gap: var(--espaco-2);
   min-height: 2.75rem; /* área de toque de 44px */
-  padding: 0 var(--espaco-3);
-  border: 1px solid currentColor;
-  border-radius: var(--raio);
+  padding: 0 var(--espaco-3) 0 var(--espaco-2);
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: none;
   color: inherit;
   font: inherit;
   font-size: var(--texto-pequeno);
   cursor: pointer;
+  transition: border-color var(--tecla-tempo) ease;
 }
 
-.botao-tema[aria-pressed="true"] {
-  background: var(--cor-texto);
-  color: var(--cor-fundo);
-  border-color: var(--cor-texto);
+/* Trilho + pino (o pino é um círculo desenhado no fundo do trilho). */
+.botao-tema::before {
+  content: "";
+  flex: none;
+  width: 2.5rem;
+  height: 1.5rem;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  background-image: radial-gradient(circle closest-side, currentColor 88%, transparent 100%);
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+  background-position: 0.15rem center;
+  transition:
+    background-position 260ms var(--tecla-curva),
+    background-color 260ms ease;
+}
+
+.botao-tema[aria-pressed="true"]::before {
+  background-color: currentColor;
+  /* Pino na cor do fundo, para aparecer sobre o trilho preenchido. */
+  background-image: radial-gradient(circle closest-side, var(--cor-fundo) 88%, transparent 100%);
+  background-position: calc(100% - 0.15rem) center;
+}
+
+@media (hover: hover) {
+  .botao-tema:hover {
+    border-color: currentColor;
+  }
 }
 
 /* Título grande centralizado, em Big Shoulders Display maiúscula. */
@@ -603,25 +642,83 @@ p {
   gap: var(--espaco-2);
 }
 
+/* Cada opção é uma tecla: acende (fundo azul) quando marcada.
+   O círculo do rádio continua visível e preenchido: a cor não é a
+   única pista de qual opção foi escolhida. */
 .escala label {
   display: inline-flex;
   align-items: center;
   gap: var(--espaco-2);
   min-height: 2.75rem;
   padding: 0 var(--espaco-3);
-  border: 1px solid var(--cor-divisor);
+  border: 2px solid var(--cor-divisor);
   border-radius: var(--raio);
+  background: var(--cor-superficie);
   cursor: pointer;
+  transition:
+    border-color var(--tecla-tempo) ease,
+    background-color var(--tecla-tempo) ease,
+    color var(--tecla-tempo) ease,
+    transform var(--tecla-tempo) var(--tecla-curva),
+    box-shadow var(--tecla-tempo) var(--tecla-curva);
 }
 
 .escala input {
-  accent-color: var(--cor-primaria);
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
   margin: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit; /* o input não herda a cor sozinho; segue o rótulo */
+}
+
+.escala input:checked {
+  background: radial-gradient(circle, currentColor 0 38%, transparent 42%);
+}
+
+/* O contorno de foco vai na tecla inteira, não só no círculo. */
+.escala input:focus-visible {
+  outline: none;
+}
+
+.escala label:has(input:focus-visible) {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .escala label:hover {
+    border-color: var(--cor-primaria);
+  }
+}
+
+.escala label:active {
+  transform: scale(0.96);
 }
 
 .escala label:has(input:checked) {
   border-color: var(--cor-primaria);
-  box-shadow: inset 0 0 0 1px var(--cor-primaria);
+  background: var(--cor-primaria);
+  color: var(--cor-fundo);
+  box-shadow: 0 3px 0 var(--cor-botao-aresta);
+  transform: translateY(-3px);
+  animation: tecla-marcar 260ms var(--tecla-curva);
+}
+
+/* Resposta ao toque: a tecla marcada dá um pequeno salto. */
+@keyframes tecla-marcar {
+  0% { transform: translateY(0) scale(0.94); }
+  100% { transform: translateY(-3px) scale(1); }
+}
+
+/* Campo com erro: as teclas ganham borda vermelha (o texto do erro
+   aparece logo abaixo, então a cor não é a única pista). */
+.escala label:has(input[aria-invalid="true"]) {
+  border-color: var(--cor-critico);
 }
 
 .erro-campo {
@@ -634,44 +731,119 @@ p {
   display: none;
 }
 
-.botao {
+/* ----------------------------------------------------------
+   Botões: teclas de painel.
+   - Em repouso, a aresta (sombra sólida) mostra a altura da tecla.
+   - Passar o mouse: a tecla sobe um pouco e clareia.
+   - Apertar: afunda até a aresta sumir.
+   - Salvando (aria-busy="true"): fica afundada, com listras correndo.
+   - Indisponível (disabled sem aria-busy): travada embaixo, tracejada.
+   ---------------------------------------------------------- */
+.botao,
+.botao-secundario {
   justify-self: start;
-  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  min-height: 3rem;
   padding: 0 var(--espaco-4);
-  border: 0;
   border-radius: var(--raio);
-  background: var(--cor-primaria);
-  color: var(--cor-fundo);
   /* Rótulo curto em corpo de texto: fica na fonte de leitura. */
   font-family: var(--fonte-texto);
   font-weight: 700;
   font-size: var(--texto-base);
-  cursor: pointer;
-}
-
-.botao:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-/* Botão de contorno, para ações secundárias (painel e teste de reação). */
-.botao-secundario {
-  justify-self: start;
-  min-height: 2.75rem;
-  padding: 0 var(--espaco-4);
-  border: 1px solid currentColor;
-  border-radius: var(--raio);
-  background: none;
-  color: var(--cor-texto);
-  font: inherit;
-  cursor: pointer;
-}
-
-/* Link com cara de botão (ex.: "Fazer check-in" no painel). */
-.botao-link {
-  display: inline-flex;
-  align-items: center;
+  line-height: 1.2;
   text-decoration: none;
+  cursor: pointer;
+  /* Reserva o espaço da aresta, para a tecla não encostar no texto de baixo. */
+  margin-bottom: var(--tecla-aresta);
+  transform: translateY(0);
+  transition:
+    transform var(--tecla-tempo) var(--tecla-curva),
+    box-shadow var(--tecla-tempo) var(--tecla-curva),
+    background-color var(--tecla-tempo) ease,
+    color var(--tecla-tempo) ease;
+}
+
+.botao {
+  border: 0;
+  background-color: var(--cor-primaria);
+  color: var(--cor-fundo);
+  box-shadow: 0 var(--tecla-aresta) 0 var(--cor-botao-aresta);
+}
+
+/* Secundário: só contorno, mesma mecânica de tecla. */
+.botao-secundario {
+  border: 2px solid var(--cor-primaria);
+  background-color: var(--cor-superficie);
+  color: var(--cor-primaria);
+  box-shadow: 0 var(--tecla-aresta) 0 var(--cor-primaria);
+}
+
+.botao:focus-visible,
+.botao-secundario:focus-visible {
+  outline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .botao:hover:enabled,
+  .botao-link:hover {
+    background-color: var(--cor-botao-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 calc(var(--tecla-aresta) + 2px) 0 var(--cor-botao-aresta);
+  }
+
+  .botao-secundario:hover:enabled {
+    background-color: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie));
+    transform: translateY(-2px);
+    box-shadow: 0 calc(var(--tecla-aresta) + 2px) 0 var(--cor-primaria);
+  }
+}
+
+/* Apertar: resposta rápida (40 ms), a volta usa a "mola". */
+.botao:active:enabled,
+.botao-link:active,
+.botao-secundario:active:enabled {
+  transform: translateY(var(--tecla-aresta));
+  box-shadow: 0 0 0 var(--cor-botao-aresta);
+  transition-duration: 40ms;
+}
+
+/* Indisponível (ex.: salvar no modo de demonstração): tecla travada. */
+.botao:disabled,
+.botao-secundario:disabled {
+  cursor: not-allowed;
+  transform: translateY(var(--tecla-aresta));
+  box-shadow: none;
+  border: 2px dashed var(--cor-texto-suave);
+  background-color: transparent;
+  color: var(--cor-texto-suave);
+}
+
+/* Salvando: tecla afundada, cor normal e listras em movimento. */
+.botao[aria-busy="true"],
+.botao-secundario[aria-busy="true"] {
+  cursor: progress;
+  border: 0;
+  background-color: var(--cor-primaria);
+  color: var(--cor-fundo);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 0.625rem,
+    color-mix(in srgb, var(--cor-fundo) 28%, transparent) 0.625rem 1.25rem
+  );
+  background-size: 1.768rem 1.768rem; /* 1,25rem × √2: emenda sem salto */
+  animation: tecla-salvando 600ms linear infinite;
+}
+
+@keyframes tecla-salvando {
+  to { background-position: 1.768rem 0; }
+}
+
+/* Link com cara de botão (ex.: "Complete a check-in" no painel). */
+.botao-link {
+  color: var(--cor-fundo);
 }
 
 .checkin-mensagem {
@@ -773,6 +945,31 @@ p {
 [data-revelar="pronto"] .revelar--instantaneo,
 [data-revelar="pronto"] .revelar--instantaneo .revelar-item {
   transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao,
+  .botao-secundario,
+  .escala label,
+  .botao-tema,
+  .botao-tema::before {
+    transition: none;
+    animation: none;
+  }
+
+  .botao:hover,
+  .botao:active,
+  .botao-secundario:hover,
+  .botao-secundario:active,
+  .escala label:active,
+  .escala label:has(input:checked) {
+    transform: none;
+  }
+
+  .botao[aria-busy="true"],
+  .botao-secundario[aria-busy="true"] {
+    animation: none; /* listras paradas ainda indicam "salvando" */
+  }
 }
 
 @media print {

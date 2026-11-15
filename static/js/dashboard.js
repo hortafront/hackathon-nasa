@@ -383,20 +383,27 @@
       ciclos = dados.acompanhamentos;
       $("ciclo-controles").hidden = false;
       $("ciclo-aviso").textContent = "Fictional follow-ups saved on the local server.";
-      ["ciclo-iniciar", "ciclo-acao", "ciclo-reavaliar"].forEach(function (id) { $(id).disabled = false; });
+      ["ciclo-iniciar", "ciclo-acao", "ciclo-reavaliar"].forEach(function (id) {
+        $(id).disabled = false;
+        $(id).removeAttribute("aria-busy");
+      });
       mostrarCiclos();
     }).catch(function () {
       if (sequencia !== sequenciaCiclo) return;
       $("ciclo-aviso").textContent = ciclos
         ? "Could not update follow-up; the previous data may be out of date."
         : "Could not load follow-up. Retrying in 10 seconds.";
-      ["ciclo-iniciar", "ciclo-acao", "ciclo-reavaliar"].forEach(function (id) { $(id).disabled = true; });
+      ["ciclo-iniciar", "ciclo-acao", "ciclo-reavaliar"].forEach(function (id) {
+        $(id).disabled = true;
+        $(id).removeAttribute("aria-busy");
+      });
     });
   }
 
   function executarCiclo(botao, operacao, sucesso) {
     ++sequenciaCiclo;
     botao.disabled = true;
+    botao.setAttribute("aria-busy", "true"); // visual de "salvando" (style.css)
     $("ciclo-mensagem").textContent = "Saving…";
     operacao().then(function () {
       $("ciclo-mensagem").textContent = sucesso;
@@ -539,6 +546,7 @@
     var valor = Number($("indicador-valor").value);
     var horario = horarioComFuso(indicadorHora.value);
     botao.disabled = true;
+    botao.setAttribute("aria-busy", "true"); // visual de "salvando" (style.css)
     $("indicador-mensagem").textContent = "Saving…";
     window.RagaDados.enviarIndicador({ area: $("indicador-area").value, valor: valor, registrado_em: horario })
       .then(function () {
@@ -546,7 +554,10 @@
         return carregar();
       }).catch(function (erro) {
         $("indicador-mensagem").textContent = erro && (erro.status || erro.rede) ? erro.message : "Could not save the indicator.";
-      }).then(function () { botao.disabled = false; });
+      }).then(function () {
+        botao.disabled = false;
+        botao.removeAttribute("aria-busy");
+      });
   });
 
   // ---------- Início ----------

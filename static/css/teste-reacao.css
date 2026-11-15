@@ -57,6 +57,31 @@
   color: var(--cor-primaria);
 }
 
+/* Parado / fim: tecla grande, com aresta, que afunda ao apertar.
+   Sem transição de propósito: durante o teste, a troca de fase
+   precisa aparecer na hora, sem atrasar o sinal. */
+.alvo {
+  margin-bottom: 6px; /* espaço fixo da aresta: a página não pula entre fases */
+}
+
+.alvo[data-fase="parado"],
+.alvo[data-fase="fim"] {
+  box-shadow: 0 6px 0 var(--cor-primaria);
+}
+
+@media (hover: hover) {
+  .alvo[data-fase="parado"]:hover,
+  .alvo[data-fase="fim"]:hover {
+    background: color-mix(in srgb, var(--cor-primaria) 10%, var(--cor-superficie));
+  }
+}
+
+.alvo[data-fase="parado"]:active,
+.alvo[data-fase="fim"]:active {
+  transform: translateY(6px);
+  box-shadow: none;
+}
+
 /* Esperando: quadro apagado, borda tracejada. */
 .alvo[data-fase="esperando"] {
   border-style: dashed;
