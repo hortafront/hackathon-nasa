@@ -195,15 +195,24 @@
             <p id="erro-convivencia" class="erro-campo"></p>
           </fieldset>
 
-          <!-- Diário fictício compartilhado na demonstração. -->
+          <!-- Diário: privado por padrão. Só sai do navegador se a pessoa
+               marcar "compartilhar"; sem isso, o front envia o diário vazio
+               e guarda o texto só nesta aba (checkins.js). -->
           <div class="campo diario">
             <label for="noite-diario">Journal (optional)</label>
             <p id="diario-ajuda" class="nota">
-              Use fictional text only. The journal is saved with the check-in and appears
-              in the medical view. The prototype has no authentication or access control.
+              Private by default: it stays only in this browser tab and is not sent to the server.
+              Use fictional text only.
             </p>
             <textarea id="noite-diario" name="diario" rows="4" maxlength="1000" aria-describedby="diario-ajuda diario-contador"></textarea>
             <p id="diario-contador" class="nota">0 of 1000 characters</p>
+            <label class="compartilhar">
+              <input id="noite-compartilhar" type="checkbox" aria-describedby="compartilhar-ajuda">
+              <span>Share this entry with the mission psychologist</span>
+            </label>
+            <p id="compartilhar-ajuda" class="nota">
+              If checked, the journal text is saved with the check-in and shown in the medical view.
+            </p>
           </div>
 
           <p id="noite-nota-fonte" class="nota"></p>
@@ -235,6 +244,7 @@
         <p class="nota">
           On the server, a demonstration rule compares three days of stress responses.
           It is not a psychological assessment or diagnosis and does not analyze the journal.
+          Private journal entries are shown here only in the tab where they were written.
         </p>
       </div>
     </section>

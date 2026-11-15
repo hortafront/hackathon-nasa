@@ -2,7 +2,9 @@
 // Cada parte tem formulário, histórico e fonte de dados próprios
 // (a API pode ter a rota do sono e ainda não ter a da noite).
 // - O front não avalia nada: as regras ilustrativas ficam no back-end.
-// - O diário fictício acompanha o check-in e aparece na visão médica.
+// - Diário: PRIVADO POR PADRÃO. Só é enviado ao servidor (e aparece na
+//   visão médica) se a pessoa marcar "compartilhar". Sem isso, o front
+//   envia diario "" e guarda o texto só no sessionStorage desta aba.
 (function () {
   var INTERVALO_MS = 10000;
   var F = window.RagaFormato;
@@ -60,8 +62,8 @@
       ? "The check-in is saved on the local server using fictional data, and the API recalculates the assessment."
       : "In this demonstration, the check-in stays in this tab and is not sent to a server.";
     $("noite-nota-fonte").textContent = noite.fonte === "api"
-      ? "Fictional responses and journal entries are saved on the server and shown in the medical view. There is no access control."
-      : "Responses and journal entries stay in this tab and may appear in the local medical view.";
+      ? "Your 1–5 answers are saved on the server and shown in the medical view. The journal text is sent only if you choose to share it. There is no access control."
+      : "In this demonstration, answers stay in this tab. The journal text appears in the local medical view only if you choose to share it.";
   }
 
   // ---------- Manhã: histórico ----------
@@ -97,6 +99,36 @@
     return n + " (" + ROTULOS[campo][n] + ")";
   }
 
+  // ---------- Diário privado (só nesta aba) ----------
+  // sessionStorage pode estar bloqueado; nesse caso o texto privado não é guardado.
+  function chaveDiario(data) { return "raga-diario-privado-" + data; }
+
+  function guardarDiarioPrivado(data, texto) {
+    try {
+      if (texto) sessionStorage.setItem(chaveDiario(data), texto);
+      else sessionStorage.removeItem(chaveDiario(data));
+      return true;
+    } catch (erro) {
+      return false;
+    }
+  }
+
+  function temDiarioPrivado(data) {
+    try {
+      return !!sessionStorage.getItem(chaveDiario(data));
+    } catch (erro) {
+      return false;
+    }
+  }
+
+  // Coluna "Journal": compartilhado (texto veio do servidor), privado
+  // (texto só nesta aba) ou nenhum.
+  function situacaoDiario(c) {
+    if (c.diario) return "Shared: " + F.textoExibicao(c.diario);
+    if (temDiarioPrivado(c.data)) return "Private (only in this tab)";
+    return "—";
+  }
+
   function mostrarNoite(dados) {
     var lista = dados.checkins;
     $("noite-vazio").hidden = lista.length > 0;
@@ -109,7 +141,7 @@
         valor("humor", c.humor),
         valor("estresse", c.estresse),
         valor("convivencia", c.convivencia),
-        F.textoExibicao(c.diario) || "—",
+        situacaoDiario(c),
         F.textoExibicao(c.origem)
       ]);
     });
@@ -283,6 +315,7 @@
   var mensagemNoite = $("noite-mensagem");
   var campoDataNoite = $("noite-data");
   var campoDiario = $("noite-diario");
+  var campoCompartilhar = $("noite-compartilhar");
 
   function atualizarContador() {
     $("diario-contador").textContent = campoDiario.value.length + " of 1000 characters";
@@ -320,12 +353,14 @@
       erros[0].focus();
       return null;
     }
+    // Sem permissão, o texto do diário NÃO entra no envio: vai vazio
+    // (a API exige o campo) e fica só nesta aba.
     return {
       data: campoDataNoite.value,
       humor: respostas.humor,
       estresse: respostas.estresse,
       convivencia: respostas.convivencia,
-      diario: campoDiario.value,
+      diario: campoCompartilhar.checked ? campoDiario.value.trim() : "",
       registrado_em: new Date().toISOString()
     };
   }
@@ -338,12 +373,20 @@
       mensagemNoite.textContent = "Check the highlighted fields.";
       return;
     }
+    var textoDiario = campoDiario.value.trim();
+    var compartilhado = campoCompartilhar.checked && !!textoDiario;
     var botao = formNoite.querySelector('button[type="submit"]');
     botao.disabled = true;
     window.RagaDados.enviarCheckinNoite(checkin).then(function (resposta) {
-      mensagemNoite.textContent = (resposta.situacao === "salvo_no_servidor"
-        ? "Fictional check-in and journal for " + F.dia(checkin.data) + " saved on the server and available in the medical view."
-        : "Fictional check-in and journal for " + F.dia(checkin.data) + " saved in this tab.");
+      // Diário não compartilhado: guarda só nesta aba, depois do envio dar certo.
+      var guardado = compartilhado ? guardarDiarioPrivado(checkin.data, "") :
+        (textoDiario ? guardarDiarioPrivado(checkin.data, textoDiario) : true);
+      var lugar = resposta.situacao === "salvo_no_servidor" ? "saved on the server" : "saved in this tab";
+      var sobreDiario = !textoDiario ? ""
+        : compartilhado ? " The journal entry was shared with the mission psychologist (medical view)."
+        : guardado ? " The journal entry stayed private, only in this tab."
+        : " The browser blocked storage, so the private journal entry was not kept.";
+      mensagemNoite.textContent = "Evening check-in for " + F.dia(checkin.data) + " " + lugar + "." + sobreDiario;
       formNoite.reset();
       prepararNoite();
       return carregar();
