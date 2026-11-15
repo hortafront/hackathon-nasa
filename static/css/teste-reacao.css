@@ -89,17 +89,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.botao-secundario {
-  justify-self: start;
-  min-height: 2.75rem;
-  padding: 0 var(--espaco-4);
-  border: 1px solid currentColor;
-  border-radius: var(--raio);
-  background: none;
-  color: var(--cor-texto);
-  font: inherit;
-  cursor: pointer;
-}
+/* .botao-secundario fica no style.css (usado também pelo painel). */
 
 /* ==========================================================
    3. Resultado

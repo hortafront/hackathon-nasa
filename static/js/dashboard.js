@@ -16,6 +16,23 @@
 
   function $(id) { return document.getElementById(id); }
 
+  // Data pedida no endereço (?data=AAAA-MM-DD); sem ela, o painel mostra hoje.
+  var dataParam = (function () {
+    var valor = new URLSearchParams(window.location.search).get("data") || "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor : null;
+  })();
+
+  function hojeTexto() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  // "2026-11-10" → "10/11/2026"
+  function dataCompleta(texto) {
+    var p = texto.split("-");
+    return p[2] + "/" + p[1] + "/" + p[0];
+  }
+
   // Data local do despertar, tirada de fim_sono como em servico_sono.py.
   function dataDe(registro) {
     return registro.fim_sono.slice(0, 10);
@@ -57,11 +74,18 @@
     $("estado-geral-selo").innerHTML = F.selo(dados.estado_geral.estado);
     $("estado-geral-texto").textContent = dados.estado_geral.explicacao;
 
+    // A atualização a cada 10 s recria os cartões: guarda quais detalhes
+    // estavam abertos para não fechá-los na cara de quem está lendo.
     var lista = $("lista-areas");
+    var abertos = {};
+    lista.querySelectorAll("li[data-area] details[open]").forEach(function (d) {
+      abertos[d.closest("li").getAttribute("data-area")] = true;
+    });
     lista.replaceChildren();
     dados.areas.forEach(function (area) {
       var li = document.createElement("li");
       li.className = "area area--" + area.estado;
+      li.setAttribute("data-area", area.id);
       // Áreas com tela própria viram link.
       var destino = { sono: "#sono", mente: "checkins.html#noite", cognicao: "teste-reacao.html" }[area.id];
       var nome = document.createElement(destino ? "a" : "p");
@@ -81,9 +105,7 @@
         origem.textContent = "Fixed local example; not calculated from records.";
         li.appendChild(origem);
       }
-      if (area.historico) {
-        li.appendChild(paragrafo("Historical assessment for " + area.data_avaliacao + "; it may not reflect the current situation.", "nota"));
-      }
+      // Data histórica: o aviso fica uma vez só, na faixa de data do topo.
       if (area.estado === "dados_insuficientes" && area.ultimo_registro) {
         var u = area.ultimo_registro;
         li.appendChild(paragrafo("Latest available record: " + u.valor + " " + F.textoExibicao(u.unidade) +
@@ -91,6 +113,7 @@
       }
       if ((area.dados && area.dados.length) || area.linha_base) {
         var detalhes = document.createElement("details");
+        detalhes.open = !!abertos[area.id];
         var sumario = document.createElement("summary");
         sumario.textContent = "View data and baseline";
         detalhes.appendChild(sumario);
@@ -246,6 +269,7 @@
   // Lista do ciclo: indicação → reavaliação (só se houver mais de uma).
   function mostrarAcompanhamento(avaliacoes) {
     $("acompanhamento-bloco").hidden = avaliacoes.length < 2;
+    $("acompanhamento-resumo").textContent = "Retrospective assessments (" + avaliacoes.length + " dates)";
     var lista = $("lista-acompanhamento");
     lista.replaceChildren();
     avaliacoes.forEach(function (av, i) {
@@ -415,8 +439,44 @@
     $("aviso-fonte").textContent = F.textoFonte(window.RagaDados.fonte("sono"));
   }
 
+  // Faixa de data: diz qual dia o painel mostra (uma vez só) e, quando
+  // hoje ainda não tem registros, oferece o atalho para o cenário.
+  function mostrarFaixaData(dados) {
+    var api = window.RagaDados.fonte("sono").fonte === "api";
+    var hoje = hojeTexto();
+    var data = dataParam || hoje;
+    var sugestao = $("faixa-data-sugestao");
+    $("form-data").hidden = !api; // os dados locais têm um cenário fixo
+    $("link-hoje").hidden = !dataParam;
+    sugestao.hidden = true;
+    if (!api) {
+      $("faixa-data-texto").textContent = "Local demonstration data: a fixed scenario with a yellow sleep indication on 10/11/2026.";
+      return;
+    }
+    $("faixa-data-texto").textContent = data < hoje
+      ? "Showing " + dataCompleta(data) + ", a past date. Results are historical and do not describe the current situation."
+      : "Showing today, " + dataCompleta(data) + ".";
+
+    // Hoje sem dados: sugere a indicação amarela mais recente (ou o último registro).
+    var semDados = dados.areas.every(function (a) {
+      return a.estado === "dados_insuficientes" || a.estado === "sem_registros";
+    });
+    if (dataParam || !semDados) return;
+    var amarelas = dados.sono.avaliacoes.filter(function (a) { return a.estado === "amarelo"; });
+    var registros = dados.sono.registros;
+    var alvo = amarelas.length ? amarelas[amarelas.length - 1].data_avaliacao
+      : (registros.length ? dataDe(registros[registros.length - 1]) : null);
+    if (!alvo) return;
+    var link = document.createElement("a");
+    link.href = "?data=" + alvo;
+    link.textContent = "View the demonstration scenario of " + dataCompleta(alvo);
+    sugestao.replaceChildren(document.createTextNode("There are no records for today yet. "), link);
+    sugestao.hidden = false;
+  }
+
   function mostrar(dados) {
     mostrarFonte();
+    mostrarFaixaData(dados);
     mostrarAstronauta(dados);
     mostrarAreas(dados);
     mostrarSono(dados.sono);
@@ -496,6 +556,9 @@
   });
 
   // ---------- Início ----------
+  // Seletor de data: começa na data mostrada; não aceita futuro.
+  $("campo-data").max = hojeTexto();
+  $("campo-data").value = dataParam || hojeTexto();
   carregar();
   setInterval(carregar, INTERVALO_MS);
 })();

@@ -70,6 +70,20 @@
     <!-- De onde vêm os dados: API ou dados fictícios locais (dados-api.js). -->
     <p id="aviso-fonte" class="aviso-fonte depende-dados"></p>
 
+    <!-- Qual data o painel mostra (hoje ou ?data=AAAA-MM-DD) e atalho
+         para o cenário quando hoje não tem registros (dashboard.js). -->
+    <section id="faixa-data" class="faixa-data depende-dados" aria-labelledby="faixa-data-texto">
+      <p id="faixa-data-texto" class="faixa-data-texto"></p>
+      <p id="faixa-data-sugestao" class="faixa-data-sugestao" hidden></p>
+      <!-- Formulário GET: envia ?data=... para a própria página. -->
+      <form id="form-data" class="form-data">
+        <label for="campo-data">View another date</label>
+        <input id="campo-data" name="data" type="date">
+        <button type="submit" class="botao-secundario">View</button>
+        <a id="link-hoje" href="?">Back to today</a>
+      </form>
+    </section>
+
     <!-- Identificação da astronauta fictícia. -->
     <section id="astronauta" class="cartao identificacao depende-dados" aria-labelledby="nome-astronauta">
       <p class="etiqueta-simulada">Simulated data</p>
@@ -98,20 +112,6 @@
       <ul id="lista-areas" class="lista-areas"></ul>
     </section>
 
-    <section class="cartao depende-dados" aria-labelledby="titulo-indicador">
-      <h2 id="titulo-indicador">Record a fictional indicator</h2>
-      <p>Add a simulated heart rate or exercise duration. Do not use real measurements.</p>
-      <form id="form-indicador" class="formulario">
-        <label for="indicador-area">Area</label>
-        <select id="indicador-area"><option value="coracao">Resting heart rate (bpm)</option><option value="exercicio">Exercise (minutes)</option></select>
-        <label for="indicador-valor">Value</label>
-        <input id="indicador-valor" type="number" min="0" step="0.1" required>
-        <label for="indicador-horario">Date and time of the fictional reading</label>
-        <input id="indicador-horario" type="datetime-local" required>
-        <button id="indicador-salvar" type="submit" class="botao">Save fictional indicator</button>
-        <p id="indicador-mensagem" role="status" class="nota"></p>
-      </form>
-    </section>
 
     <!-- Sono: linha de base fictícia e histórico. -->
     <section id="sono" class="cartao depende-dados" aria-labelledby="titulo-sono">
@@ -201,11 +201,12 @@
 
         <!-- Aparece quando há mais de uma avaliação: mostra o ciclo
              indicação → reavaliação, da mais antiga para a mais recente. -->
-        <div id="acompanhamento-bloco" class="acompanhamento" hidden>
-          <h3>Retrospective assessments</h3>
+        <!-- Recolhida: a lista de todas as datas deixava a página longa. -->
+        <details id="acompanhamento-bloco" class="acompanhamento" hidden>
+          <summary id="acompanhamento-resumo">Retrospective assessments</summary>
           <p class="nota">Assessments calculated now for each date; these are not scheduled events or care records.</p>
           <ol id="lista-acompanhamento" class="lista-acompanhamento"></ol>
-        </div>
+        </details>
       </div>
     </section>
 
@@ -241,6 +242,25 @@
       <h2 id="titulo-checkin">Daily check-ins</h2>
       <p>In the morning, report your sleep. In the evening, report your mood, stress, and interactions with the crew.</p>
       <a class="botao botao-link" href="checkins.html">Complete a check-in</a>
+    </section>
+
+    <!-- Ferramenta de quem monta a demonstração, não do astronauta:
+         fica no fim e recolhida. Só grava com o servidor local. -->
+    <section id="ferramentas" class="cartao depende-dados" aria-labelledby="titulo-indicador">
+      <details class="ferramentas">
+        <summary><span id="titulo-indicador">Demo tools: record a fictional indicator</span></summary>
+        <p>Add a simulated heart rate or exercise duration. Do not use real measurements.</p>
+        <form id="form-indicador" class="formulario">
+          <label for="indicador-area">Area</label>
+          <select id="indicador-area"><option value="coracao">Resting heart rate (bpm)</option><option value="exercicio">Exercise (minutes)</option></select>
+          <label for="indicador-valor">Value</label>
+          <input id="indicador-valor" type="number" min="0" step="0.1" required>
+          <label for="indicador-horario">Date and time of the fictional reading</label>
+          <input id="indicador-horario" type="datetime-local" required>
+          <button id="indicador-salvar" type="submit" class="botao">Save fictional indicator</button>
+          <p id="indicador-mensagem" role="status" class="nota"></p>
+        </form>
+      </details>
     </section>
 
     <!-- Sobre os dados: origem, limites e fontes. -->

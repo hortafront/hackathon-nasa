@@ -425,8 +425,10 @@ p {
 
 /* Nada recebido ainda (carregando ou falha na 1ª carga):
    esconde as seções que dependem dos dados. */
+/* !important: regras por id das páginas (ex.: #ciclo-sono) não podem
+   mostrar a seção antes de os dados chegarem. */
 [data-tem-dados="nao"] .depende-dados {
-  display: none;
+  display: none !important;
 }
 
 /* Aviso geral. Vazio, ele continua na página (para o leitor de tela
@@ -646,6 +648,19 @@ p {
 .botao:disabled {
   opacity: 0.6;
   cursor: progress;
+}
+
+/* Botão de contorno, para ações secundárias (painel e teste de reação). */
+.botao-secundario {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-4);
+  border: 1px solid currentColor;
+  border-radius: var(--raio);
+  background: none;
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
 }
 
 /* Link com cara de botão (ex.: "Fazer check-in" no painel). */
