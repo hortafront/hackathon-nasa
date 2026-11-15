@@ -69,16 +69,97 @@
 /* ==========================================================
    3. Diário opcional
    ========================================================== */
+/* Mesmo visor rebaixado dos outros campos (style.css). */
 .diario textarea {
   font: inherit;
   width: 100%;
   min-height: 7rem;
-  padding: var(--espaco-2);
-  border: 1px solid var(--cor-texto-suave);
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 2px solid var(--cor-texto-suave);
   border-radius: var(--raio);
   background: var(--cor-superficie);
   color: var(--cor-texto);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--cor-texto) 8%, transparent);
   resize: vertical;
+  transition: border-color var(--tecla-tempo) ease;
+}
+
+@media (hover: hover) {
+  .diario textarea:hover {
+    border-color: var(--cor-primaria);
+  }
+}
+
+.diario textarea:focus-visible {
+  border-color: var(--cor-primaria);
+}
+
+/* ==========================================================
+   3b. Linha do sono: dormiu → acordou = duração
+   ========================================================== */
+.linha-sono {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-3);
+}
+
+.ponto-sono {
+  display: grid;
+  gap: var(--espaco-1);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+  font-weight: 500;
+}
+
+/* Seta tracejada entre os horários: a noite passando. */
+.linha-sono-seta {
+  position: relative;
+  width: 2.5rem;
+  height: 3rem; /* mesma altura do campo, para centralizar a seta */
+  background: linear-gradient(to right, var(--cor-texto-suave) 50%, transparent 0) left center / 0.5rem 2px repeat-x;
+}
+
+.linha-sono-seta::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-top: 2px solid var(--cor-texto-suave);
+  border-right: 2px solid var(--cor-texto-suave);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Visor da duração: leitura grande, na fonte dos números. */
+.duracao-leitura {
+  display: grid;
+  gap: var(--espaco-1);
+  min-height: 3rem;
+  padding-left: var(--espaco-3);
+  border-left: 4px solid var(--cor-primaria);
+}
+
+.duracao-leitura span {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+  font-weight: 500;
+}
+
+.duracao-leitura strong {
+  font-family: var(--fonte-titulo);
+  font-size: var(--titulo-2);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* No celular a seta some: os três blocos empilham em duas linhas. */
+@media (max-width: 30rem) {
+  .linha-sono-seta {
+    display: none;
+  }
 }
 
 .tabela-checkin details p {

@@ -230,19 +230,50 @@
     return { inicio: inicio, fim: fim, horas: Math.round(horas * 100) / 100 };
   }
 
+  // Visor da duração: pulsa quando o valor calculado muda.
   function atualizarDuracao() {
     var h = calcularHorario();
-    $("manha-duracao").textContent = "Calculated duration: " + (h ? F.duracao(h.horas) : "—");
+    var visor = $("manha-duracao-valor");
+    var texto = h ? F.duracao(h.horas) : "—";
+    if (visor.textContent !== texto && h) window.RagaTeclas.pulsar($("manha-duracao"));
+    visor.textContent = texto;
   }
 
   [campoData, campoInicio, campoFim].forEach(function (c) {
     c.addEventListener("input", atualizarDuracao);
   });
 
+  // Teclas "Today" / "Yesterday": preenchem a data (data-dias = 0 ou -1)
+  // e ficam acesas (aria-pressed) quando a data do campo é a delas.
+  var teclasDia = document.querySelectorAll(".tecla-dia");
+  function diaRelativo(dias) {
+    var d = new Date();
+    d.setDate(d.getDate() + dias);
+    return dataTexto(d);
+  }
+  function marcarTeclasDia() {
+    teclasDia.forEach(function (tecla) {
+      var campo = $(tecla.getAttribute("aria-controls"));
+      var igual = campo.value === diaRelativo(Number(tecla.getAttribute("data-dias")));
+      tecla.setAttribute("aria-pressed", String(igual));
+    });
+  }
+  teclasDia.forEach(function (tecla) {
+    var campo = $(tecla.getAttribute("aria-controls"));
+    tecla.addEventListener("click", function () {
+      campo.value = diaRelativo(Number(tecla.getAttribute("data-dias")));
+      campo.dispatchEvent(new Event("input", { bubbles: true }));
+      window.RagaTeclas.pulsar(campo);
+    });
+    campo.addEventListener("input", marcarTeclasDia);
+    campo.addEventListener("change", marcarTeclasDia);
+  });
+
   function prepararManha() {
     campoData.max = hojeTexto();
     campoData.value = hojeTexto();
     atualizarDuracao();
+    marcarTeclasDia();
   }
 
   // Validação de interface; o servidor precisa validar de novo.
@@ -337,6 +368,7 @@
     campoDataNoite.max = hojeTexto();
     campoDataNoite.value = hojeTexto();
     atualizarContador();
+    marcarTeclasDia();
   }
 
   function escolhido(nome) {

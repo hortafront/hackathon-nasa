@@ -71,29 +71,47 @@
         <form id="form-manha" class="formulario" novalidate>
           <div class="campo">
             <label for="manha-data">Date you woke up</label>
-            <input id="manha-data" name="data" type="date" required aria-describedby="erro-manha-data">
+            <!-- Teclas de atalho: preenchem a data e acendem quando
+                 correspondem à data escolhida (checkins.js). -->
+            <div class="campo-linha">
+              <input id="manha-data" name="data" type="date" required aria-describedby="erro-manha-data">
+              <button type="button" class="botao-secundario tecla-dia" data-dias="0" aria-controls="manha-data" aria-pressed="false">Today</button>
+              <button type="button" class="botao-secundario tecla-dia" data-dias="-1" aria-controls="manha-data" aria-pressed="false">Yesterday</button>
+            </div>
             <p id="erro-manha-data" class="erro-campo"></p>
           </div>
 
           <fieldset class="campo" aria-describedby="erro-manha-horario manha-duracao">
             <legend>When did you fall asleep and wake up?</legend>
-            <div class="duracao">
-              <label class="duracao-parte">
+            <!-- Linha do sono: dormiu → acordou = duração calculada. -->
+            <div class="linha-sono">
+              <label class="ponto-sono">
                 <span>Fell asleep at</span>
                 <input id="manha-inicio" name="inicio" type="time" required>
               </label>
-              <label class="duracao-parte">
+              <span class="linha-sono-seta" aria-hidden="true"></span>
+              <label class="ponto-sono">
                 <span>Woke up at</span>
                 <input id="manha-fim" name="fim" type="time" required>
               </label>
+              <p id="manha-duracao" class="duracao-leitura">
+                <span>Calculated duration</span>
+                <strong id="manha-duracao-valor">—</strong>
+              </p>
             </div>
-            <p id="manha-duracao" class="nota">Calculated duration: —</p>
             <p id="erro-manha-horario" class="erro-campo"></p>
           </fieldset>
 
           <div class="campo">
             <label for="manha-interrupcoes">How many times did you wake during the night?</label>
-            <input id="manha-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-manha-interrupcoes">
+            <!-- Teclas − / + (teclas.js): de 0 a 30; digitar também funciona. -->
+            <div class="seletor-numero">
+              <button type="button" class="botao-secundario tecla-passo" data-direcao="-1" aria-controls="manha-interrupcoes" aria-label="One less">−</button>
+              <span class="visor">
+                <input id="manha-interrupcoes" name="interrupcoes" type="number" inputmode="numeric" min="0" max="30" step="1" aria-describedby="erro-manha-interrupcoes">
+              </span>
+              <button type="button" class="botao-secundario tecla-passo" data-direcao="1" aria-controls="manha-interrupcoes" aria-label="One more">+</button>
+            </div>
             <p id="erro-manha-interrupcoes" class="erro-campo"></p>
           </div>
 
@@ -150,7 +168,11 @@
         <form id="form-noite" class="formulario" novalidate>
           <div class="campo">
             <label for="noite-data">Date</label>
-            <input id="noite-data" name="data" type="date" required aria-describedby="erro-noite-data">
+            <div class="campo-linha">
+              <input id="noite-data" name="data" type="date" required aria-describedby="erro-noite-data">
+              <button type="button" class="botao-secundario tecla-dia" data-dias="0" aria-controls="noite-data" aria-pressed="false">Today</button>
+              <button type="button" class="botao-secundario tecla-dia" data-dias="-1" aria-controls="noite-data" aria-pressed="false">Yesterday</button>
+            </div>
             <p id="erro-noite-data" class="erro-campo"></p>
           </div>
 
@@ -268,6 +290,7 @@
   <script src="../static/js/dados-demo.js" defer></script>
   <script src="../static/js/dados-api.js" defer></script>
   <script src="../static/js/formato.js" defer></script>
+  <script src="../static/js/teclas.js" defer></script>
   <script src="../static/js/checkins.js" defer></script>
 </body>
 </html>

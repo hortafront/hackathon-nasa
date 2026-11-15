@@ -717,6 +717,11 @@ p {
   -moz-appearance: textfield;
 }
 
+/* Visor sem unidade (ex.: interrupções): número centralizado. */
+.formulario .visor input[type="number"]:only-child {
+  text-align: center;
+}
+
 /* Sem as setinhas do navegador: as teclas − / + fazem esse papel. */
 .visor input::-webkit-inner-spin-button,
 .visor input::-webkit-outer-spin-button {
@@ -754,18 +759,6 @@ p {
 @keyframes pulso {
   0% { transform: scale(1.04); border-color: var(--cor-primaria); }
   100% { transform: scale(1); }
-}
-
-.duracao {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--espaco-3);
-}
-
-.duracao-parte {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espaco-2);
 }
 
 .formulario input[type="number"] {
@@ -947,6 +940,21 @@ p {
   transition-duration: 40ms;
 }
 
+/* Tecla de atalho acesa (aria-pressed="true"), ex.: "Today" quando a
+   data do campo é hoje. Mesmo visual da opção marcada na escala. */
+.botao-secundario[aria-pressed="true"] {
+  background-color: var(--cor-primaria);
+  color: var(--cor-fundo);
+  box-shadow: 0 var(--tecla-aresta) 0 var(--cor-botao-aresta);
+}
+
+@media (hover: hover) {
+  .botao-secundario[aria-pressed="true"]:hover:enabled {
+    background-color: var(--cor-botao-hover);
+    box-shadow: 0 calc(var(--tecla-aresta) + 2px) 0 var(--cor-botao-aresta);
+  }
+}
+
 /* Indisponível (ex.: salvar no modo de demonstração): tecla travada. */
 .botao:disabled,
 .botao-secundario:disabled {
@@ -1090,7 +1098,8 @@ p {
   .escala label,
   .botao-tema,
   .botao-tema::before,
-  .pulso {
+  .pulso,
+  .diario textarea {
     transition: none;
     animation: none;
   }
