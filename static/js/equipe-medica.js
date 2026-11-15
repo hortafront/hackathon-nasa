@@ -1,5 +1,6 @@
 // Prévia da visão da equipe médica.
-// Exibe os dados fictícios disponíveis, incluindo check-ins e diário.
+// Exibe os dados fictícios disponíveis. As respostas de 1 a 5 aparecem
+// sempre; o texto do diário só quando o astronauta escolheu compartilhar.
 (function () {
   var INTERVALO_MS = 10000;
   var F = window.RagaFormato;
@@ -58,7 +59,7 @@
       var detalhes = document.createElement("details");
       detalhes.dataset.astronauta = String(tri.id);
       detalhes.open = abertos.has(String(tri.id));
-      detalhes.appendChild(texto("summary", "", "View shared records and journal"));
+      detalhes.appendChild(texto("summary", "", "View shared records"));
       detalhes.appendChild(texto("p", "nota", "The full list may include records after the assessment date above."));
       (tri.areas || []).forEach(function (area) {
         detalhes.appendChild(texto("h4", "", area.nome));
@@ -94,7 +95,10 @@
         detalhes.appendChild(texto("p", "", "Date " + F.dia(c.data) + "; mood " + c.humor +
           "; stress " + c.estresse + "; crew interactions " + c.convivencia +
           "; recorded at " + F.dataHora(c.registrado_em) + "; source: " + F.textoExibicao(c.origem) + "."));
-        detalhes.appendChild(texto("p", "", "Journal: " + (F.textoExibicao(c.diario) || "not provided")));
+        // Diário privado por padrão: só aparece se o astronauta compartilhou.
+        detalhes.appendChild(texto("p", "", c.diario
+          ? "Journal shared by the astronaut: " + F.textoExibicao(c.diario)
+          : "Journal: not shared (private to the astronaut)."));
       });
       detalhes.appendChild(texto("h4", "", "Reaction tests"));
       var testes = tri.testes_reacao || [];
